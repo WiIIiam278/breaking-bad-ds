@@ -5,9 +5,7 @@
             "forcedInclude": ["${workspaceFolder}\\include\\vscode_fix.h"],
             "includePath": [
                 "${workspaceFolder}",
-                "${workspaceFolder}\\include\\**",
-                "C:\\Users\\William\\Documents\\Nintendo-DS-Development\\nitro-engine\\include\\**",
-                "C:\\Users\\William\\Documents\\Nintendo-DS-Development\\nds_nflib\\include\\**",
+                "${workspaceFolder}\\include\\**",,
                 "C:\\devkitPro\\libnds\\include\\**",
                 "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**"
             ],
