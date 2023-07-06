@@ -33,9 +33,9 @@ ICON     :=
 NITRO    := nitrofiles
 
 # These set the information text in the nds file
-GAME_TITLE     := $(shell basename $(CURDIR))
-GAME_SUBTITLE1 := Nitro Engine example
-GAME_SUBTITLE2 := github.com/AntonioND/nitro-engine
+GAME_TITLE     := Breaking Bad
+GAME_SUBTITLE1 := William278
+GAME_SUBTITLE2 := 2023
 
 #---------------------------------------------------------------------------------
 # options for code generation

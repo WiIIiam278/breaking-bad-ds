@@ -9,9 +9,9 @@ BLOCKSDSEXT	?= /opt/blocksds/external
 # ===========
 
 NAME		:= $(shell basename $(CURDIR))
-GAME_TITLE	:= NFlib + Nitro Engine template
-GAME_SUBTITLE	:= Nitro Engine example
-GAME_AUTHOR	:= github.com/AntonioND/nitro-engine
+GAME_TITLE	:= Breaking Bad
+GAME_SUBTITLE	:= William278
+GAME_AUTHOR	:= 2023
 GAME_ICON	:= $(BLOCKSDS)/sys/icon.bmp
 
 # DLDI and internal SD slot of DSi
