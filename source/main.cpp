@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cmath>
 
 #include <filesystem.h>
 #include <nds.h>
@@ -8,99 +9,289 @@
 
 #include <string>
 
+enum Tile
+{
+    VOID,
+    FLOOR,
+    WALL
+};
+
+enum Direction
+{
+    LEFT,
+    DOWN,
+    RIGHT,
+    UP
+};
+
+class SecurityCamera
+{
+public:
+    NE_Model *Model;
+    NE_Material *Material;
+
+    float x = -25;
+    float y = 4;
+    float z = 10.5;
+
+    SecurityCamera(){};
+
+    int Load(void)
+    {
+        Model = NE_ModelCreate(NE_Static);
+        Material = NE_MaterialCreate();
+
+        // Load assets from the filesystem
+        if (NE_ModelLoadStaticMeshFAT(Model, "camera.dl") == 0)
+        {
+            consoleDemoInit();
+            printf("Couldn't load security camera mesh...");
+            return -1;
+        }
+
+        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 64, 64, NE_TEXGEN_TEXCOORD, "camera_tex.bin") == 0)
+        {
+            consoleDemoInit();
+            printf("Couldn't load security camera textures...");
+            return -1;
+        }
+
+        // Assign material to the model
+        NE_ModelSetMaterial(Model, Material);
+
+        // Set model rotation, position and scale
+        int scale = 10250;
+        NE_ModelScaleI(Model, scale, scale, scale);
+        NE_ModelTranslate(Model, x, y, z);
+        return 0;
+    }
+
+    // Face the player by rotating on the x axis
+    void FacePlayer(float playerX, float playerZ) 
+    {
+        // rotate on the x axis
+        float angle = atan2(playerZ - z, playerX - x) - M_PI / 4;
+        NE_ModelSetRot(Model, 0, -angle * (512 / M_PI), 0);
+    }
+
+    void Draw()
+    {
+        // Draw the security camera
+        NE_ModelDraw(Model);
+    }
+};
+
+class Map
+{
+public:
+    NE_Model *Model;
+    NE_Material *Material;
+    SecurityCamera Camera;
+
+    // Z x X (top is closer to the camera)
+    Tile Tiles[9][9] = {
+        {FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL,  FLOOR, FLOOR, WALL,  WALL,  WALL,  FLOOR, FLOOR, FLOOR},
+        {WALL,  FLOOR, FLOOR, WALL,  WALL,  WALL,  WALL,  FLOOR, FLOOR},
+        {WALL,  FLOOR, FLOOR, WALL,  FLOOR, FLOOR, WALL,  FLOOR, FLOOR},
+        {WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL,  WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL}
+    };
+
+    Map(){};
+
+    Tile GetTileAt(int x, int z)
+    {
+        if (x < 0 || x > 8 || z < 0 || z > 8)
+        {
+            return VOID;
+        }
+        return Tiles[z][x];
+    }
+
+    int Load(void)
+    {
+        Model = NE_ModelCreate(NE_Static);
+        Material = NE_MaterialCreate();
+
+        // Load assets from the filesystem
+        if (NE_ModelLoadStaticMeshFAT(Model, "superlab.dl") == 0)
+        {
+            consoleDemoInit();
+            printf("Couldn't load map mesh...");
+            return -1;
+        }
+
+        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 256, 256, NE_TEXGEN_TEXCOORD, "superlab_tex.bin") == 0)
+        {
+            consoleDemoInit();
+            printf("Couldn't load map textures...");
+            return -1;
+        }
+
+        // Set model rotation on the x axis
+        NE_ModelSetRot(Model, 0, 3 * (512 / 4), 0);
+
+        // Set scale
+        int scale = 26600;
+        NE_ModelScaleI(Model, scale, scale, scale);
+
+        // Set position
+        NE_ModelTranslate(Model, -13, 0, 10);
+
+        // Assign material to the model
+        NE_ModelSetMaterial(Model, Material);
+
+        // Load security camera
+        if (Camera.Load() != 0)
+        {
+            return -1;
+        }
+
+        return 0;
+    }
+
+    void UpdateCameras(float playerX, float playerZ)
+    {
+        Camera.FacePlayer(playerX, playerZ);
+    }
+
+    void Draw()
+    {
+        // Draw the map
+        NE_ModelDraw(Model);
+
+        // Draw the security cameras
+        for (int i = 0; i < 2; i++)
+        {
+            Camera.Draw();
+        }
+    }
+};
+
 class Walter
 {
 public:
     NE_Model *Model;
-    NE_Animation *Animation;
     NE_Material *Material;
-    int facing = 1; // 0 = left, 1 = down, 2 = right, 3 = up
-    float rotation = (facing + 1) * (512 / 4);
-    bool walking = false;
 
+    Direction facing = DOWN; // 0 = left, 1 = down, 2 = right, 3 = up
+    float rotation = (facing + 1) * (512 / 4);
     float x = 0;
     float y = 0;
     float z = 0;
+
+    float speed = 0.125;
+    bool walking = false;
+
+    int tileX;
+    int tileZ;
+    int targetX;
+    int targetZ;
 
     Walter(){};
 
     int Load(void)
     {
-        Model = NE_ModelCreate(NE_Animated);
+        Model = NE_ModelCreate(NE_Static);
         Material = NE_MaterialCreate();
-        Animation = NE_AnimationCreate();
 
         // Load assets from the filesystem
-        if (NE_ModelLoadDSMFAT(Model, "walter.dsm") == 0)
+        if (NE_ModelLoadStaticMeshFAT(Model, "walter.dl") == 0)
         {
             consoleDemoInit();
-            printf("Couldn't load model...");
+            printf("Couldn't load walter mesh...");
             return -1;
         }
 
-        if (NE_AnimationLoadFAT(Animation, "walter_idle1.dsa") == 0)
+        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "walter_tex.bin") == 0)
         {
             consoleDemoInit();
-            printf("Couldn't load animation...");
+            printf("Couldn't load walter textures...");
             return -1;
         }
-
-        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD,
-                                  "walter_tex.bin") == 0)
-        {
-            consoleDemoInit();
-            printf("Couldn't load texture...");
-            return -1;
-        }
-
-        // Set model rotation on the x axis
-        NE_ModelSetRot(Model, 0, rotation, 0);
-
-        // Set position
-        NE_ModelTranslate(Model, 1.3, 0, -7.2);
 
         // Assign material to the model
-        // NE_MaterialSetPropierties(Material, NE_Black, NE_Black, NE_Black, NE_Black, false, true);
         NE_ModelSetMaterial(Model, Material);
 
-        // Assign animation to the model and start it
-        NE_ModelSetAnimation(Model, Animation);
-        NE_ModelAnimStart(Model, NE_ANIM_LOOP, floattof32(0.1));
+        // Set model rotation, position and scale
+        int scale = 5500;
+        NE_ModelSetRot(Model, 0, rotation, 0);
+        NE_ModelScaleI(Model, scale, scale, scale);
+        NE_ModelTranslate(Model, 0, 0.2, 0);
+
         return 0;
     }
 
     void Draw()
     {
         NE_ModelDraw(Model);
-    };
+    }
 
-    void Move(NE_Camera *camera)
+    void Move(Map map)
     {
         if (!walking)
         {
             return;
         }
 
-        float speed = 0.1;
         switch (facing)
         {
-        case 0:
-            Translate(camera, speed, 0, 0);
+        case LEFT:
+            targetX = tileX - 1;
             break;
-        case 1:
-            Translate(camera, 0, 0, -speed);
+        case DOWN:
+            targetZ = tileZ - 1;
             break;
-        case 2:
-            Translate(camera, -speed, 0, 0);
+        case RIGHT:
+            targetX = tileX + 1;
             break;
-        case 3:
-            Translate(camera, 0, 0, speed);
+        case UP:
+            targetZ = tileZ + 1;
             break;
         }
-    };
 
-    void UpdateDirection()
+        Tile target = map.GetTileAt(targetX, targetZ);
+        if (target != FLOOR)
+        {
+            targetX = tileX;
+            targetZ = tileZ;
+            walking = false;
+        }
+    }
+
+    void Update(NE_Camera *camera)
     {
+        // Update position
+        float translateX = -1.5 + (-targetX * 2.5);
+        float translateZ = 2 + (targetZ * 2.5);
+
+        if (translateX > x)
+        {
+            Translate(camera, speed, 0, 0);
+        }
+        else if (translateX < x)
+        {
+            Translate(camera, -speed, 0, 0);
+        }
+        else if (translateZ > z)
+        {
+            Translate(camera, 0, 0, speed);
+        }
+        else if (translateZ < z)
+        {
+            Translate(camera, 0, 0, -speed);
+        }
+        else 
+        {
+            tileX = targetX;
+            tileZ = targetZ;
+        }
+
+        // Update direction
         int turningSpeed = 20;
         float target = (facing + 1) * (511 / 4);
         float changeBy = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
@@ -113,68 +304,31 @@ public:
         this->x += x;
         this->y += y;
         this->z += z;
-        NE_CameraMove(camera, x, y, z);
+        NE_CameraMove(camera, x, 0, 0);
         NE_ModelTranslate(Model, x, y, z);
-    };
+    }
 
-    void PrintCoords()
+    Tile GetPlayerTile(Map map)
+    {
+        return map.GetTileAt(tileX, tileZ);
+    }
+
+    void PrintCoords(Map map)
     {
         char coords[100];
-        sprintf(coords, "x: %f, z: %f", x, z);
+        sprintf(coords, "x: %.1f, z: %.1f", x, z);
         NF_WriteText(1, 0, 1, 1, coords);
+
+        char tileCoords[100];
+        sprintf(tileCoords, "tileX: %i (%i), tileZ: %i (%i)", tileX, targetX, tileZ, targetZ);
+        NF_WriteText(1, 0, 1, 2, tileCoords);
+
+        char tileType[100];
+        sprintf(tileType, "tileType: %i", GetPlayerTile(map));
+        NF_WriteText(1, 0, 1, 3, tileType);
+
         NF_UpdateTextLayers();
     }
-};
-
-class Map
-{
-public:
-    NE_Model *Model;
-    NE_Material *Material;
-
-    Map() {};
-
-    int Load(void)
-    {
-        Model = NE_ModelCreate(NE_Static);
-        Material = NE_MaterialCreate();
-
-        
-        // Load assets from the filesystem
-        if (NE_ModelLoadStaticMeshFAT(Model, "superlab.dl") == 0)
-        {
-            consoleDemoInit();
-            printf("Couldn't load map mesh...");
-            return -1;
-        }
-
-        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 256, 256, NE_TEXGEN_TEXCOORD,
-                                  "superlab_tex.bin") == 0)
-        {
-            consoleDemoInit();
-            printf("Couldn't load map textures...");
-            return -1;
-        }
-
-        // Set model rotation on the x axis
-        NE_ModelSetRot(Model, 0, 3 * (512 / 4), 0);
-        
-        // Set scale - The model is scaled 5.9x using obj2dl from the blender waveform
-        int scale = 26600;
-        NE_ModelScaleI(Model, scale, scale, scale);
-        
-        // Set position
-        NE_ModelTranslate(Model, 0, 3.85, 0);
-
-        // Assign material to the model
-        NE_ModelSetMaterial(Model, Material);
-        return 0;
-    }
-
-    void Draw()
-    {
-        NE_ModelDraw(Model);
-    };
 };
 
 NE_Camera *camera;
@@ -182,7 +336,6 @@ Map map;
 Walter player;
 
 volatile int frame = 0;
-bool flashingRed = false;
 
 void WaitLoop(void)
 {
@@ -194,12 +347,15 @@ void WaitLoop(void)
 
 void Draw3DScene(void)
 {
-    player.Move(camera);
+    // Enable  fog
+    NE_FogEnable(3, NE_Red, 31, 3, 0x7c00);
+
     NE_CameraUse(camera);
-    NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_DISABLE);
+    NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
+    player.Update(camera);
+    player.Move(map);
 
-    player.UpdateDirection();
-
+    map.UpdateCameras(player.x, player.z);
     map.Draw();
     player.Draw();
 }
@@ -234,9 +390,16 @@ void LoadAndSetupGraphics3D(void)
 
     // Setup camera
     NE_CameraSet(camera,
-                 1.3, 11.5, -14.2,
-                 1.3, 2, -3,
+                 0, 12.5, -3,
+                 0, 1, 8.5,
                  0, 1, 0);
+    
+    // Move player to starting position
+    player.Translate(camera, -11.5, 0, 4.5);
+    player.targetX = 4;
+    player.tileX = 4;
+    player.targetZ = 1;
+    player.tileZ = 1;
 }
 
 void LoadAndSetupGraphics2D(void)
@@ -259,20 +422,6 @@ void LoadAndSetupGraphics2D(void)
 
     // Create text layer
     NF_CreateTextLayer(1, 0, 0, "normal");
-}
-
-void TickLights(void)
-{
-    if (frame % 120 == 0)
-    {
-        flashingRed = !flashingRed;
-
-        if (flashingRed) {
-            NE_LightSetColor(0, NE_Red);
-        } else {
-            NE_LightSetColor(0, NE_White);
-        }
-    }
 }
 
 int main(void)
@@ -321,36 +470,34 @@ int main(void)
         oamUpdate(&oamSub);
 
         // Debug - print coords
-        player.PrintCoords();
+        player.PrintCoords(map);
 
         // Start processing a new frame after the 2D elements have been updated.
         scanKeys();
         uint32 keys = keysHeld();
 
+        bool moving = player.targetX != player.tileX || player.targetZ != player.tileZ;
         player.walking = false;
-        if (keys & KEY_LEFT)
+        if (keys & KEY_LEFT && (!moving || player.facing == LEFT))
         {
-            player.facing = 0;
+            player.facing = LEFT;
             player.walking = true;
         }
-        if (keys & KEY_DOWN)
+        if (keys & KEY_DOWN && (!moving || player.facing == DOWN))
         {
-            player.facing = 1;
+            player.facing = DOWN;
             player.walking = true;
         }
-        if (keys & KEY_RIGHT)
+        if (keys & KEY_RIGHT && (!moving || player.facing == RIGHT))
         {
-            player.facing = 2;
+            player.facing = RIGHT;
             player.walking = true;
         }
-        if (keys & KEY_UP)
+        if (keys & KEY_UP && (!moving || player.facing == UP))
         {
-            player.facing = 3;
+            player.facing = UP;
             player.walking = true;
         }
-
-        // Tick lights
-        TickLights();
 
         // Refresh shadow OAM copy
         NF_SpriteOamSet(1);
