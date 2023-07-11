@@ -30,9 +30,9 @@ public:
     NE_Model *Model;
     NE_Material *Material;
 
-    float x = -25;
-    float y = 4;
-    float z = 10.5;
+    float x = -24;
+    float y = 4.25;
+    float z = 16;
 
     SecurityCamera(){};
 
@@ -66,12 +66,17 @@ public:
         return 0;
     }
 
-    // Face the player by rotating on the x axis
     void FacePlayer(float playerX, float playerZ) 
     {
-        // rotate on the x axis
-        float angle = atan2(playerZ - z, playerX - x) - M_PI / 4;
-        NE_ModelSetRot(Model, 0, -angle * (512 / M_PI), 0);
+        float angle = atan2(playerZ - z, playerX - x) * 180.0f / M_PI;
+        if (angle > 90.0f) {
+            angle = 90.0f;
+        } else if (angle < -90.0f) {
+            angle = -90.0f;
+        }
+        
+        // Rotate the camera about the y-axis
+        NE_ModelSetRot(Model, 0, -(angle + 90), 0);
     }
 
     void Draw()
