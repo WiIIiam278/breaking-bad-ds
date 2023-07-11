@@ -186,7 +186,7 @@ public:
     Direction facing = DOWN; // 0 = left, 1 = down, 2 = right, 3 = up
     float rotation = (facing + 1) * (512 / 4);
     float x = 0;
-    float y = 0;
+    float y = 0.4;
     float z = 0;
 
     float speed = 0.125;
@@ -226,7 +226,7 @@ public:
         int scale = 5500;
         NE_ModelSetRot(Model, 0, rotation, 0);
         NE_ModelScaleI(Model, scale, scale, scale);
-        NE_ModelTranslate(Model, 0, 0.2, 0);
+        NE_ModelTranslate(Model, x, y, z);
 
         return 0;
     }
@@ -268,27 +268,30 @@ public:
         }
     }
 
-    void Update(NE_Camera *camera)
+    void Update(NE_Camera *camera, volatile int *frame)
     {
         // Update position
-        float translateX = -1.5 + (-targetX * 2.5);
-        float translateZ = 2 + (targetZ * 2.5);
+        float translateX = -1.3 + (-targetX * 2.6);
+        float translateZ = 1.9 + (targetZ * 2.4);
 
-        if (translateX > x)
+        // Bob up and down
+        float dY = (sin(*frame / 3.0) / 50.0) * 3;
+        float allowance = 0.05;
+        if (translateX > x + allowance)
         {
-            Translate(camera, speed, 0, 0);
+            Translate(camera, speed, dY, 0);
         }
-        else if (translateX < x)
+        else if (translateX < x - allowance)
         {
-            Translate(camera, -speed, 0, 0);
+            Translate(camera, -speed, dY, 0);
         }
-        else if (translateZ > z)
+        else if (translateZ > z + allowance)
         {
-            Translate(camera, 0, 0, speed);
+            Translate(camera, 0, dY, speed);
         }
-        else if (translateZ < z)
+        else if (translateZ < z - allowance)
         {
-            Translate(camera, 0, 0, -speed);
+            Translate(camera, 0, dY, -speed);
         }
         else 
         {
@@ -321,7 +324,7 @@ public:
     void PrintCoords(Map map)
     {
         char coords[100];
-        sprintf(coords, "x: %.1f, z: %.1f", x, z);
+        sprintf(coords, "x: %.1f, y: %.1f, z: %.1f", x, y, z);
         NF_WriteText(1, 0, 1, 1, coords);
 
         char tileCoords[100];
@@ -357,7 +360,7 @@ void Draw3DScene(void)
 
     NE_CameraUse(camera);
     NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
-    player.Update(camera);
+    player.Update(camera, &frame);
     player.Move(map);
 
     map.UpdateCameras(player.x, player.z);
