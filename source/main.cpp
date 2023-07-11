@@ -42,14 +42,14 @@ public:
         Material = NE_MaterialCreate();
 
         // Load assets from the filesystem
-        if (NE_ModelLoadStaticMeshFAT(Model, "camera.dl") == 0)
+        if (NE_ModelLoadStaticMeshFAT(Model, "model/camera.dl") == 0)
         {
             consoleDemoInit();
             printf("Couldn't load security camera mesh...");
             return -1;
         }
 
-        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 64, 64, NE_TEXGEN_TEXCOORD, "camera_tex.bin") == 0)
+        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 64, 64, NE_TEXGEN_TEXCOORD, "model/camera_tex.bin") == 0)
         {
             consoleDemoInit();
             printf("Couldn't load security camera textures...");
@@ -66,15 +66,18 @@ public:
         return 0;
     }
 
-    void FacePlayer(float playerX, float playerZ) 
+    void FacePlayer(float playerX, float playerZ)
     {
         float angle = atan2(playerZ - z, playerX - x) * 180.0f / M_PI;
-        if (angle > 90.0f) {
+        if (angle > 90.0f)
+        {
             angle = 90.0f;
-        } else if (angle < -90.0f) {
+        }
+        else if (angle < -90.0f)
+        {
             angle = -90.0f;
         }
-        
+
         // Rotate the camera about the y-axis
         NE_ModelSetRot(Model, 0, -(angle + 90), 0);
     }
@@ -96,15 +99,14 @@ public:
     // Z x X (top is closer to the camera)
     Tile Tiles[9][9] = {
         {FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
-        {WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
-        {WALL,  FLOOR, FLOOR, WALL,  WALL,  WALL,  FLOOR, FLOOR, FLOOR},
-        {WALL,  FLOOR, FLOOR, WALL,  WALL,  WALL,  WALL,  FLOOR, FLOOR},
-        {WALL,  FLOOR, FLOOR, WALL,  FLOOR, FLOOR, WALL,  FLOOR, FLOOR},
-        {WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
-        {WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
-        {WALL,  WALL,  FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
-        {WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL}
-    };
+        {WALL, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL, FLOOR, FLOOR, WALL, WALL, WALL, FLOOR, FLOOR, FLOOR},
+        {WALL, FLOOR, FLOOR, WALL, WALL, WALL, WALL, FLOOR, FLOOR},
+        {WALL, FLOOR, FLOOR, WALL, WALL, WALL, WALL, FLOOR, FLOOR},
+        {WALL, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL, WALL, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
+        {WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL}};
 
     Map(){};
 
@@ -123,14 +125,14 @@ public:
         Material = NE_MaterialCreate();
 
         // Load assets from the filesystem
-        if (NE_ModelLoadStaticMeshFAT(Model, "superlab.dl") == 0)
+        if (NE_ModelLoadStaticMeshFAT(Model, "model/superlab.dl") == 0)
         {
             consoleDemoInit();
             printf("Couldn't load map mesh...");
             return -1;
         }
 
-        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 256, 256, NE_TEXGEN_TEXCOORD, "superlab_tex.bin") == 0)
+        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 256, 256, NE_TEXGEN_TEXCOORD, "model/superlab_tex.bin") == 0)
         {
             consoleDemoInit();
             printf("Couldn't load map textures...");
@@ -205,14 +207,14 @@ public:
         Material = NE_MaterialCreate();
 
         // Load assets from the filesystem
-        if (NE_ModelLoadStaticMeshFAT(Model, "walter.dl") == 0)
+        if (NE_ModelLoadStaticMeshFAT(Model, "model/walter.dl") == 0)
         {
             consoleDemoInit();
             printf("Couldn't load walter mesh...");
             return -1;
         }
 
-        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "walter_tex.bin") == 0)
+        if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/walter_tex.bin") == 0)
         {
             consoleDemoInit();
             printf("Couldn't load walter textures...");
@@ -274,8 +276,13 @@ public:
         float translateX = -1.3 + (-targetX * 2.6);
         float translateZ = 1.9 + (targetZ * 2.4);
 
-        // Bob up and down
+        // Bob up and down as the player walks
         float dY = (sin(*frame / 3.0) / 50.0) * 3;
+        if (y + dY > 0.8 || y + dY < 0.4)
+        {
+            dY = -dY;
+        }
+
         float allowance = 0.05;
         if (translateX > x + allowance)
         {
@@ -293,7 +300,7 @@ public:
         {
             Translate(camera, 0, dY, -speed);
         }
-        else 
+        else
         {
             tileX = targetX;
             tileZ = targetZ;
@@ -312,8 +319,8 @@ public:
         this->x += x;
         this->y += y;
         this->z += z;
-        NE_CameraMove(camera, x, 0, 0);
         NE_ModelTranslate(Model, x, y, z);
+        NE_CameraMove(camera, x, z / 6, z / 6);
     }
 
     Tile GetPlayerTile(Map map)
@@ -398,10 +405,10 @@ void LoadAndSetupGraphics3D(void)
 
     // Setup camera
     NE_CameraSet(camera,
-                 0, 12.5, -3,
+                 0, 12.5, -4,
                  0, 1, 8.5,
                  0, 1, 0);
-    
+
     // Move player to starting position
     player.Translate(camera, -11.5, 0, 4.5);
     player.targetX = 4;
