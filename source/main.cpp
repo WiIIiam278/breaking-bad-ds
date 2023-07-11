@@ -159,7 +159,7 @@ public:
         return 0;
     }
 
-    void UpdateCameras(float playerX, float playerZ)
+    void UpdateCamera(float playerX, float playerZ)
     {
         Camera.FacePlayer(playerX, playerZ);
     }
@@ -363,7 +363,7 @@ void Draw3DScene(void)
     player.Update(camera, &frame);
     player.Move(map);
 
-    map.UpdateCameras(player.x, player.z);
+    map.UpdateCamera(player.x, player.z);
     map.Draw();
     player.Draw();
 }
