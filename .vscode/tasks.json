@@ -22,7 +22,7 @@
             "label": "run",
             "type": "shell",
             "isBackground": true,
-            "command": "C:\\melonDS\\melonDS.exe",
+            "command": "C:\\melonDS\\melonDS.exe", // This requires https://github.com/melonDS-emu/melonDS/pull/1583
             "args": [
                 "${workspaceFolder}/${workspaceFolderBasename}.nds"
             ],

@@ -23,7 +23,7 @@
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing",
-                    "text": "file ${workspaceFolder}/${workspaceFolderBasename}.elf -enable-pretty-printing",
+                    "text": "file ${workspaceFolder}/build/${workspaceFolderBasename}.elf -enable-pretty-printing",
                     "ignoreFailures": true
                 }
             ]

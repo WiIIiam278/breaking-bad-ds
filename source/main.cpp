@@ -181,23 +181,26 @@ public:
 
 class Walter
 {
-public:
+private:
+    const float SPEED = 0.125;
+
     NE_Model *Model;
     NE_Material *Material;
 
-    Direction facing = DOWN; // 0 = left, 1 = down, 2 = right, 3 = up
-    float rotation = (facing + 1) * (512 / 4);
-    float x = 0;
-    float y = 0.4;
-    float z = 0;
-
-    float speed = 0.125;
+public:
+    bool canMove = true;
+    Direction facing = DOWN;
     bool walking = false;
 
     int tileX;
     int tileZ;
     int targetX;
     int targetZ;
+
+    float x = 0;
+    float y = 0.4;
+    float z = 0;
+    float rotation = (facing + 1) * (512 / 4);
 
     Walter(){};
 
@@ -286,19 +289,19 @@ public:
         float allowance = 0.05;
         if (translateX > x + allowance)
         {
-            Translate(camera, speed, dY, 0);
+            Translate(camera, SPEED, dY, 0);
         }
         else if (translateX < x - allowance)
         {
-            Translate(camera, -speed, dY, 0);
+            Translate(camera, -SPEED, dY, 0);
         }
         else if (translateZ > z + allowance)
         {
-            Translate(camera, 0, dY, speed);
+            Translate(camera, 0, dY, SPEED);
         }
         else if (translateZ < z - allowance)
         {
-            Translate(camera, 0, dY, -speed);
+            Translate(camera, 0, dY, -SPEED);
         }
         else
         {
