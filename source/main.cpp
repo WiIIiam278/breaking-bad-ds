@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmath>
+#include <string>
 
 #include <filesystem.h>
 #include <nds.h>
 #include <NEMain.h>
 #include <nf_lib.h>
-
-#include <string>
 
 enum Tile
 {
@@ -26,7 +25,7 @@ enum Direction
 
 class SecurityCamera
 {
-public:
+private:
     NE_Model *Model;
     NE_Material *Material;
 
@@ -34,6 +33,7 @@ public:
     float y = 4.25;
     float z = 16;
 
+public:
     SecurityCamera(){};
 
     int Load(void)
@@ -82,7 +82,7 @@ public:
         NE_ModelSetRot(Model, 0, -(angle + 90), 0);
     }
 
-    void Draw()
+    void Draw(void)
     {
         // Draw the security camera
         NE_ModelDraw(Model);
@@ -381,7 +381,6 @@ void LoadAndSetupGraphics3D(void)
     // backgrounds and banks D and I are used for sprites. Nitro Engine only
     // uses bank E for palettes, so the only thing we need to do is to tell
     // Nitro Engine to only use banks A and B and leave C and D unused.
-
     NE_Init3D();
     NE_TextureSystemReset(0, 0, NE_VRAM_AB);
     NE_ShadingEnable(true);

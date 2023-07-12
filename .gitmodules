@@ -1,8 +1,0 @@
-[submodule "lib/nitro-engine"]
-	path = lib/nitro-engine
-	url = https://github.com/AntonioND/nitro-engine.git
-[submodule "lib/nflib"]
-	path = lib/nflib
-[submodule "lib/blocks-sdk"]
-	path = lib/blocks-sdk
-	url = https://github.com/blocksds/sdk.git

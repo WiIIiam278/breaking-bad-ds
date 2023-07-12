@@ -1,0 +1,63 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build debug",
+            "type": "shell",
+            "command": "./build.ps1",
+            "problemMatcher": []
+        },
+        {
+            "label": "clean",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "isBackground": true,
+            "command": "C:\\melonDS\\melonDS.exe",
+            "args": [
+                "${workspaceFolder}/${workspaceFolderBasename}.nds"
+            ],
+            "presentation": {
+                "clear": true,
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "gdb-debug",
+            "type": "shell",
+            "dependsOn": [
+                "build debug"
+            ],
+            "isBackground": false,
+            "command": "C:\\melonDS\\melonDS.exe",
+            "args": [
+                "${workspaceFolder}/${workspaceFolderBasename}.nds"
+            ],
+            "presentation": {
+                "clear": true,
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "stop-emulation",
+            "type": "shell",
+            "command": "taskkill",
+            "args": [
+                "/FI",
+                "imagename eq melonDS*"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

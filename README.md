@@ -10,7 +10,7 @@ Breaking Bad, as a 3D Nintendo DS game.
 BlocksDS, NFLib and Nitro-Engine must be installed. Docker reccommended for building on Windows as a result. Then, just run the following to build a `.nds` ROM file:
 
 ```bash
-make -f Make.blocksds
+make
 ```
 
 ## Playing
