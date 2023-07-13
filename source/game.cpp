@@ -93,7 +93,7 @@ void Game::Prepare2DGraphics()
     NF_InitTextSys(1);
 
     // Load assets from filesystem to RAM
-    NF_LoadTextFont("fnt/default", "normal", 256, 256, 0);
+    NF_LoadTextFont("font/default", "normal", 256, 256, 0);
 
     // Create text layer
     NF_CreateTextLayer(1, 0, 0, "normal");

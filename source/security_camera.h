@@ -16,8 +16,8 @@ private:
     NE_Model *model;
     NE_Material *material;
 
-    const float x = -24;
-    const float y = 4.25;
+    const float x = -22.5;
+    const float y = 7;
     const float z = 16;
 
 public:

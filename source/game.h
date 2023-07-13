@@ -12,13 +12,17 @@
 
 #include "map.h"
 #include "player.h"
+#include "enums.h"
 
 class Game
 {
 private:
+    Mode mode;
+
     Map map;
     Player player;
     NE_Camera *camera;
+    
     volatile int frame;
 
 public:

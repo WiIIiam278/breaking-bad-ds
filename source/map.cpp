@@ -48,7 +48,7 @@ int Map::Load()
 
 Tile Map::GetTileAt(int x, int z)
 {
-    if (x < 0 || x > 8 || z < 0 || z > 8)
+    if (x < 0 || x > 9 || z < 0 || z > 8)
     {
         return VOID;
     }

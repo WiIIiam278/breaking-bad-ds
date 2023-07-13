@@ -14,3 +14,16 @@ enum Tile
     FLOOR,
     WALL
 };
+
+enum Mode
+{
+    TITLE_SCREEN,
+    DIALOGUE,
+    MOVE,
+    MINIGAME
+};
+
+enum Speaker
+{
+    GALE  
+};
