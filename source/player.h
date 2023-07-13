@@ -1,5 +1,4 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,8 +11,7 @@
 #include <nf_lib.h>
 
 #include "map.h"
-#include "direction.h"
-#include "tile.h"
+#include "enums.h"
 
 class Player
 {
@@ -50,5 +48,3 @@ public:
     void HandleInput(uint32 keys);
     void Draw();
 };
-
-#endif  // PLAYER_H

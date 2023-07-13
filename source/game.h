@@ -1,5 +1,4 @@
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,5 +30,3 @@ public:
     void Update(volatile int frame);
     void Render(volatile int frame);
 };
-
-#endif  // GAME_H

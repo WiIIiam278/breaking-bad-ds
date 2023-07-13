@@ -1,5 +1,4 @@
-#ifndef MAP_H
-#define MAP_H
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +9,7 @@
 #include <nds.h>
 #include <NEMain.h>
 
-#include "tile.h"
+#include "enums.h"
 #include "security_camera.h"
 
 class Map
@@ -39,5 +38,3 @@ public:
     void UpdateCamera(float playerX, float playerZ);
     void Draw();
 };
-
-#endif // MAP_H
