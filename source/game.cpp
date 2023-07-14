@@ -99,6 +99,74 @@ void Game::Prepare2DGraphics()
     NF_CreateTextLayer(1, 0, 0, "normal");
 }
 
+void Game::SetDialogue(Speaker speaker, char line[128], int startFrame)
+{
+    debugFlag = false; // DEBUG
+    if (mode == DIALOGUE)
+    {
+        return;
+    }
+    mode = DIALOGUE;
+
+    // Set dialog params
+    currentSpeaker = speaker;
+    // currentLine = line;
+    currentLineStartFrame = startFrame;
+    currentSpeakerAnimation = 0;
+
+    // Set lab background
+    NF_LoadTiledBg("bg/lab", "lab", 256, 256);
+    NF_CreateTiledBg(1, 3, "lab");
+
+    // Load sprite files from NitroFS
+    switch (currentSpeaker)
+    {
+    case GALE:
+        NF_LoadSpriteGfx("sprite/gale", 1, 64, 64);
+        NF_LoadSpritePal("sprite/gale", 1);
+        break;
+    }
+    NF_VramSpriteGfx(1, 1, 0, false); // This keeps unused frames in RAM
+    NF_VramSpritePal(1, 1, 0);
+
+    // Create, position & scale sprite
+    NF_CreateSprite(1, currentSpeaker + 10, 0, 0, 64, 27);
+    NF_EnableSpriteRotScale(1, currentSpeaker + 10, currentSpeaker + 10, true);
+    NF_SpriteRotScale(1, currentSpeaker + 10, 0, 386, 386);
+}
+
+void Game::UpdateDialogue(volatile int frame)
+{
+    // Update speaker animation
+    if ((frame - currentLineStartFrame) % 5 == 0)
+    {
+        currentSpeakerAnimation++;
+        if (currentSpeakerAnimation > 7)
+        {
+            currentSpeakerAnimation = 0;
+        }
+        NF_SpriteFrame(1, currentSpeaker + 10, currentSpeakerAnimation);
+    }
+
+    // Draw text
+    NF_WriteText(1, 0, 1, 4, "LAAL YEEY");
+
+    currentLineStartFrame++;
+}
+
+void Game::ClearDialogue()
+{
+    debugFlag = true; // DEBUG
+    if (mode == MOVE)
+    {
+        return;
+    }
+
+    NF_DeleteTiledBg(1, 3);
+
+    mode = MOVE;
+}
+
 void Game::Render(volatile int frame)
 {
     // Enable  fog
@@ -123,11 +191,27 @@ void Game::Update(volatile int frame)
     oamUpdate(&oamSub);
 
     // Debug - print coords
-    player.PrintCoords(map);
-    
+    if (debugFlag)
+    {
+        player.PrintCoords(map);
+    }
+
+    // Draw dialogue
+    if (mode == DIALOGUE)
+    {
+        UpdateDialogue(frame);
+    }
+    else
+    {
+        SetDialogue(GALE, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", frame);
+    }
+
     // Handle input
     scanKeys();
-    player.HandleInput(keysHeld());
+    if (mode == MOVE)
+    {
+        player.HandleInput(keysHeld());
+    }
 
     // Refresh shadow OAM copy
     NF_SpriteOamSet(1);

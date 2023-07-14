@@ -1,9 +1,8 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cmath>
-#include <string>
 
 #include <filesystem.h>
 #include <nds.h>
