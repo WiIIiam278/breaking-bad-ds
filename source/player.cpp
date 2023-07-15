@@ -2,23 +2,22 @@
 
 Player::Player()
 {
-    // Player initialization code
 }
 
 int Player::Load()
 {
-    Model = NE_ModelCreate(NE_Static);
-    Material = NE_MaterialCreate();
+    model = NE_ModelCreate(NE_Static);
+    material = NE_MaterialCreate();
 
     // Load assets from the filesystem
-    if (NE_ModelLoadStaticMeshFAT(Model, "model/walter.dl") == 0)
+    if (NE_ModelLoadStaticMeshFAT(model, "model/walter.dl") == 0)
     {
         consoleDemoInit();
         printf("Couldn't load walter mesh...");
         return -1;
     }
 
-    if (NE_MaterialTexLoadFAT(Material, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/walter_tex.bin") == 0)
+    if (NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/walter_tex.bin") == 0)
     {
         consoleDemoInit();
         printf("Couldn't load walter textures...");
@@ -26,14 +25,13 @@ int Player::Load()
     }
 
     // Assign material to the model
-    NE_ModelSetMaterial(Model, Material);
+    NE_ModelSetMaterial(model, material);
 
     // Set model rotation, position and scale
     int scale = 5500;
-    NE_ModelSetRot(Model, 0, rotation, 0);
-    NE_ModelScaleI(Model, scale, scale, scale);
-    NE_ModelTranslate(Model, x, y, z);
-
+    NE_ModelSetRot(model, 0, rotation, 0);
+    NE_ModelScaleI(model, scale, scale, scale);
+    NE_ModelTranslate(model, x, y, z);
     return 0;
 }
 
@@ -67,7 +65,7 @@ void Player::Move(Map &map)
     }
 }
 
-void Player::Update(NE_Camera *camera, volatile int frame)
+void Player::Update(volatile int frame)
 {
     // Update position
     float translateX = -1.3 + (-targetX * 2.6);
@@ -80,21 +78,21 @@ void Player::Update(NE_Camera *camera, volatile int frame)
         dY = -dY;
     }
 
-    if (translateX > x + TILE_TOLERANCE)
+    if (translateX > x + TILE_SIZE)
     {
-        Translate(camera, SPEED, dY, 0);
+        Translate(SPEED, dY, 0);
     }
-    else if (translateX < x - TILE_TOLERANCE)
+    else if (translateX < x - TILE_SIZE)
     {
-        Translate(camera, -SPEED, dY, 0);
+        Translate(-SPEED, dY, 0);
     }
-    else if (translateZ > z + TILE_TOLERANCE)
+    else if (translateZ > z + TILE_SIZE)
     {
-        Translate(camera, 0, dY, SPEED);
+        Translate(0, dY, SPEED);
     }
-    else if (translateZ < z - TILE_TOLERANCE)
+    else if (translateZ < z - TILE_SIZE)
     {
-        Translate(camera, 0, dY, -SPEED);
+        Translate(0, dY, -SPEED);
     }
     else
     {
@@ -107,16 +105,15 @@ void Player::Update(NE_Camera *camera, volatile int frame)
     float target = (facing + 1) * (511 / 4);
     float changeBy = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
     rotation += changeBy;
-    NE_ModelSetRot(Model, 0, rotation, 0);
+    NE_ModelSetRot(model, 0, rotation, 0);
 }
 
-void Player::Translate(NE_Camera *camera, float x, float y, float z)
+void Player::Translate(float x, float y, float z)
 {
     this->x += x;
     this->y += y;
     this->z += z;
-    NE_ModelTranslate(Model, x, y, z);
-    NE_CameraMove(camera, x, z / 6, z / 6);
+    NE_ModelTranslate(model, x, y, z);
 }
 
 Tile Player::GetPlayerTile(Map &map)
@@ -167,5 +164,5 @@ void Player::HandleInput(uint32 keys)
 
 void Player::Draw()
 {
-    NE_ModelDraw(Model);
+    NE_ModelDraw(model);
 }

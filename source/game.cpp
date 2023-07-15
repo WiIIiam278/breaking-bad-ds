@@ -47,7 +47,6 @@ void Game::Prepare3DGraphics()
     NE_ShadingEnable(true);
 
     // Load map and player
-    camera = NE_CameraCreate();
     if (map.Load() == -1)
     {
         WaitLoop();
@@ -63,18 +62,15 @@ void Game::Prepare3DGraphics()
     // Setup background color
     NE_ClearColorSet(NE_Black, 31, 63);
 
-    // Setup camera
-    NE_CameraSet(camera,
-                 0, 12.5, -4,
-                 0, 1, 8.5,
-                 0, 1, 0);
-
     // Move player to starting position
-    player.Translate(camera, -11.5, 0, 4.5);
+    player.Translate(-11.5, 0, 4.5);
     player.targetX = 4;
     player.tileX = 4;
     player.targetZ = 1;
     player.tileZ = 1;
+
+    // Setup camera
+    camera = SetupCamera();
 }
 
 void Game::Prepare2DGraphics()
@@ -99,27 +95,79 @@ void Game::Prepare2DGraphics()
     NF_CreateTextLayer(1, 0, 0, "normal");
 
     // Set dialogue -- DEBUG
-    SetDialogue(GALE, "M-M-Mister White!", frame);
+    SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_INTRO, SCRIPT_GALE_TUTORIAL_INTRO_LENGTH, frame);
 }
 
-void Game::SetDialogue(Speaker speaker, char line[], int startFrame)
+NE_Camera *Game::SetupCamera()
+{
+    NE_Camera *camera = NE_CameraCreate();
+
+    NE_CameraSet(camera,
+                 cameraX, cameraY, cameraZ,
+                 -11.5, 1, 8.5,
+                 0, 1, 0);
+
+    return camera;
+}
+
+void Game::UpdateCamera(volatile int frame)
+{
+    // Update the camera position based on mode
+    cameraTx = player.x;
+    switch (mode)
+    {
+        case DIALOGUE:
+            cameraTy = 7.5;
+            cameraTz = -2.5 + (player.z / 6);
+            break;
+        default:
+            cameraTy = 12.5 + (player.z / 6);
+            cameraTz = -4 + (player.z / 6);
+            break;
+    }
+
+    // Move camera towards target
+    float camXDiff = cameraTx - cameraX;
+    float camYDiff = cameraTy - cameraY;
+    float camZDiff = cameraTz - cameraZ;
+    float camXSpeed = camXDiff / 10;
+    float camYSpeed = camYDiff / 10;
+    float camZSpeed = camZDiff / 10;
+    
+    NE_CameraMove(camera, camXSpeed, camYSpeed, camZSpeed);
+    cameraX += camXSpeed;
+    cameraY += camYSpeed;
+    cameraZ += camZSpeed;
+}
+
+void Game::TranslateCamera(float x, float y, float z)
+{
+    cameraTx += x;
+    cameraTy += y;
+    cameraTz += z;
+}
+
+void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame)
 {
     if (mode == DIALOGUE)
     {
         return;
     }
     mode = DIALOGUE;
+    debugFlag = false; // DEBUG
 
     // Set dialog params
     currentSpeaker = speaker;
+    currentLineIndex = 0;
     currentLineStartFrame = startFrame;
     currentSpeakerAnimation = 0;
-    
-    // copy line to currentLine
-    for (int i = 0; i < 128; i++)
+
+    // copy script to currentScript
+    for (int i = 0; i < scriptLength; i++)
     {
-        currentLine[i] = line[i];
+        strncpy(currentScript[i], script[i], 128);
     }
+    currentScriptLength = scriptLength;
 
     // Set lab background
     NF_LoadTiledBg("bg/lab", "lab", 256, 256);
@@ -137,25 +185,25 @@ void Game::SetDialogue(Speaker speaker, char line[], int startFrame)
     NF_VramSpritePal(1, 1, 0);
 
     // Create, position & scale sprite
-    NF_CreateSprite(1, currentSpeaker + 10, 0, 0, 64, 27);
+    NF_CreateSprite(1, currentSpeaker + 10, 0, 0, 64, 32);
     NF_EnableSpriteRotScale(1, currentSpeaker + 10, currentSpeaker + 10, true);
     NF_SpriteRotScale(1, currentSpeaker + 10, 0, 386, 386);
 }
 
-void Game::UpdateDialogue(volatile int frame)
+void Game::UpdateDialogue(volatile int frame, uint32 keys)
 {
-    uint charsToPrint = (frame - currentLineStartFrame) / 4;
-    if (charsToPrint > strlen(currentLine))
+    uint charsToPrint = (frame - currentLineStartFrame) / 3;
+    char currentLine[128];
+    strncpy(currentLine, currentScript[currentLineIndex], 128);
+    bool endOfLine = false;
+    if (charsToPrint >= strlen(currentLine))
     {
+        endOfLine = true;
         charsToPrint = strlen(currentLine);
     }
-    char lineToPrint[charsToPrint];
-    strncpy(lineToPrint, currentLine, charsToPrint);
-    lineToPrint[charsToPrint] = '\0';
-    NF_WriteText(1, 0, 1, 21, lineToPrint);
 
     // Update speaker animation
-    if ((frame - currentLineStartFrame) % 15 == 0)
+    if (!endOfLine && (frame - currentLineStartFrame) % 10 == 0)
     {
         currentSpeakerAnimation++;
         if (currentSpeakerAnimation > 7)
@@ -163,6 +211,41 @@ void Game::UpdateDialogue(volatile int frame)
             currentSpeakerAnimation = 0;
         }
         NF_SpriteFrame(1, currentSpeaker + 10, currentSpeakerAnimation);
+    }
+
+    // Handle input
+    if (endOfLine && ((keys & KEY_A) || (keys & KEY_TOUCH)))
+    {
+        currentLineIndex++;
+        currentLineStartFrame = frame;
+
+        if (currentLineIndex >= currentScriptLength)
+        {
+            ClearDialogue();
+            return;
+        }
+    }
+
+    char lineToPrint[charsToPrint];
+    strncpy(lineToPrint, currentLine, charsToPrint);
+    NF_ClearTextLayer(1, 0);
+
+    const int firstLineChars = 29;
+
+    // Print dialogue lines
+    int line1Chars = charsToPrint > firstLineChars ? firstLineChars : charsToPrint;
+    char line1[line1Chars];
+    strncpy(line1, lineToPrint, line1Chars);
+    line1[line1Chars] = '\0';
+    NF_WriteText(1, 0, 1, 21, line1);
+
+    int line2Chars = charsToPrint > firstLineChars ? charsToPrint - firstLineChars : 0;
+    if (line2Chars > 0)
+    {
+        char line2[line2Chars];
+        strncpy(line2, lineToPrint + firstLineChars, line2Chars);
+        line2[line2Chars] = '\0';
+        NF_WriteText(1, 0, 1, 22, line2);
     }
 }
 
@@ -172,10 +255,12 @@ void Game::ClearDialogue()
     {
         return;
     }
+    mode = MOVE;
+    debugFlag = true; // DEBUG
 
     NF_DeleteTiledBg(1, 3);
-
-    mode = MOVE;
+    NF_DeleteSprite(1, currentSpeaker + 10);
+    NF_ClearTextLayer(1, 0);
 }
 
 void Game::Render(volatile int frame)
@@ -185,10 +270,10 @@ void Game::Render(volatile int frame)
 
     NE_CameraUse(camera);
     NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
-    player.Update(camera, frame);
+    player.Update(frame);
     player.Move(map);
 
-    map.UpdateCamera(player.x, player.z);
+    map.RotateSecurityCamera(player.x, player.z);
     map.Draw();
     player.Draw();
 }
@@ -207,12 +292,6 @@ void Game::Update(volatile int frame)
         player.PrintCoords(map);
     }
 
-    // Draw dialogue
-    if (mode == DIALOGUE)
-    {
-        UpdateDialogue(frame);
-    }
-
     // Update text layers
     NF_UpdateTextLayers();
 
@@ -222,6 +301,13 @@ void Game::Update(volatile int frame)
     {
         player.HandleInput(keysHeld());
     }
+    if (mode == DIALOGUE)
+    {
+        UpdateDialogue(frame, keysDown());
+    }
+
+    // Update camera
+    UpdateCamera(frame);
 
     // Refresh shadow OAM copy
     NF_SpriteOamSet(1);

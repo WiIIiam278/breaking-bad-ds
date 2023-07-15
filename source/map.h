@@ -14,9 +14,9 @@
 class Map
 {
 private:
-    NE_Model *Model;
-    NE_Material *Material;
-    SecurityCamera Camera;
+    NE_Model *model;
+    NE_Material *material;
+    SecurityCamera securityCamera;
 
     const Tile Tiles[9][10] = {
         {FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR},
@@ -34,6 +34,6 @@ public:
 
     int Load();
     Tile GetTileAt(int x, int z);
-    void UpdateCamera(float playerX, float playerZ);
+    void RotateSecurityCamera(float playerX, float playerZ);
     void Draw();
 };

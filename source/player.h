@@ -16,10 +16,10 @@ class Player
 {
 private:
     const float SPEED = 0.125;
-    const float TILE_TOLERANCE = 0.05;
+    const float TILE_SIZE = 0.05;
 
-    NE_Model *Model;
-    NE_Material *Material;
+    NE_Model *model;
+    NE_Material *material;
 
 public:
     bool canMove = true;
@@ -40,8 +40,8 @@ public:
 
     int Load();
     void Move(Map& map);
-    void Update(NE_Camera *camera, volatile int frame);
-    void Translate(NE_Camera *camera, float x, float y, float z);
+    void Update(volatile int frame);
+    void Translate(float x, float y, float z);
     Tile GetPlayerTile(Map& map);
     void PrintCoords(Map& map);
     void HandleInput(uint32 keys);

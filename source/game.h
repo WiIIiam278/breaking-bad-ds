@@ -12,6 +12,7 @@
 #include "map.h"
 #include "player.h"
 #include "enums.h"
+#include "scripts.h"
 
 using namespace std;
 
@@ -24,11 +25,22 @@ private:
     // 3D Gameplay
     Map map;
     Player player;
+    
+    // Camera
+    const float CAMERA_SPEED = 0.025;
     NE_Camera *camera;
+    float cameraX = -11.5;
+    float cameraY = 12.5;
+    float cameraZ = -4;
+    float cameraTx = cameraX;
+    float cameraTy = cameraY;
+    float cameraTz = cameraZ;
     
     // Dialogue
     Speaker currentSpeaker = GALE;
-    char currentLine[128];
+    char currentScript[128][128];
+    int currentScriptLength = 0;
+    int currentLineIndex = 0;
     int currentLineStartFrame = 0;
     int currentSpeakerAnimation = 0;
 
@@ -42,9 +54,15 @@ public:
     void Prepare3DGraphics();
     void Prepare2DGraphics();
 
+    // Camera
+    NE_Camera *SetupCamera();
+    void UpdateCamera(volatile int frame);
+    void TranslateCamera(float x, float y, float z);
+    void PrintCameraCoords();
+
     // Dialogue
-    void SetDialogue(Speaker speaker, char line[128], int startFrame);
-    void UpdateDialogue(volatile int frame);
+    void SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame);
+    void UpdateDialogue(volatile int frame, uint32 keys);
     void ClearDialogue();
 
     // Main tick logic
