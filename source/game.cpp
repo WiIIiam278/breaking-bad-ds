@@ -97,11 +97,13 @@ void Game::Prepare2DGraphics()
 
     // Create text layer
     NF_CreateTextLayer(1, 0, 0, "normal");
+
+    // Set dialogue -- DEBUG
+    SetDialogue(GALE, "M-M-Mister White!", frame);
 }
 
-void Game::SetDialogue(Speaker speaker, char line[128], int startFrame)
+void Game::SetDialogue(Speaker speaker, char line[], int startFrame)
 {
-    debugFlag = false; // DEBUG
     if (mode == DIALOGUE)
     {
         return;
@@ -110,9 +112,14 @@ void Game::SetDialogue(Speaker speaker, char line[128], int startFrame)
 
     // Set dialog params
     currentSpeaker = speaker;
-    // currentLine = line;
     currentLineStartFrame = startFrame;
     currentSpeakerAnimation = 0;
+    
+    // copy line to currentLine
+    for (int i = 0; i < 128; i++)
+    {
+        currentLine[i] = line[i];
+    }
 
     // Set lab background
     NF_LoadTiledBg("bg/lab", "lab", 256, 256);
@@ -137,8 +144,18 @@ void Game::SetDialogue(Speaker speaker, char line[128], int startFrame)
 
 void Game::UpdateDialogue(volatile int frame)
 {
+    uint charsToPrint = (frame - currentLineStartFrame) / 4;
+    if (charsToPrint > strlen(currentLine))
+    {
+        charsToPrint = strlen(currentLine);
+    }
+    char lineToPrint[charsToPrint];
+    strncpy(lineToPrint, currentLine, charsToPrint);
+    lineToPrint[charsToPrint] = '\0';
+    NF_WriteText(1, 0, 1, 21, lineToPrint);
+
     // Update speaker animation
-    if ((frame - currentLineStartFrame) % 5 == 0)
+    if ((frame - currentLineStartFrame) % 15 == 0)
     {
         currentSpeakerAnimation++;
         if (currentSpeakerAnimation > 7)
@@ -147,17 +164,11 @@ void Game::UpdateDialogue(volatile int frame)
         }
         NF_SpriteFrame(1, currentSpeaker + 10, currentSpeakerAnimation);
     }
-
-    // Draw text
-    NF_WriteText(1, 0, 1, 4, "LAAL YEEY");
-
-    currentLineStartFrame++;
 }
 
 void Game::ClearDialogue()
 {
-    debugFlag = true; // DEBUG
-    if (mode == MOVE)
+    if (mode != DIALOGUE)
     {
         return;
     }
@@ -201,10 +212,9 @@ void Game::Update(volatile int frame)
     {
         UpdateDialogue(frame);
     }
-    else
-    {
-        SetDialogue(GALE, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", frame);
-    }
+
+    // Update text layers
+    NF_UpdateTextLayers();
 
     // Handle input
     scanKeys();

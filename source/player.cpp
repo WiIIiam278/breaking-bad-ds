@@ -137,8 +137,6 @@ void Player::PrintCoords(Map &map)
     char tileType[100];
     sprintf(tileType, "tileType: %i", GetPlayerTile(map));
     NF_WriteText(1, 0, 1, 3, tileType);
-
-    NF_UpdateTextLayers();
 }
 
 void Player::HandleInput(uint32 keys)
