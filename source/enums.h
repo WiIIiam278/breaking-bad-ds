@@ -10,9 +10,14 @@ enum Direction
 
 enum Tile
 {
+    // Fallback tile (not walkable)
     VOID,
+    // Collision tiles (not walkable)
+    WALL,
+    // Empty floor tiles 
     FLOOR,
-    WALL
+    // Valve minigame
+    MINIGAME_VALVE
 };
 
 enum Mode

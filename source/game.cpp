@@ -61,16 +61,6 @@ void Game::Prepare3DGraphics()
 
     // Setup background color
     NE_ClearColorSet(NE_Black, 31, 63);
-
-    // Move player to starting position
-    player.Translate(-11.5, 0, 4.5);
-    player.targetX = 4;
-    player.tileX = 4;
-    player.targetZ = 1;
-    player.tileZ = 1;
-
-    // Setup camera
-    camera = SetupCamera();
 }
 
 void Game::Prepare2DGraphics()
@@ -93,9 +83,6 @@ void Game::Prepare2DGraphics()
 
     // Create text layer
     NF_CreateTextLayer(1, 0, 0, "normal");
-
-    // Set dialogue -- DEBUG
-    SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_INTRO, SCRIPT_GALE_TUTORIAL_INTRO_LENGTH, frame);
 }
 
 NE_Camera *Game::SetupCamera()
@@ -116,14 +103,14 @@ void Game::UpdateCamera(volatile int frame)
     cameraTx = player.x;
     switch (mode)
     {
-        case DIALOGUE:
-            cameraTy = 7.5;
-            cameraTz = -2.5 + (player.z / 6);
-            break;
-        default:
-            cameraTy = 12.5 + (player.z / 6);
-            cameraTz = -4 + (player.z / 6);
-            break;
+    case DIALOGUE:
+        cameraTy = 7.5;
+        cameraTz = -2.5 + (player.z / 6);
+        break;
+    default:
+        cameraTy = 12.5 + (player.z / 6);
+        cameraTz = -4 + (player.z / 6);
+        break;
     }
 
     // Move camera towards target
@@ -133,7 +120,7 @@ void Game::UpdateCamera(volatile int frame)
     float camXSpeed = camXDiff / 10;
     float camYSpeed = camYDiff / 10;
     float camZSpeed = camZDiff / 10;
-    
+
     NE_CameraMove(camera, camXSpeed, camYSpeed, camZSpeed);
     cameraX += camXSpeed;
     cameraY += camYSpeed;
@@ -145,6 +132,29 @@ void Game::TranslateCamera(float x, float y, float z)
     cameraTx += x;
     cameraTy += y;
     cameraTz += z;
+}
+
+void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
+{
+    isTutorial = tutorialGame;
+    tutorialProgress = 0;
+
+    // Move player to starting position
+    player.Translate(-11.5, 0, 4.5);
+    player.targetX = 4;
+    player.tileX = 4;
+    player.targetZ = 1;
+    player.tileZ = 1;
+
+    // Setup camera
+    camera = SetupCamera();
+
+    // Start tutorial
+    if (tutorialGame)
+    {
+        SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_INTRO, SCRIPT_GALE_TUTORIAL_INTRO_LENGTH, frame);
+        tutorialProgress++;
+    }
 }
 
 void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame)
@@ -261,6 +271,12 @@ void Game::ClearDialogue()
     NF_DeleteTiledBg(1, 3);
     NF_DeleteSprite(1, currentSpeaker + 10);
     NF_ClearTextLayer(1, 0);
+    
+    // Unload from RAM, VRAM
+    NF_UnloadSpriteGfx(1);
+    NF_UnloadSpritePal(1);
+    NF_FreeSpriteGfx(1, 0);
+    NF_UnloadTiledBg(1, 0);
 }
 
 void Game::Render(volatile int frame)
@@ -304,6 +320,32 @@ void Game::Update(volatile int frame)
     if (mode == DIALOGUE)
     {
         UpdateDialogue(frame, keysDown());
+    }
+
+    // Update timer
+    if (frame % 60 == 0 && timeLimit > -1)
+    {
+        timeLimit--;
+
+        //todo draw time limit to HUD
+
+        if (timeLimit == 0)
+        {
+            // TODO - game over
+            return;
+        }
+    }
+
+    // Tutorials check
+    switch (map.GetTileAt(player.tileX, player.tileZ))
+    {
+    case MINIGAME_VALVE:
+        if (isTutorial && tutorialProgress == 1)
+        {
+            SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_VALVE, SCRIPT_GALE_TUTORIAL_VALVE_LENGTH, frame);
+            tutorialProgress++;
+        }
+        break;
     }
 
     // Update camera

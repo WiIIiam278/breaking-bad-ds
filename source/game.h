@@ -44,6 +44,14 @@ private:
     int currentLineStartFrame = 0;
     int currentSpeakerAnimation = 0;
 
+    // Tutorial
+    bool isTutorial = true;
+    int tutorialProgress = 0;
+
+    // Game
+    int timeLimit = 180;
+    int batchQuota = 10;
+
     bool debugFlag = true;
 
 public:
@@ -58,7 +66,9 @@ public:
     NE_Camera *SetupCamera();
     void UpdateCamera(volatile int frame);
     void TranslateCamera(float x, float y, float z);
-    void PrintCameraCoords();
+
+    // Start game
+    void StartGame(bool tutorialGame, int timeLimit, int batchQuota);
 
     // Dialogue
     void SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame);

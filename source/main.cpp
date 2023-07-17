@@ -13,6 +13,7 @@ int main(void)
     // Setup the game
     game.Prepare3DGraphics();
     game.Prepare2DGraphics();
+    game.StartGame(true, 60, 10);
 
     // Run the game loop
     while (true)

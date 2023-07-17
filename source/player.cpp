@@ -57,11 +57,12 @@ void Player::Move(Map &map)
     }
 
     Tile target = map.GetTileAt(targetX, targetZ);
-    if (target != FLOOR)
+    if (target == WALL || target == VOID)
     {
         targetX = tileX;
         targetZ = tileZ;
         walking = false;
+        return;
     }
 }
 
