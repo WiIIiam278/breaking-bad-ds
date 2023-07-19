@@ -36,4 +36,5 @@ public:
     Tile GetTileAt(int x, int z);
     void RotateSecurityCamera(float playerX, float playerZ);
     void Draw();
+    void Unload();
 };

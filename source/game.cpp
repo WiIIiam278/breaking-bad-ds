@@ -35,33 +35,6 @@ void Game::WaitLoop()
     }
 }
 
-void Game::Prepare3DGraphics()
-{
-    // When using nflib for the 2D sub screen engine, banks C and H are used for
-    // backgrounds and banks D and I are used for sprites. Nitro Engine only
-    // uses bank E for palettes, so the only thing we need to do is to tell
-    // Nitro Engine to only use banks A and B and leave C and D unused.
-    NE_Init3D();
-    NE_TextureSystemReset(0, 0, NE_VRAM_AB);
-    NE_ShadingEnable(true);
-
-    // Load map and player
-    if (map.Load() == -1)
-    {
-        WaitLoop();
-    }
-    if (player.Load() == -1)
-    {
-        WaitLoop();
-    }
-
-    // Setup lighting
-    NE_LightSet(0, NE_White, 0, -1, -1);
-
-    // Setup background color
-    NE_ClearColorSet(NE_Black, 31, 63);
-}
-
 void Game::Prepare2DGraphics()
 {
     // Initialize sub 2D engine
@@ -84,31 +57,50 @@ void Game::Prepare2DGraphics()
     NF_CreateTextLayer(1, 0, 0, "normal");
 }
 
-NE_Camera *Game::SetupCamera()
+void Game::Prepare3DGraphics()
 {
-    NE_Camera *camera = NE_CameraCreate();
 
-    NE_CameraSet(camera,
-                 cameraX, cameraY, cameraZ,
-                 -11.5, 1, 8.5,
-                 0, 1, 0);
+    // When using nflib for the 2D sub screen engine, banks C and H are used for
+    // backgrounds and banks D and I are used for sprites. Nitro Engine only
+    // uses bank E for palettes, so the only thing we need to do is to tell
+    // Nitro Engine to only use banks A and B and leave C and D unused.
+    NE_Init3D();
 
-    return camera;
+    // Reset the texture system
+    NE_TextureSystemReset(0, 0, NE_VRAM_AB);
+
+    // Enable texture shading
+    NE_ShadingEnable(true);
+
+    // Setup lighting
+    NE_LightSet(0, NE_White, 0, -1, -1);
+
+    // Setup background color
+    NE_ClearColorSet(CLEAR_COLOR, 31, 63);
+
+    // Create camera
+    camera = NE_CameraCreate();
 }
 
 void Game::UpdateCamera(volatile int frame)
 {
     // Update the camera position based on mode
-    cameraTx = player.x;
     switch (mode)
     {
+    case TITLE_SCREEN:
+        cameraTx = BASE_TITLE_CAMERA_POS[0];
+        cameraTy = BASE_TITLE_CAMERA_POS[1];
+        cameraTz = BASE_TITLE_CAMERA_POS[2];
+        break;
     case DIALOGUE:
+        cameraTx = player.x;
         cameraTy = 7.5;
         cameraTz = -2.5 + (player.z / 6);
         break;
     default:
-        cameraTy = 12.5 + (player.z / 6);
-        cameraTz = -4 + (player.z / 6);
+        cameraTx = player.x;
+        cameraTy = BASE_MOVE_CAMERA_POS[1] + (player.z / 6);
+        cameraTz = BASE_MOVE_CAMERA_POS[2] + (player.z / 6);
         break;
     }
 
@@ -135,8 +127,13 @@ void Game::TranslateCamera(float x, float y, float z)
 
 void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
 {
+    frame = 0;
     isTutorial = tutorialGame;
     tutorialProgress = 0;
+    mode = MOVE;
+
+    // Prepare laboratory scene
+    LoadLabScene();
 
     // Move player to starting position
     player.Translate(-11.5, 0, 4.5);
@@ -146,13 +143,90 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
     player.tileZ = 1;
 
     // Setup camera
-    camera = SetupCamera();
+    cameraX = BASE_MOVE_CAMERA_POS[0];
+    cameraY = BASE_MOVE_CAMERA_POS[1];
+    cameraZ = BASE_MOVE_CAMERA_POS[2];
+    NE_CameraSet(camera,
+                 cameraX, cameraY, cameraZ,
+                 -11.5, 1, 8.5,
+                 0, 1, 0);
 
     // Start tutorial
     if (tutorialGame)
     {
         SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_INTRO, SCRIPT_GALE_TUTORIAL_INTRO_LENGTH, frame);
         tutorialProgress++;
+    }
+}
+
+void Game::LoadLabScene()
+{
+    // Load map and player
+    if (map.Load() == -1)
+    {
+        WaitLoop();
+    }
+    if (player.Load() == -1)
+    {
+        WaitLoop();
+    }
+
+    // Set fog color
+    NE_FogEnable(3, RGB15(15, 0, 0), 31, 3, 0x7c00);
+}
+
+// Unload map and player
+void Game::UnLoadLabScene()
+{
+    map.Unload();
+    player.Unload();
+}
+
+void Game::StartTitleScreen()
+{
+    frame = 0;
+    mode = TITLE_SCREEN;
+
+    // Load logo
+    LoadLogoScene();
+
+    // Position camera
+    cameraX = BASE_TITLE_CAMERA_POS[0];
+    cameraY = BASE_TITLE_CAMERA_POS[1];
+    cameraZ = BASE_TITLE_CAMERA_POS[2];
+    NE_CameraSet(camera,
+                 cameraX, cameraY, cameraZ,
+                 0, BASE_TITLE_CAMERA_POS[1], 0,
+                 0, 1, 0);
+}
+
+void Game::LoadLogoScene()
+{
+    // Load logo
+    if (logo.Load() == -1)
+    {
+        WaitLoop();
+    }
+    
+    // Set fog color
+    NE_FogEnable(3, NE_DarkGreen, 31, 3, 0x7c00);
+}
+
+void Game::UnLoadLogoScene()
+{
+    logo.Unload();
+}
+
+void Game::UpdateTitleScreen(volatile int frame)
+{
+    logo.Update(frame);
+
+    // If the touch screen
+    if (keysDown() & KEY_TOUCH)
+    {
+        // Start game
+        UnLoadLogoScene();
+        StartGame(false, 60, 10);
     }
 }
 
@@ -163,6 +237,7 @@ void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLeng
         return;
     }
     mode = DIALOGUE;
+    player.facing = DOWN;
 
     // Set dialog params
     currentSpeaker = speaker;
@@ -303,14 +378,21 @@ void Game::DeleteMinigame()
 
 void Game::Render(volatile int frame)
 {
-    // Enable  fog
-    NE_FogEnable(3, NE_Red, 31, 3, 0x7c00);
-
-    NE_CameraUse(camera);
+    // Set poly format
     NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
+
+    // Set camera
+    NE_CameraUse(camera);
+
+    // Render title screen
+    if (mode == TITLE_SCREEN)
+    {
+        logo.Draw();
+        return;
+    }
+
     player.Update(frame);
     player.Move(map);
-
     map.RotateSecurityCamera(player.x, player.z);
     map.Draw();
     player.Draw();
@@ -325,7 +407,7 @@ void Game::Update(volatile int frame)
     oamUpdate(&oamSub);
 
     // Debug - print debug info
-    if (mode == MOVE && debugFlag)
+    if (debugFlag && mode == MOVE)
     {
         player.PrintCoords(map);
 
@@ -343,7 +425,7 @@ void Game::Update(volatile int frame)
 
     // Handle input or dialogue progress
     scanKeys();
-    if (mode != DIALOGUE)
+    if (mode != TITLE_SCREEN && mode != DIALOGUE)
     {
         player.HandleInput(keysHeld());
     }
@@ -352,45 +434,52 @@ void Game::Update(volatile int frame)
         UpdateDialogue(frame, keysDown());
     }
 
-    // Update timer
-    if (frame % 60 == 0 && timeLimit > -1)
-    {
-        timeLimit--;
-
-        // todo draw time limit to HUD
-
-        if (timeLimit == 0)
-        {
-            // TODO - game over
-            return;
-        }
-    }
-
     // Update camera
     UpdateCamera(frame);
 
     // Tutorials check
-    switch (map.GetTileAt(player.tileX, player.tileZ))
+    if (mode != TITLE_SCREEN)
     {
-    case MINIGAME_VALVE:
-        if (isTutorial && tutorialProgress == 1)
+        // Update timer
+        if (frame % 60 == 0 && timeLimit > -1)
         {
-            SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_VALVE, SCRIPT_GALE_TUTORIAL_VALVE_LENGTH, frame);
-            tutorialProgress++;
+            timeLimit--;
+
+            // todo draw time limit to HUD
+
+            if (timeLimit == 0)
+            {
+                // TODO - game over
+                return;
+            }
+        }
+
+        switch (map.GetTileAt(player.tileX, player.tileZ))
+        {
+        case MINIGAME_VALVE:
+            if (isTutorial && tutorialProgress == 1)
+            {
+                SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_VALVE, SCRIPT_GALE_TUTORIAL_VALVE_LENGTH, frame);
+                tutorialProgress++;
+                break;
+            }
+            if (mode == MOVE)
+            {
+                StartMinigame(MINIGAME_VALVE);
+            }
+            break;
+        default:
+            if (mode == MINIGAME)
+            {
+                mode = MOVE;
+                DeleteMinigame();
+            }
             break;
         }
-        if (mode == MOVE)
-        {
-            StartMinigame(MINIGAME_VALVE);
-        }
-        break;
-    default:
-        if (mode == MINIGAME)
-        {
-            mode = MOVE;
-            DeleteMinigame();
-        }
-        break;
+    }
+    else
+    {
+        UpdateTitleScreen(frame);
     }
 
     // Check for minigame

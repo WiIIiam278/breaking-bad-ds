@@ -56,3 +56,10 @@ void SecurityCamera::Draw()
     // Draw the security camera
     NE_ModelDraw(model);
 }
+
+void SecurityCamera::Unload()
+{
+    // Free the model and material
+    NE_MaterialDelete(material);
+    NE_ModelDelete(model);
+}

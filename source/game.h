@@ -10,6 +10,7 @@
 #include <NEMain.h>
 #include <nf_lib.h>
 
+#include "logo.h"
 #include "map.h"
 #include "player.h"
 #include "minigames.h"
@@ -22,23 +23,28 @@ using namespace std;
 class Game
 {
 private:
+    const bool debugFlag = false;
     volatile int frame;
     Mode mode = MOVE;
 
     // 3D Gameplay
+    Logo logo;
     Map map;
     Player player;
+    const u32 CLEAR_COLOR = RGB15(3, 3, 3);
     
     // Camera
     const float CAMERA_SPEED = 0.025;
-    NE_Camera *camera;
-    float cameraX = -11.5;
-    float cameraY = 12.5;
-    float cameraZ = -4;
+    const float BASE_TITLE_CAMERA_POS[3] = {-10, 8, 0};
+    const float BASE_MOVE_CAMERA_POS[3] = {-11.5, 12.5, -4};
+    float cameraX = BASE_TITLE_CAMERA_POS[0];
+    float cameraY = BASE_TITLE_CAMERA_POS[1];
+    float cameraZ = BASE_TITLE_CAMERA_POS[2];
     float cameraTx = cameraX;
     float cameraTy = cameraY;
     float cameraTz = cameraZ;
-    
+    NE_Camera *camera;
+
     // Dialogue
     Speaker currentSpeaker = GALE;
     char currentScript[128][128];
@@ -48,7 +54,7 @@ private:
     int currentSpeakerAnimation = 0;
 
     // Tutorial
-    bool isTutorial = true;
+    bool isTutorial = false;
     int tutorialProgress = 0;
 
     // Game
@@ -59,8 +65,6 @@ private:
     ValveMinigame valveMinigame;
     Minigame *currentMinigame = NULL;
 
-    bool debugFlag = true;
-
 public:
     Game();
 
@@ -70,12 +74,19 @@ public:
     void Prepare2DGraphics();
 
     // Camera
-    NE_Camera *SetupCamera();
     void UpdateCamera(volatile int frame);
     void TranslateCamera(float x, float y, float z);
 
     // Start game
     void StartGame(bool tutorialGame, int timeLimit, int batchQuota);
+    void LoadLabScene();
+    void UnLoadLabScene();
+
+    // Start title screen
+    void StartTitleScreen();
+    void LoadLogoScene();
+    void UnLoadLogoScene();
+    void UpdateTitleScreen(volatile int frame);
 
     // Dialogue
     void SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame);

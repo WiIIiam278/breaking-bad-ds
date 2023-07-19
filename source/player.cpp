@@ -167,3 +167,9 @@ void Player::Draw()
 {
     NE_ModelDraw(model);
 }
+
+void Player::Unload()
+{
+    NE_ModelDelete(model);
+    NE_MaterialDelete(material);
+}

@@ -8,21 +8,22 @@
 #include <nds.h>
 #include <NEMain.h>
 
-class SecurityCamera
+class Logo
 {
 private:
     NE_Model *model;
     NE_Material *material;
 
-    const float x = -22.5;
-    const float y = 7;
-    const float z = 16;
+    const float X_SPEED = 0.025;
+    float x = -15;
+    const float y = 5;
+    const float z = 0;
 
 public:
-    SecurityCamera();
+    Logo();
 
     int Load();
-    void FacePlayer(float playerX, float playerZ);
+    void Update(volatile int frame);
     void Draw();
     void Unload();
 };

@@ -71,3 +71,13 @@ void Map::Draw()
         securityCamera.Draw();
     }
 }
+
+void Map::Unload()
+{
+    // Unload the security cameras
+    securityCamera.Unload();
+
+    // Unload the map
+    NE_MaterialDelete(material);
+    NE_ModelDelete(model);
+}

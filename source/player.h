@@ -46,4 +46,5 @@ public:
     void PrintCoords(Map& map);
     void HandleInput(uint32 keys);
     void Draw();
+    void Unload();
 };

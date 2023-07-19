@@ -10,11 +10,12 @@ void RenderGame()
 
 int main(void)
 {
-    // Setup the game
+    // Prepare graphics
     game.Prepare3DGraphics();
     game.Prepare2DGraphics();
-    // game.StartGame(true, 60, 10);
-    game.StartGame(false, 60, 10);
+
+    // Start the game
+    game.StartTitleScreen();
 
     // Run the game loop
     while (true)
