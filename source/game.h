@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <memory>
 
 #include <filesystem.h>
 #include <nds.h>
@@ -11,8 +12,10 @@
 
 #include "map.h"
 #include "player.h"
+#include "minigames.h"
 #include "enums.h"
 #include "scripts.h"
+#include "debug.h"
 
 using namespace std;
 
@@ -52,6 +55,10 @@ private:
     int timeLimit = 180;
     int batchQuota = 10;
 
+    // Minigames
+    ValveMinigame valveMinigame;
+    Minigame *currentMinigame = NULL;
+
     bool debugFlag = true;
 
 public:
@@ -74,6 +81,10 @@ public:
     void SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame);
     void UpdateDialogue(volatile int frame, uint32 keys);
     void ClearDialogue();
+
+    // Minigame stuff
+    void StartMinigame(Tile tile);
+    void DeleteMinigame();
 
     // Main tick logic
     void Update(volatile int frame);

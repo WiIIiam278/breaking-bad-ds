@@ -3,14 +3,13 @@
 Game::Game()
 {
     // Initialize nitroFS before doing anything else
-    NF_Set2D(0, 0);
-    NF_Set2D(1, 0);
     consoleDemoInit();
-    printf("Starting nitroFS...\n");
+    consoleClear();
+    printf("Loading nitroFS. Use melonDS if this fails.\n");
     if (!nitroFSInit(NULL))
     {
         printf("Failed to start nitroFS\n");
-        printf("Press POWER or RESET to continue.\n");
+        printf("Press POWER or RESET to continue\n");
 
         while (1)
         {
@@ -164,7 +163,6 @@ void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLeng
         return;
     }
     mode = DIALOGUE;
-    debugFlag = false; // DEBUG
 
     // Set dialog params
     currentSpeaker = speaker;
@@ -266,17 +264,41 @@ void Game::ClearDialogue()
         return;
     }
     mode = MOVE;
-    debugFlag = true; // DEBUG
 
     NF_DeleteTiledBg(1, 3);
     NF_DeleteSprite(1, currentSpeaker + 10);
     NF_ClearTextLayer(1, 0);
-    
+
     // Unload from RAM, VRAM
     NF_UnloadSpriteGfx(1);
     NF_UnloadSpritePal(1);
     NF_FreeSpriteGfx(1, 0);
-    NF_UnloadTiledBg(1, 0);
+}
+
+void Game::StartMinigame(Tile tile)
+{
+    switch (tile)
+    {
+    case MINIGAME_VALVE:
+        currentMinigame = &valveMinigame;
+        break;
+    default:
+        currentMinigame = NULL;
+        return;
+    }
+
+    mode = MINIGAME;
+    currentMinigame->Load();
+}
+
+void Game::DeleteMinigame()
+{
+    if (currentMinigame == NULL)
+    {
+        return;
+    }
+    currentMinigame->Delete();
+    currentMinigame = NULL;
 }
 
 void Game::Render(volatile int frame)
@@ -302,22 +324,30 @@ void Game::Update(volatile int frame)
     // Copy shadow OAM copy to the OAM of the 2D sub engine
     oamUpdate(&oamSub);
 
-    // Debug - print coords
-    if (debugFlag)
+    // Debug - print debug info
+    if (mode == MOVE && debugFlag)
     {
         player.PrintCoords(map);
+
+        char modeText[100];
+        sprintf(modeText, "Mode: %d", mode);
+        NF_WriteText(1, 0, 1, 4, modeText);
+
+        char memUsage[100];
+        sprintf(memUsage, "Mem: %d (%d)", getMemUsed(), getMemFree());
+        NF_WriteText(1, 0, 1, 5, memUsage);
     }
 
     // Update text layers
     NF_UpdateTextLayers();
 
-    // Handle input
+    // Handle input or dialogue progress
     scanKeys();
-    if (mode == MOVE)
+    if (mode != DIALOGUE)
     {
         player.HandleInput(keysHeld());
     }
-    if (mode == DIALOGUE)
+    else
     {
         UpdateDialogue(frame, keysDown());
     }
@@ -327,7 +357,7 @@ void Game::Update(volatile int frame)
     {
         timeLimit--;
 
-        //todo draw time limit to HUD
+        // todo draw time limit to HUD
 
         if (timeLimit == 0)
         {
@@ -335,6 +365,9 @@ void Game::Update(volatile int frame)
             return;
         }
     }
+
+    // Update camera
+    UpdateCamera(frame);
 
     // Tutorials check
     switch (map.GetTileAt(player.tileX, player.tileZ))
@@ -344,12 +377,27 @@ void Game::Update(volatile int frame)
         {
             SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_VALVE, SCRIPT_GALE_TUTORIAL_VALVE_LENGTH, frame);
             tutorialProgress++;
+            break;
+        }
+        if (mode == MOVE)
+        {
+            StartMinigame(MINIGAME_VALVE);
+        }
+        break;
+    default:
+        if (mode == MINIGAME)
+        {
+            mode = MOVE;
+            DeleteMinigame();
         }
         break;
     }
 
-    // Update camera
-    UpdateCamera(frame);
+    // Check for minigame
+    if (mode == MINIGAME)
+    {
+        currentMinigame->Update(frame, keysHeld());
+    }
 
     // Refresh shadow OAM copy
     NF_SpriteOamSet(1);
