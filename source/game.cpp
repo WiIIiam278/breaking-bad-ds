@@ -5,7 +5,7 @@ Game::Game()
     // Initialize nitroFS before doing anything else
     consoleDemoInit();
     consoleClear();
-    printf("Loading nitroFS. Use melonDS if this fails.\n");
+    printf("\n\n\n\n\n\n\n\n\n\n\n          Now Loading...\n");
     if (!nitroFSInit(NULL))
     {
         printf("Failed to start nitroFS\n");
@@ -25,6 +25,9 @@ Game::Game()
     irqEnable(IRQ_HBLANK);
     irqSet(IRQ_VBLANK, NE_VBLFunc);
     irqSet(IRQ_HBLANK, NE_HBLFunc);
+    
+    // Setup sound
+    sound.LoadSound();
 }
 
 void Game::WaitLoop()
@@ -68,9 +71,6 @@ void Game::Prepare3DGraphics()
 
     // Reset the texture system
     NE_TextureSystemReset(0, 0, NE_VRAM_AB);
-
-    // Enable texture shading
-    NE_ShadingEnable(true);
 
     // Setup lighting
     NE_LightSet(0, NE_White, 0, -1, -1);
@@ -195,9 +195,12 @@ void Game::StartTitleScreen()
     cameraY = BASE_TITLE_CAMERA_POS[1];
     cameraZ = BASE_TITLE_CAMERA_POS[2];
     NE_CameraSet(camera,
-                 cameraX, cameraY, cameraZ,
+                 cameraX, cameraY + 1.5, cameraZ,
                  0, BASE_TITLE_CAMERA_POS[1], 0,
                  0, 1, 0);
+
+    // Play sound
+    sound.PlayBGM(BGM_TITLE_HOOK, false, 0);
 }
 
 void Game::LoadLogoScene()
@@ -207,9 +210,12 @@ void Game::LoadLogoScene()
     {
         WaitLoop();
     }
+
+    // Load tiled BG
+    NF_LoadTiledBg("bg/title", "title", 256, 256);
     
     // Set fog color
-    NE_FogEnable(3, NE_DarkGreen, 31, 3, 0x7c00);
+    // NE_FogEnable(3, NE_DarkGreen, 31, 3, 0x7c00);
 }
 
 void Game::UnLoadLogoScene()
@@ -226,7 +232,17 @@ void Game::UpdateTitleScreen(volatile int frame)
     {
         // Start game
         UnLoadLogoScene();
+        NF_DeleteTiledBg(1, 2);
         StartGame(false, 60, 10);
+        sound.StopBGM();
+        return;
+    }
+
+    // Play title loop
+    if (frame == 690)
+    {
+        sound.PlayBGM(BGM_TITLE_LOOP, true, 5);
+        NF_CreateTiledBg(1, 2, "title");
     }
 }
 
@@ -387,7 +403,7 @@ void Game::Render(volatile int frame)
     // Render title screen
     if (mode == TITLE_SCREEN)
     {
-        logo.Draw();
+        logo.Draw(frame);
         return;
     }
 

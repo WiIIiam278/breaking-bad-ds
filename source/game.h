@@ -17,6 +17,7 @@
 #include "enums.h"
 #include "scripts.h"
 #include "debug.h"
+#include "sound.h"
 
 using namespace std;
 
@@ -32,6 +33,9 @@ private:
     Map map;
     Player player;
     const u32 CLEAR_COLOR = RGB15(3, 3, 3);
+
+    // Sound
+    Sound sound;
     
     // Camera
     const float CAMERA_SPEED = 0.025;
