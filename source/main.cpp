@@ -15,7 +15,7 @@ int main(void)
     game.Prepare2DGraphics();
 
     // Start the game
-    game.StartTitleScreen();
+    game.StartMenuScreen();
 
     // Run the game loop
     while (true)

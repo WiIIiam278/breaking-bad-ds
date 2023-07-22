@@ -22,7 +22,7 @@ enum Tile
 
 enum Mode
 {
-    TITLE_SCREEN,
+    MAIN_MENU,
     DIALOGUE,
     MOVE,
     MINIGAME
@@ -31,4 +31,22 @@ enum Mode
 enum Speaker
 {
     GALE  
+};
+
+enum MenuSelection
+{
+    NONE,
+    START_GAME,
+    START_TUTORIAL,
+    BACK_TO_TITLE,
+    TOGGLE_RUMBLE
+};
+
+enum MenuState
+{
+    LOGO,
+    TITLE,
+    MENU,
+    RUMBLE,
+    LOADING
 };

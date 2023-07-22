@@ -18,7 +18,7 @@ class Sound
 {
 private:
     const int BGM_CHANNEL = 0;
-    const int BGM_VOLUME = 64;
+    const int BGM_VOLUME = 127;
     const int BGM_PAN = 64;
     const int BGM_SAMPLE_RATE = 22050;
 public:

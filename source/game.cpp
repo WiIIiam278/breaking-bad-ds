@@ -5,7 +5,8 @@ Game::Game()
     // Initialize nitroFS before doing anything else
     consoleDemoInit();
     consoleClear();
-    printf("\n\n\n\n\n\n\n\n\n\n\n          Now Loading...\n");
+    printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");
+    setBrightness(1, -16);
     if (!nitroFSInit(NULL))
     {
         printf("Failed to start nitroFS\n");
@@ -25,7 +26,7 @@ Game::Game()
     irqEnable(IRQ_HBLANK);
     irqSet(IRQ_VBLANK, NE_VBLFunc);
     irqSet(IRQ_HBLANK, NE_HBLFunc);
-    
+
     // Setup sound
     sound.LoadSound();
 }
@@ -87,7 +88,7 @@ void Game::UpdateCamera(volatile int frame)
     // Update the camera position based on mode
     switch (mode)
     {
-    case TITLE_SCREEN:
+    case MAIN_MENU:
         cameraTx = BASE_TITLE_CAMERA_POS[0];
         cameraTy = BASE_TITLE_CAMERA_POS[1];
         cameraTz = BASE_TITLE_CAMERA_POS[2];
@@ -125,9 +126,51 @@ void Game::TranslateCamera(float x, float y, float z)
     cameraTz += z;
 }
 
+void Game::Transition(bool fadeIn, int duration)
+{
+    if (duration <= 0)
+    {
+        setBrightness(3, fadeIn ? 0 : -16);
+        return;
+    }
+
+    isTransitioning = true;
+    isFadingIn = fadeIn;
+    transitionDuration = duration;
+    transitionStartFrame = frame;
+}
+
+void Game::UpdateTransition(volatile int frame)
+{
+    if (!isTransitioning)
+    {
+        return;
+    }
+
+    if (frame >= (transitionStartFrame + transitionDuration))
+    {
+        setBrightness(3, isFadingIn ? 0 : -16);
+        isTransitioning = false;
+        return;
+    }
+
+    int brightness;
+    if (!isFadingIn) {
+        brightness = (frame - transitionStartFrame) * 16 / transitionDuration;
+    } else {
+        brightness = 16 - (frame - transitionStartFrame) * 16 / transitionDuration;
+    }
+    setBrightness(3, -brightness);
+}
+
+
 void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
 {
+    Transition(false, 0);
+
     frame = 0;
+    timeLimit = timeLimit;
+    batchQuota = batchQuota;
     isTutorial = tutorialGame;
     tutorialProgress = 0;
     mode = MOVE;
@@ -157,6 +200,7 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
         SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_INTRO, SCRIPT_GALE_TUTORIAL_INTRO_LENGTH, frame);
         tutorialProgress++;
     }
+    Transition(true, 60);
 }
 
 void Game::LoadLabScene()
@@ -178,14 +222,17 @@ void Game::LoadLabScene()
 // Unload map and player
 void Game::UnLoadLabScene()
 {
+    Transition(false, 0);
     map.Unload();
     player.Unload();
 }
 
-void Game::StartTitleScreen()
+void Game::StartMenuScreen()
 {
+    Transition(false, 0);
+
     frame = 0;
-    mode = TITLE_SCREEN;
+    mode = MAIN_MENU;
 
     // Load logo
     LoadLogoScene();
@@ -199,50 +246,38 @@ void Game::StartTitleScreen()
                  0, BASE_TITLE_CAMERA_POS[1], 0,
                  0, 1, 0);
 
-    // Play sound
-    sound.PlayBGM(BGM_TITLE_HOOK, false, 0);
+    Transition(true, 120);
 }
 
 void Game::LoadLogoScene()
 {
     // Load logo
-    if (logo.Load() == -1)
+    if (menu.Load(&sound) == -1)
     {
         WaitLoop();
     }
-
-    // Load tiled BG
-    NF_LoadTiledBg("bg/title", "title", 256, 256);
-    
-    // Set fog color
-    // NE_FogEnable(3, NE_DarkGreen, 31, 3, 0x7c00);
 }
 
 void Game::UnLoadLogoScene()
 {
-    logo.Unload();
+    Transition(false, 0);
+    menu.Unload(&sound);
 }
 
-void Game::UpdateTitleScreen(volatile int frame)
+void Game::UpdateMenuScreen(volatile int frame)
 {
-    logo.Update(frame);
+    menu.Update(frame, &sound);
 
-    // If the touch screen
-    if (keysDown() & KEY_TOUCH)
+    switch (menu.HandleInput(&sound))
     {
-        // Start game
+    case START_TUTORIAL:
         UnLoadLogoScene();
-        NF_DeleteTiledBg(1, 2);
-        StartGame(false, 60, 10);
-        sound.StopBGM();
-        return;
-    }
-
-    // Play title loop
-    if (frame == 690)
-    {
-        sound.PlayBGM(BGM_TITLE_LOOP, true, 5);
-        NF_CreateTiledBg(1, 2, "title");
+        StartGame(true, -1, 1);
+        break;
+    case START_GAME:
+        UnLoadLogoScene();
+        StartGame(true, 240, 10);
+        break;
     }
 }
 
@@ -401,9 +436,9 @@ void Game::Render(volatile int frame)
     NE_CameraUse(camera);
 
     // Render title screen
-    if (mode == TITLE_SCREEN)
+    if (mode == MAIN_MENU)
     {
-        logo.Draw(frame);
+        menu.Draw(frame);
         return;
     }
 
@@ -436,12 +471,15 @@ void Game::Update(volatile int frame)
         NF_WriteText(1, 0, 1, 5, memUsage);
     }
 
+    // Update transition
+    UpdateTransition(frame);
+
     // Update text layers
     NF_UpdateTextLayers();
 
     // Handle input or dialogue progress
     scanKeys();
-    if (mode != TITLE_SCREEN && mode != DIALOGUE)
+    if (mode != MAIN_MENU && mode != DIALOGUE)
     {
         player.HandleInput(keysHeld());
     }
@@ -454,7 +492,7 @@ void Game::Update(volatile int frame)
     UpdateCamera(frame);
 
     // Tutorials check
-    if (mode != TITLE_SCREEN)
+    if (mode != MAIN_MENU)
     {
         // Update timer
         if (frame % 60 == 0 && timeLimit > -1)
@@ -495,7 +533,7 @@ void Game::Update(volatile int frame)
     }
     else
     {
-        UpdateTitleScreen(frame);
+        UpdateMenuScreen(frame);
     }
 
     // Check for minigame

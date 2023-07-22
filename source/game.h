@@ -10,7 +10,7 @@
 #include <NEMain.h>
 #include <nf_lib.h>
 
-#include "logo.h"
+#include "menu.h"
 #include "map.h"
 #include "player.h"
 #include "minigames.h"
@@ -29,13 +29,19 @@ private:
     Mode mode = MOVE;
 
     // 3D Gameplay
-    Logo logo;
+    Menu menu;
     Map map;
     Player player;
     const u32 CLEAR_COLOR = RGB15(3, 3, 3);
 
     // Sound
     Sound sound;
+
+    // Transition
+    bool isTransitioning = false;
+    bool isFadingIn = false;
+    int transitionDuration = 0;
+    int transitionStartFrame = 0;
     
     // Camera
     const float CAMERA_SPEED = 0.025;
@@ -77,6 +83,10 @@ public:
     void Prepare3DGraphics();
     void Prepare2DGraphics();
 
+    // Transition Control
+    void Transition(bool fadeIn, int duration);
+    void UpdateTransition(volatile int frame);
+
     // Camera
     void UpdateCamera(volatile int frame);
     void TranslateCamera(float x, float y, float z);
@@ -87,10 +97,10 @@ public:
     void UnLoadLabScene();
 
     // Start title screen
-    void StartTitleScreen();
+    void StartMenuScreen();
     void LoadLogoScene();
     void UnLoadLogoScene();
-    void UpdateTitleScreen(volatile int frame);
+    void UpdateMenuScreen(volatile int frame);
 
     // Dialogue
     void SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame);
