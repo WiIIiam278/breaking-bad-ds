@@ -48,7 +48,7 @@ private:
 public:
     Menu();
 
-    int Load(Sound *sound);
+    int Load();
     void LoadSplashSprite();
     void LoadButtons();
     void Update(volatile int frame, Sound *sound);

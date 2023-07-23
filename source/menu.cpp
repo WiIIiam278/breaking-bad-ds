@@ -2,11 +2,11 @@
 
 Menu::Menu()
 {
-    state = LOGO;
+    state = LOADING;
     highlightedItem = NONE;
 }
 
-int Menu::Load(Sound *sound) 
+int Menu::Load() 
 {
     backdrop = NE_ModelCreate(NE_Static);
     backdropMaterial = NE_MaterialCreate();
@@ -51,7 +51,6 @@ int Menu::Load(Sound *sound)
 
     // Load tiled BG
     NF_LoadTiledBg(TITLE_BG_NAME, TITLE_BG_NAME, 256, 256);
-    sound->PlayBGM(BGM_TITLE_HOOK, false, 0);
     return 0;
 }
 
@@ -104,9 +103,12 @@ void Menu::SetState(MenuState newState, Sound *sound)
         NF_CreateTiledBg(1, TITLE_BG, TITLE_BG_NAME);
         sound->PlayBGM(BGM_TITLE_LOOP, true, 5);
     }
-    else if (state != LOGO && newState == LOGO)
+    else if (newState == LOGO)
     {
-        NF_DeleteTiledBg(1, TITLE_BG);
+        if (!(state == LOADING || state == LOGO))
+        {
+            NF_DeleteTiledBg(1, TITLE_BG);
+        }
         sound->PlayBGM(BGM_TITLE_HOOK, false, 0);
     }
 

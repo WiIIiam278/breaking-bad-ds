@@ -6,6 +6,7 @@ Game::Game()
     consoleDemoInit();
     consoleClear();
     printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");
+    printf("\n\n\n\n\n\n\n\n\n\n\n (Stuck loading? Try melonDS.)\n");
     setBrightness(1, -16);
     if (!nitroFSInit(NULL))
     {
@@ -252,10 +253,11 @@ void Game::StartMenuScreen()
 void Game::LoadLogoScene()
 {
     // Load logo
-    if (menu.Load(&sound) == -1)
+    if (menu.Load() == -1)
     {
         WaitLoop();
     }
+    menu.SetState(LOGO, &sound);
 }
 
 void Game::UnLoadLogoScene()
@@ -276,7 +278,7 @@ void Game::UpdateMenuScreen(volatile int frame)
         break;
     case START_GAME:
         UnLoadLogoScene();
-        StartGame(true, 240, 10);
+        StartGame(false, 240, 10);
         break;
     }
 }
