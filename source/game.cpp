@@ -156,14 +156,16 @@ void Game::UpdateTransition(volatile int frame)
     }
 
     int brightness;
-    if (!isFadingIn) {
+    if (!isFadingIn)
+    {
         brightness = (frame - transitionStartFrame) * 16 / transitionDuration;
-    } else {
+    }
+    else
+    {
         brightness = 16 - (frame - transitionStartFrame) * 16 / transitionDuration;
     }
     setBrightness(3, -brightness);
 }
-
 
 void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
 {
@@ -218,6 +220,15 @@ void Game::LoadLabScene()
 
     // Set fog color
     NE_FogEnable(3, RGB15(15, 0, 0), 31, 3, 0x7c00);
+
+    // Load tiled BG
+    // todo
+
+    // Load sprites
+    NF_LoadSpriteGfx("sprite/quality", QUALITY_INDICATOR_SPRITE, 64, 64);
+    NF_LoadSpritePal("sprite/quality", QUALITY_INDICATOR_SPRITE);
+    NF_VramSpriteGfx(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE + 1, false);
+    NF_VramSpritePal(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE + 1);
 }
 
 // Unload map and player
@@ -226,6 +237,10 @@ void Game::UnLoadLabScene()
     Transition(false, 0);
     map.Unload();
     player.Unload();
+
+    // Free sprites
+    NF_FreeSpriteGfx(1, QUALITY_INDICATOR_SPRITE + 1);
+    NF_UnloadSpriteGfx(QUALITY_INDICATOR_SPRITE);
 }
 
 void Game::StartMenuScreen()
@@ -234,6 +249,12 @@ void Game::StartMenuScreen()
 
     frame = 0;
     mode = MAIN_MENU;
+
+    if (debugFlag)
+    {
+        StartGame(false, 0, 0);
+        return;
+    }
 
     // Load logo
     LoadLogoScene();
@@ -429,6 +450,17 @@ void Game::DeleteMinigame()
     currentMinigame = NULL;
 }
 
+void Game::ShowQualityIcon(MinigameResult indicator, int frames)
+{
+    int animation = indicator;
+    showingIndicatorFor = frames;
+
+    NF_CreateSprite(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE + 1, QUALITY_INDICATOR_SPRITE + 1, 64, 32);
+    NF_SpriteFrame(1, QUALITY_INDICATOR_SPRITE, animation);
+    NF_EnableSpriteRotScale(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE, true);
+    NF_SpriteRotScale(1, QUALITY_INDICATOR_SPRITE, 0, 300, 300);
+}
+
 void Game::Render(volatile int frame)
 {
     // Set poly format
@@ -541,7 +573,27 @@ void Game::Update(volatile int frame)
     // Check for minigame
     if (mode == MINIGAME)
     {
+        inMinigameFor++;
         currentMinigame->Update(frame, keysHeld());
+        if (currentMinigame->IsComplete() && currentMinigame->IsForCurrentBatch(currentBatchProgress))
+        {
+            ShowQualityIcon(currentMinigame->GetResult(inMinigameFor), 90);
+            currentBatchProgress++;
+        }
+    }
+    else
+    {
+        inMinigameFor = 0;
+    }
+
+    // Update status indicators
+    if (showingIndicatorFor > 0)
+    {
+        showingIndicatorFor--;
+        if (showingIndicatorFor == 0)
+        {
+            NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
+        }
     }
 
     // Refresh shadow OAM copy

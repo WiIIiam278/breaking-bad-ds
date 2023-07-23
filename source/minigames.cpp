@@ -44,6 +44,11 @@ void ValveMinigame::Delete()
 
 void ValveMinigame::Update(volatile int frame, uint32 keys)
 {
+    if (IsComplete())
+    {
+        return;
+    }
+
     // Check if the user is rotating the valve
     if (keys & KEY_TOUCH)
     {
@@ -73,5 +78,15 @@ void ValveMinigame::Update(volatile int frame, uint32 keys)
 
 bool ValveMinigame::IsComplete()
 {
-    return isComplete;
+    return rotation >= targetRotation;
+}
+
+MinigameResult ValveMinigame::GetResult(int framesTaken)
+{
+    return (framesTaken < 480) ? GOOD : (framesTaken < 900) ? OKAY : BAD;
+}
+
+bool ValveMinigame::IsForCurrentBatch(int currentBatchProgress)
+{
+    return currentBatchProgress == 0;
 }

@@ -50,3 +50,10 @@ enum MenuState
     RUMBLE,
     LOADING
 };
+
+enum MinigameResult
+{
+    GOOD,
+    OKAY,
+    BAD
+};

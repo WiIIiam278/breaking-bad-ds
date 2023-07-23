@@ -1,5 +1,7 @@
 #include "debug.h"
 
+// Routine taken from https://devkitpro.org/viewtopic.php?t=3057
+
 extern u8 *fake_heap_end;   // current heap start
 extern u8 *fake_heap_start; // current heap end
 
