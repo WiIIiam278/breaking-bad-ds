@@ -79,6 +79,12 @@ private:
     ValveMinigame valveMinigame;
     Minigame *currentMinigame = NULL;
 
+    // Backgrounds
+    const int LAB_BG = 3;
+    const char LAB_BG_NAME[32] = "bg/lab";
+    const int HUD_BG = 1;
+    const char HUD_BG_NAME[32] = "bg/hud";
+
 public:
     Game();
 

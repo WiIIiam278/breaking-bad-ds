@@ -222,7 +222,8 @@ void Game::LoadLabScene()
     NE_FogEnable(3, RGB15(15, 0, 0), 31, 3, 0x7c00);
 
     // Load tiled BG
-    // todo
+    NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
+    NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
 
     // Load sprites
     NF_LoadSpriteGfx("sprite/quality", QUALITY_INDICATOR_SPRITE, 64, 64);
@@ -327,8 +328,10 @@ void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLeng
     currentScriptLength = scriptLength;
 
     // Set lab background
-    NF_LoadTiledBg("bg/lab", "lab", 256, 256);
-    NF_CreateTiledBg(1, 3, "lab");
+    NF_DeleteTiledBg(1, HUD_BG);
+    NF_UnloadTiledBg(HUD_BG_NAME);
+    NF_LoadTiledBg(LAB_BG_NAME, LAB_BG_NAME, 256, 256);
+    NF_CreateTiledBg(1, LAB_BG, LAB_BG_NAME);
 
     // Load sprite files from NitroFS
     switch (currentSpeaker)
@@ -414,7 +417,8 @@ void Game::ClearDialogue()
     }
     mode = MOVE;
 
-    NF_DeleteTiledBg(1, 3);
+    NF_DeleteTiledBg(1, LAB_BG);
+    NF_UnloadTiledBg(LAB_BG_NAME);
     NF_DeleteSprite(1, currentSpeaker + 10);
     NF_ClearTextLayer(1, 0);
 
@@ -422,6 +426,10 @@ void Game::ClearDialogue()
     NF_UnloadSpriteGfx(1);
     NF_UnloadSpritePal(1);
     NF_FreeSpriteGfx(1, 0);
+
+    // Load HUD
+    NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
+    NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
 }
 
 void Game::StartMinigame(Tile tile)
@@ -437,6 +445,8 @@ void Game::StartMinigame(Tile tile)
     }
 
     mode = MINIGAME;
+    NF_DeleteTiledBg(1, HUD_BG);
+    NF_UnloadTiledBg(HUD_BG_NAME);
     currentMinigame->Load();
 }
 
@@ -448,6 +458,8 @@ void Game::DeleteMinigame()
     }
     currentMinigame->Delete();
     currentMinigame = NULL;
+    NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
+    NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
 }
 
 void Game::ShowQualityIcon(MinigameResult indicator, int frames)
