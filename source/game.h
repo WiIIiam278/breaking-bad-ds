@@ -70,8 +70,12 @@ private:
     // Game
     int timeLimit = 180;
     int batchQuota = 10;
+    int currentBatchProgress = 0;
 
     // Minigames
+    const int QUALITY_INDICATOR_SPRITE = 12;
+    int showingIndicatorFor = 0;
+    int inMinigameFor = 0;
     ValveMinigame valveMinigame;
     Minigame *currentMinigame = NULL;
 
@@ -110,6 +114,7 @@ public:
     // Minigame stuff
     void StartMinigame(Tile tile);
     void DeleteMinigame();
+    void ShowQualityIcon(MinigameResult indicator, int frames);
 
     // Main tick logic
     void Update(volatile int frame);
