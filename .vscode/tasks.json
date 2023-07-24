@@ -4,18 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build debug",
-            "type": "process",
-            "command": "make",
-            "problemMatcher": []
-        },
-        {
             "label": "clean",
             "type": "process",
             "command": "make",
             "args": [
                 "clean"
             ],
+            "problemMatcher": []
+        },
+        {
+            "dependsOn": "clean",
+            "label": "build debug",
+            "type": "process",
+            "command": "make",
             "problemMatcher": []
         },
         {

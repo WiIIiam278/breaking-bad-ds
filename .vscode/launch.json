@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/${workspaceFolderBasename}.elf",
+            "program": "${workspaceFolder}/${workspaceFolderBasename}.elf",
             "targetArchitecture": "arm",
             "preLaunchTask": "gdb-debug",
             "postDebugTask": "stop-emulation",
@@ -18,12 +18,12 @@
             "environment": [],
             "externalConsole": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-gdb.exe",
+            "miDebuggerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc",
             "miDebuggerServerAddress": "localhost:3333",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing",
-                    "text": "file ${workspaceFolder}/build/${workspaceFolderBasename}.elf -enable-pretty-printing",
+                    "text": "file ${workspaceFolder}/${workspaceFolderBasename}.elf -enable-pretty-printing",
                     "ignoreFailures": true
                 }
             ]

@@ -4,8 +4,9 @@
             "name": "NDS",
             "includePath": [
                 "${workspaceFolder}",
-                "C:\\devkitPro\\libnds\\include\\**",
-                "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**"
+                "/nitro-engine/include/**",
+                "/nds_nflib/include/**",
+                "/opt/devkitpro/libnds/include/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -17,15 +18,16 @@
             "browse": {
                 "path": [
                     "${workspaceFolder}",
-                    "C:\\devkitPro\\libnds\\include\\**",
-                    "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**"
+                    "/nitro-engine/include/**",
+                    "/nds_nflib/include/**",
+                    "/opt/devkitpro/libnds/include/**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
             },
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-gcc.exe"
+            "compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc"
         }
     ],
     "version": 4
