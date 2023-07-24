@@ -6,7 +6,8 @@
 enum BGM
 {
     BGM_TITLE_HOOK,
-    BGM_TITLE_LOOP
+    BGM_TITLE_LOOP,
+    BGM_BABY_BLUE
 };
 
 enum SFX

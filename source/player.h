@@ -25,16 +25,17 @@ public:
     bool canMove = true;
     Direction facing = DOWN;
     bool walking = false;
+    bool lyingDown = false;
 
     int tileX;
     int tileZ;
     int targetX;
     int targetZ;
 
-    float x = 0;
-    float y = 0.4;
-    float z = 0;
-    float rotation = (facing + 1) * (512 / 4);
+    float x;
+    float y;
+    float z;
+    float rotation;
 
     Player();
 
@@ -45,6 +46,7 @@ public:
     Tile GetPlayerTile(Map& map);
     void PrintCoords(Map& map);
     void HandleInput(uint32 keys);
+    void SetLyingDown(bool lyingDown);
     void Draw();
     void Unload();
 };

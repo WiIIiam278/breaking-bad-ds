@@ -33,8 +33,8 @@ private:
     const float TARGET_X = 1;
     const float X_SPEED = 0.025;
     float x = TARGET_X - 10;
-    const float y = 4;
-    const float z = -2;
+    const float Y = 4;
+    const float Z = -2;
 
     const float TARGET_TEXT_X = TARGET_X - 1;
     float textX = TARGET_X - 16;
@@ -54,6 +54,7 @@ public:
     void Update(volatile int frame, Sound *sound);
     void Draw(volatile int frame);
     void SetState(MenuState newState, Sound *sound);
+    void PositionLogo();
     MenuSelection HandleInput(Sound *sound);
     bool IsTouchInBox(const float coords[2], int boxHeight, touchPosition touch);
     MenuSelection CheckSelection(MenuSelection tappedBox);

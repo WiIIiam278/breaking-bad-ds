@@ -25,7 +25,8 @@ enum Mode
     MAIN_MENU,
     DIALOGUE,
     MOVE,
-    MINIGAME
+    MINIGAME,
+    GAME_OVER
 };
 
 enum Speaker
@@ -39,7 +40,8 @@ enum MenuSelection
     START_GAME,
     START_TUTORIAL,
     BACK_TO_TITLE,
-    TOGGLE_RUMBLE
+    TOGGLE_RUMBLE,
+    SKIP_LOGO
 };
 
 enum MenuState

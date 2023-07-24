@@ -36,14 +36,21 @@ int Menu::Load()
     NE_ModelSetMaterial(logo, logoMaterial);
     NE_ModelSetMaterial(text, textMaterial);
 
-    // Set model rotation, position and scale
+    // Set model rotation and scale
     int scale = 8250;
     NE_ModelScaleI(backdrop, scale * 3, scale * 3, scale * 3);
     NE_ModelScaleI(logo, scale, scale, scale);
     NE_ModelScaleI(text, scale, scale, scale);
-    NE_ModelTranslate(backdrop, x + 15, y - 10, z + 5);
-    NE_ModelTranslate(logo, x, y, z);
-    NE_ModelTranslate(text, textX, y + 0.1, z + 4.55);
+
+    // Position models
+    x = TARGET_X - 10;
+    textX = TARGET_X - 16;
+    NE_ModelSetCoordI(backdrop, 0, 0, 0);
+    NE_ModelSetCoordI(logo, 0, 0, 0);
+    NE_ModelSetCoordI(text, 0, 0, 0);
+    NE_ModelTranslate(backdrop, x + 15, Y - 10, Z + 5);
+    NE_ModelTranslate(logo, x, Y, Z);
+    NE_ModelTranslate(text, textX, Y + 0.1, Z + 4.55);
 
     // Prepare sprites
     LoadSplashSprite();
@@ -115,8 +122,18 @@ void Menu::SetState(MenuState newState, Sound *sound)
     state = newState;
 }
 
+void Menu::PositionLogo()
+{
+    // Position logo
+    NE_ModelSetCoordI(logo, 0, 0, 0);
+    NE_ModelSetCoordI(text, 0, 0, 0);
+    NE_ModelTranslate(logo, TARGET_X, Y, Z);
+    NE_ModelTranslate(text, TARGET_TEXT_X, Y + 0.1, Z + 4.55);
+}
+
 void Menu::Update(volatile int frame, Sound *sound)
 {
+    NF_ClearTextLayer(1, 0);
     switch (state)
     {
     case LOADING:
@@ -188,7 +205,7 @@ void Menu::Update(volatile int frame, Sound *sound)
         {
             NF_ShowSprite(1, BUTTONS[i], false);
         }
-
+        
         if (isRumbleInserted())
         {
             NF_WriteText(1, 0, 1, 7, "Rumble Pak detected.");
@@ -221,6 +238,8 @@ MenuSelection Menu::HandleInput(Sound *sound)
 
         switch (state)
         {
+        case LOGO:
+            return SKIP_LOGO;
         case TITLE:
         case RUMBLE:
             SetState(MENU, sound);
@@ -262,7 +281,7 @@ MenuSelection Menu::HandleInput(Sound *sound)
 bool Menu::IsTouchInBox(const float coords[2], int boxHeight, touchPosition touch)
 {
     // Adjust the touch coordinates to account for the sprite scaling
-    const float scale = 2.2f;
+    const float scale = 2.1f;
     float scaledTouchX = touch.px / scale;
     float scaledTouchY = touch.py / scale;
 

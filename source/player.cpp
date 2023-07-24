@@ -8,6 +8,7 @@ int Player::Load()
 {
     model = NE_ModelCreate(NE_Static);
     material = NE_MaterialCreate();
+    lyingDown = false;
 
     // Load assets from the filesystem
     if (NE_ModelLoadStaticMeshFAT(model, "model/walter.dl") == 0)
@@ -27,11 +28,15 @@ int Player::Load()
     // Assign material to the model
     NE_ModelSetMaterial(model, material);
 
-    // Set model rotation, position and scale
+    // Set position, rotation and scale
+    x = 0;
+    y = 0.4;
+    z = 0;
+    rotation = (facing + 1) * (512 / 4);
     int scale = 5500;
     NE_ModelSetRot(model, 0, rotation, 0);
     NE_ModelScaleI(model, scale, scale, scale);
-    NE_ModelTranslate(model, x, y, z);
+    NE_ModelSetCoordI(model, x, y, z);
     return 0;
 }
 
@@ -68,6 +73,18 @@ void Player::Move(Map &map)
 
 void Player::Update(volatile int frame)
 {
+    // Update direction
+    int turningSpeed = 20;
+    float target = (facing + 1) * (511 / 4);
+    float changeBy = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
+    rotation += changeBy;
+    NE_ModelSetRot(model, lyingDown ? 90 : 0, rotation, 0);
+
+    // Don't move walter if he's dead
+    if (lyingDown) {
+        return;
+    }
+
     // Update position
     float translateX = -1.3 + (-targetX * 2.6);
     float translateZ = 1.9 + (targetZ * 2.4);
@@ -100,13 +117,6 @@ void Player::Update(volatile int frame)
         tileX = targetX;
         tileZ = targetZ;
     }
-
-    // Update direction
-    int turningSpeed = 20;
-    float target = (facing + 1) * (511 / 4);
-    float changeBy = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
-    rotation += changeBy;
-    NE_ModelSetRot(model, 0, rotation, 0);
 }
 
 void Player::Translate(float x, float y, float z)
@@ -135,6 +145,14 @@ void Player::PrintCoords(Map &map)
     char tileType[100];
     sprintf(tileType, "tileType: %i", GetPlayerTile(map));
     NF_WriteText(1, 0, 1, 3, tileType);
+}
+
+void Player::SetLyingDown(bool lyingDown)
+{
+    this->lyingDown = lyingDown;
+    Translate(0, 0.3f, -2.0f);
+    facing = DOWN;
+    NE_ModelSetRot(model, lyingDown ? 90 : 0, rotation, 0);
 }
 
 void Player::HandleInput(uint32 keys)

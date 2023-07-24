@@ -13,6 +13,7 @@ void Sound::LoadSound()
     // Load sound
     NF_LoadRawSound("bgm/title_hook", BGM_TITLE_HOOK, BGM_SAMPLE_RATE, 0);
     NF_LoadRawSound("bgm/title_loop", BGM_TITLE_LOOP, BGM_SAMPLE_RATE, 0);
+    NF_LoadRawSound("bgm/baby_blue", BGM_BABY_BLUE, BGM_SAMPLE_RATE, 0);
 }
 
 void Sound::PlayBGM(BGM bgm, bool loop, int loopAfter)

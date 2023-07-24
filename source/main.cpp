@@ -1,11 +1,11 @@
 #include "game.h"
 
+const bool debugMode = false;
 Game game;
-volatile int frame = 0;
 
 void RenderGame()
 {
-    game.Render(frame);
+    game.Render();
 }
 
 int main(void)
@@ -15,16 +15,16 @@ int main(void)
     game.Prepare2DGraphics();
 
     // Start the game
-    game.StartMenuScreen();
+    game.StartMenuScreen(debugMode);
 
     // Run the game loop
     while (true)
     {
-        // Increment the frame counter
-        frame++;
+        // Tick the game clock
+        game.Tick();
 
         // Process input, update game state
-        game.Update(frame);
+        game.Update();
 
         // Render the game 3D scene
         NE_Process(RenderGame);

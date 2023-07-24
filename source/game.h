@@ -24,8 +24,8 @@ using namespace std;
 class Game
 {
 private:
-    const bool debugFlag = false;
-    volatile int frame;
+    volatile int frame = 0;
+    bool debugFlag = true;
     Mode mode = MOVE;
 
     // 3D Gameplay
@@ -56,6 +56,7 @@ private:
     NE_Camera *camera;
 
     // Dialogue
+    const int CHARACTERS_PER_DIALOGUE_LINE = 29;
     Speaker currentSpeaker = GALE;
     char currentScript[128][128];
     int currentScriptLength = 0;
@@ -68,9 +69,10 @@ private:
     int tutorialProgress = 0;
 
     // Game
-    int timeLimit = 180;
-    int batchQuota = 10;
+    int timeLimit = -1;
+    int batchQuota = 1;
     int currentBatchProgress = 0;
+    int gameOverFrame = 0;
 
     // Minigames
     const int QUALITY_INDICATOR_SPRITE = 12;
@@ -95,10 +97,10 @@ public:
 
     // Transition Control
     void Transition(bool fadeIn, int duration);
-    void UpdateTransition(volatile int frame);
+    void UpdateTransition();
 
     // Camera
-    void UpdateCamera(volatile int frame);
+    void UpdateCamera();
     void TranslateCamera(float x, float y, float z);
 
     // Start game
@@ -107,14 +109,14 @@ public:
     void UnLoadLabScene();
 
     // Start title screen
-    void StartMenuScreen();
+    void StartMenuScreen(bool debugMode);
     void LoadLogoScene();
     void UnLoadLogoScene();
-    void UpdateMenuScreen(volatile int frame);
+    void UpdateMenuScreen();
 
     // Dialogue
     void SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame);
-    void UpdateDialogue(volatile int frame, uint32 keys);
+    void UpdateDialogue(uint32 keys);
     void ClearDialogue();
 
     // Minigame stuff
@@ -122,7 +124,12 @@ public:
     void DeleteMinigame();
     void ShowQualityIcon(MinigameResult indicator, int frames);
 
+    // Game Over
+    void StartGameOver();
+    void UpdateGameOver();
+
     // Main tick logic
-    void Update(volatile int frame);
-    void Render(volatile int frame);
+    void Tick();
+    void Update();
+    void Render();
 };

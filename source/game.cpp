@@ -6,7 +6,8 @@ Game::Game()
     consoleDemoInit();
     consoleClear();
     printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");
-    printf("\n\n\n\n\n\n\n\n\n\n\n (Stuck loading? Try melonDS.)\n");
+    printf("\n\n\n\n\n\n\n\n\n\n Stuck loading? Use melonDS or\n");
+    printf(" a DS flash cartridge instead.\n");
     setBrightness(1, -16);
     if (!nitroFSInit(NULL))
     {
@@ -84,7 +85,7 @@ void Game::Prepare3DGraphics()
     camera = NE_CameraCreate();
 }
 
-void Game::UpdateCamera(volatile int frame)
+void Game::UpdateCamera()
 {
     // Update the camera position based on mode
     switch (mode)
@@ -98,6 +99,12 @@ void Game::UpdateCamera(volatile int frame)
         cameraTx = player.x;
         cameraTy = 7.5;
         cameraTz = -2.5 + (player.z / 6);
+        break;
+    case GAME_OVER:
+        cameraTx = player.x - 0.5f;
+        cameraTy = 5 + (((float) gameOverFrame / 500.0f) * 13.0f);
+        cameraTz = player.z + 1.5f;
+        NE_CameraRotate(camera, 0, frame % 2 == 0 ? 1 : 0, 0);
         break;
     default:
         cameraTx = player.x;
@@ -132,6 +139,7 @@ void Game::Transition(bool fadeIn, int duration)
     if (duration <= 0)
     {
         setBrightness(3, fadeIn ? 0 : -16);
+        isTransitioning = false;
         return;
     }
 
@@ -141,7 +149,7 @@ void Game::Transition(bool fadeIn, int duration)
     transitionStartFrame = frame;
 }
 
-void Game::UpdateTransition(volatile int frame)
+void Game::UpdateTransition()
 {
     if (!isTransitioning)
     {
@@ -172,11 +180,12 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
     Transition(false, 0);
 
     frame = 0;
-    timeLimit = timeLimit;
-    batchQuota = batchQuota;
-    isTutorial = tutorialGame;
     tutorialProgress = 0;
     mode = MOVE;
+
+    this->timeLimit = timeLimit;
+    this->batchQuota = batchQuota;
+    this->isTutorial = tutorialGame;
 
     // Prepare laboratory scene
     LoadLabScene();
@@ -239,21 +248,27 @@ void Game::UnLoadLabScene()
     map.Unload();
     player.Unload();
 
+    // Remove fog
+    NE_FogDisable();
+
     // Free sprites
     NF_FreeSpriteGfx(1, QUALITY_INDICATOR_SPRITE + 1);
     NF_UnloadSpriteGfx(QUALITY_INDICATOR_SPRITE);
+    NF_UnloadSpritePal(QUALITY_INDICATOR_SPRITE);
 }
 
-void Game::StartMenuScreen()
+void Game::StartMenuScreen(bool debugMode)
 {
     Transition(false, 0);
 
+    debugFlag = debugMode;
     frame = 0;
     mode = MAIN_MENU;
 
+    // Quick-start debug game if the flag is set
     if (debugFlag)
     {
-        StartGame(false, 0, 0);
+        StartGame(false, 3, 0);
         return;
     }
 
@@ -288,19 +303,23 @@ void Game::UnLoadLogoScene()
     menu.Unload(&sound);
 }
 
-void Game::UpdateMenuScreen(volatile int frame)
+void Game::UpdateMenuScreen()
 {
     menu.Update(frame, &sound);
 
     switch (menu.HandleInput(&sound))
     {
+    case SKIP_LOGO:
+        frame = 689;
+        menu.PositionLogo();
+        break;
     case START_TUTORIAL:
         UnLoadLogoScene();
         StartGame(true, -1, 1);
         break;
     case START_GAME:
         UnLoadLogoScene();
-        StartGame(false, 240, 10);
+        StartGame(false, 30, 10);
         break;
     }
 }
@@ -350,7 +369,7 @@ void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLeng
     NF_SpriteRotScale(1, currentSpeaker + 10, 0, 386, 386);
 }
 
-void Game::UpdateDialogue(volatile int frame, uint32 keys)
+void Game::UpdateDialogue(uint32 keys)
 {
     uint charsToPrint = (frame - currentLineStartFrame) / 3;
     char currentLine[128];
@@ -390,20 +409,18 @@ void Game::UpdateDialogue(volatile int frame, uint32 keys)
     strncpy(lineToPrint, currentLine, charsToPrint);
     NF_ClearTextLayer(1, 0);
 
-    const int firstLineChars = 29;
-
     // Print dialogue lines
-    int line1Chars = charsToPrint > firstLineChars ? firstLineChars : charsToPrint;
+    int line1Chars = charsToPrint > CHARACTERS_PER_DIALOGUE_LINE ? CHARACTERS_PER_DIALOGUE_LINE : charsToPrint;
     char line1[line1Chars];
     strncpy(line1, lineToPrint, line1Chars);
     line1[line1Chars] = '\0';
     NF_WriteText(1, 0, 1, 21, line1);
 
-    int line2Chars = charsToPrint > firstLineChars ? charsToPrint - firstLineChars : 0;
+    int line2Chars = charsToPrint > CHARACTERS_PER_DIALOGUE_LINE ? charsToPrint - CHARACTERS_PER_DIALOGUE_LINE : 0;
     if (line2Chars > 0)
     {
         char line2[line2Chars];
-        strncpy(line2, lineToPrint + firstLineChars, line2Chars);
+        strncpy(line2, lineToPrint + CHARACTERS_PER_DIALOGUE_LINE, line2Chars);
         line2[line2Chars] = '\0';
         NF_WriteText(1, 0, 1, 22, line2);
     }
@@ -473,7 +490,62 @@ void Game::ShowQualityIcon(MinigameResult indicator, int frames)
     NF_SpriteRotScale(1, QUALITY_INDICATOR_SPRITE, 0, 300, 300);
 }
 
-void Game::Render(volatile int frame)
+void Game::StartGameOver()
+{
+    if (!(mode == MOVE || mode == MINIGAME))
+    {
+        return;
+    }
+    player.walking = false;
+
+    // Clear other elements
+    if (mode == MINIGAME)
+    {
+        DeleteMinigame();
+    }
+    else
+    {
+        NF_DeleteTiledBg(1, HUD_BG);
+        NF_UnloadTiledBg(HUD_BG_NAME);
+    }
+
+    // Set mode
+    mode = GAME_OVER;
+    gameOverFrame = 0;
+    sound.PlayBGM(BGM_BABY_BLUE, false, 0);
+    player.SetLyingDown(true);
+    NE_CameraRotate(camera, 90, 0, 0);
+}
+
+void Game::UpdateGameOver()
+{
+    gameOverFrame++;
+    if (gameOverFrame == 530)
+    {
+        Transition(false, 0);
+        return;
+    }
+
+    if (gameOverFrame == 620)
+    {
+        UnLoadLabScene();
+        StartMenuScreen(false);
+    }
+
+    if (debugFlag)
+    {
+        char gameOver[100];
+        sprintf(gameOver, "GOFrame: %d", gameOverFrame);
+        NF_WriteText(1, 0, 1, 19, gameOver);
+    }
+}
+
+void Game::Tick()
+{
+    frame++;
+}
+
+void Game::Render()
 {
     // Set poly format
     NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
@@ -495,7 +567,7 @@ void Game::Render(volatile int frame)
     player.Draw();
 }
 
-void Game::Update(volatile int frame)
+void Game::Update()
 {
     // Wait for the VBlank interrupt
     NE_WaitForVBL(NE_UPDATE_ANIMATIONS);
@@ -504,7 +576,7 @@ void Game::Update(volatile int frame)
     oamUpdate(&oamSub);
 
     // Debug - print debug info
-    if (debugFlag && mode == MOVE)
+    if (debugFlag && (mode != MAIN_MENU && mode != MINIGAME && mode != DIALOGUE))
     {
         player.PrintCoords(map);
 
@@ -515,33 +587,39 @@ void Game::Update(volatile int frame)
         char memUsage[100];
         sprintf(memUsage, "Mem: %d (%d)", getMemUsed(), getMemFree());
         NF_WriteText(1, 0, 1, 5, memUsage);
+
+        char timeLeft[100];
+        sprintf(timeLeft, "Time: %ds, Frame: %d", timeLimit, frame);
+        NF_WriteText(1, 0, 1, 18, timeLeft);
     }
 
     // Update transition
-    UpdateTransition(frame);
+    UpdateTransition();
 
     // Update text layers
     NF_UpdateTextLayers();
 
-    // Handle input or dialogue progress
+    // Handle input
     scanKeys();
-    if (mode != MAIN_MENU && mode != DIALOGUE)
+    if (mode != MAIN_MENU && mode != DIALOGUE && mode != GAME_OVER)
     {
         player.HandleInput(keysHeld());
     }
-    else
+
+    // Update dialogue
+    if (mode == DIALOGUE)
     {
-        UpdateDialogue(frame, keysDown());
+        UpdateDialogue(keysDown());
     }
 
     // Update camera
-    UpdateCamera(frame);
+    UpdateCamera();
 
     // Tutorials check
-    if (mode != MAIN_MENU)
+    if (mode != MAIN_MENU && mode != GAME_OVER)
     {
         // Update timer
-        if (frame % 60 == 0 && timeLimit > -1)
+        if (frame % 60 == 0 && timeLimit > -1 && mode != DIALOGUE)
         {
             timeLimit--;
 
@@ -549,7 +627,7 @@ void Game::Update(volatile int frame)
 
             if (timeLimit == 0)
             {
-                // TODO - game over
+                StartGameOver(); // todo
                 return;
             }
         }
@@ -579,7 +657,7 @@ void Game::Update(volatile int frame)
     }
     else
     {
-        UpdateMenuScreen(frame);
+        UpdateMenuScreen();
     }
 
     // Check for minigame
@@ -596,6 +674,11 @@ void Game::Update(volatile int frame)
     else
     {
         inMinigameFor = 0;
+    }
+
+    if (mode == GAME_OVER)
+    {
+        UpdateGameOver();
     }
 
     // Update status indicators
