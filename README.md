@@ -7,32 +7,8 @@
 *Breaking Bad*, as a 3D Nintendo DS game.
 
 ## Building
-### Windows instructions
-You can use the Powershell script `build.ps1` to automate the build for Windows. This requires Docker and a certain directory structure setup, though. Here's how to set that up:
-
-* Install [Docker Engine](https://docs.docker.com/engine/) for Windows
-* Create a directory somewhere in your machine (preferebly as part of a path without spaces). Name it `Nintendo-DS-Development`
-* Create a subdirectory, `projects`. Run `cd projects`, then `git clone https://github.com/WiIIiam278/breaking-bad-ds.git ./breaking-bad-ds`
-* Back in the `Nintendo-DS-Development` directory, git clone NightFoxLib and Nitro-Engine into `nds_nflib` and `nitro-engine`
-  - `git clone https://github.com/knightfox75/nds_nflib.git ./nds_nflib`
-  - `git clone https://github.com/AntonioND/nitro-engine.git ./nitro-engine`
-* Your directory structure should now resemble this:
-  - `Nintendo-DS-Development/`
-    - `projects/`
-      - `breaking-bad-ds/`
-        - `build.ps1`
-        - `(...)`
-    - `nds_nflib/`
-      - `(...)`
-    - `nitro-engine/`
-      - `(...)`
-* Ensure docker engine is open and that the engline has initialized. Then, open Powershell and run `./build.ps1`. 
-* `breaking-bad-ds.nds` will be output.
-
-VSCode is reccommended for development. Please note the VSCode scripts currently use hard-coded paths for my machine; you'll want to edit these to reference your install directory.
-
 ### General instructions
-BlocksDS, NFLib and Nitro-Engine must be installed. Then, just run `make` following to build a `.nds` ROM file.
+devKitARM, NFLib and Nitro-Engine must be installed. Then, just run `make` following to build a `.nds` ROM file.
 
 ### Asset preparation
 There's scripts for converting assets and moving them into the correct nitrofiles directories. Run `bash ./convert.sh` inside `graphics/sprite` for instance to automatically prepare all the sprite images. If you've updated the graphics, delete the `build/` directory before building.

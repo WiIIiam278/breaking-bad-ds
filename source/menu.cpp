@@ -199,7 +199,7 @@ void Menu::Update(volatile int frame, Sound *sound)
         NF_ShowSprite(1, START_SPRITE, false);
         break;
 
-    case RUMBLE:
+    case RUMBLE_INFO:
         NF_ShowSprite(1, START_SPRITE, false);
         for (int i = 0; i < 4; i++)
         {
@@ -241,7 +241,7 @@ MenuSelection Menu::HandleInput(Sound *sound)
         case LOGO:
             return SKIP_LOGO;
         case TITLE:
-        case RUMBLE:
+        case RUMBLE_INFO:
             SetState(MENU, sound);
             break;
 
@@ -266,7 +266,7 @@ MenuSelection Menu::HandleInput(Sound *sound)
             {
                 if (CheckSelection(TOGGLE_RUMBLE))
                 {
-                    SetState(RUMBLE, sound);
+                    SetState(RUMBLE_INFO, sound);
                     return TOGGLE_RUMBLE;
                 }
             }

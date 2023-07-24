@@ -5,8 +5,8 @@
     "tasks": [
         {
             "label": "build debug",
-            "type": "shell",
-            "command": "./build.ps1",
+            "type": "process",
+            "command": "make",
             "problemMatcher": []
         },
         {
@@ -39,7 +39,7 @@
                 "build debug"
             ],
             "isBackground": false,
-            "command": "C:\\melonDS\\melonDS.exe",
+            "command": "C:/melonDS/melonDS.exe",
             "args": [
                 "${workspaceFolder}/${workspaceFolderBasename}.nds"
             ],

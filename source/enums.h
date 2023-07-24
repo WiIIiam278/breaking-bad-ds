@@ -49,7 +49,7 @@ enum MenuState
     LOGO,
     TITLE,
     MENU,
-    RUMBLE,
+    RUMBLE_INFO,
     LOADING
 };
 

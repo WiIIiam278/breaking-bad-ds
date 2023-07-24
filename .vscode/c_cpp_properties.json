@@ -3,7 +3,9 @@
         {
             "name": "NDS",
             "includePath": [
-                "${workspaceFolder}"
+                "${workspaceFolder}",
+                "C:\\devkitPro\\libnds\\include\\**",
+                "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**"
             ],
             "defines": [
                 "_DEBUG",
@@ -14,14 +16,16 @@
             ],
             "browse": {
                 "path": [
-                    "${workspaceFolder}"
+                    "${workspaceFolder}",
+                    "C:\\devkitPro\\libnds\\include\\**",
+                    "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
             },
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-gcc.exe",
+            "compilerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-gcc.exe"
         }
     ],
     "version": 4
