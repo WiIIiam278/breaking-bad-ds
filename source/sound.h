@@ -3,6 +3,10 @@
 #include <nds.h>
 #include <nf_lib.h>
 
+
+const int BGM_COUNT = 3;
+const char BGM_NAMES[BGM_COUNT][64] = {"Main Theme (Intro)", "Main Theme (Loop)", "My Baby Blue"};
+
 enum BGM
 {
     BGM_TITLE_HOOK,

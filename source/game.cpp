@@ -6,8 +6,6 @@ Game::Game()
     consoleDemoInit();
     consoleClear();
     printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");
-    printf("\n\n\n\n\n\n\n\n\n\n Stuck loading? Use melonDS or\n");
-    printf(" a DS flash cartridge instead.\n");
     setBrightness(1, -16);
     if (!nitroFSInit(NULL))
     {
@@ -102,7 +100,7 @@ void Game::UpdateCamera()
         break;
     case GAME_OVER:
         cameraTx = player.x - 0.5f;
-        cameraTy = 5 + (((float) gameOverFrame / 500.0f) * 13.0f);
+        cameraTy = 5 + (((float)gameOverFrame / 500.0f) * 13.0f);
         cameraTz = player.z + 1.5f;
         NE_CameraRotate(camera, 0, frame % 2 == 0 ? 1 : 0, 0);
         break;
@@ -175,6 +173,37 @@ void Game::UpdateTransition()
     setBrightness(3, -brightness);
 }
 
+// Show/hide bottom screen HUD
+void Game::ToggleHud(bool show)
+{
+    if (show && !hudVisible)
+    {
+        NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
+        NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
+        NF_CreateSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
+        NF_SpriteFrame(1, HUD_MAP_PLAYER_SPRITE, 0);
+        NF_CreateSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
+        NF_SpriteFrame(1, HUD_MAP_MARKER_SPRITE, 3);
+    }
+    else if (hudVisible)
+    {
+        NF_DeleteTiledBg(1, HUD_BG);
+        NF_UnloadTiledBg(HUD_BG_NAME);
+        NF_DeleteSprite(1, HUD_MAP_PLAYER_SPRITE);
+        NF_DeleteSprite(1, HUD_MAP_MARKER_SPRITE);
+    }
+    hudVisible = show;
+}
+
+void Game::UpdateHud()
+{
+    if (mode == MOVE)
+    {
+        NF_MoveSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (player.x * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (player.z * 4.4));
+        NF_MoveSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][0] * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][1] * 4.4));
+    }
+}
+
 void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
 {
     Transition(false, 0);
@@ -182,6 +211,7 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
     frame = 0;
     tutorialProgress = 0;
     mode = MOVE;
+    currentBatchProgress = 0;
 
     this->timeLimit = timeLimit;
     this->batchQuota = batchQuota;
@@ -230,21 +260,26 @@ void Game::LoadLabScene()
     // Set fog color
     NE_FogEnable(3, RGB15(15, 0, 0), 31, 3, 0x7c00);
 
-    // Load tiled BG
-    NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
-    NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
-
     // Load sprites
     NF_LoadSpriteGfx("sprite/quality", QUALITY_INDICATOR_SPRITE, 64, 64);
     NF_LoadSpritePal("sprite/quality", QUALITY_INDICATOR_SPRITE);
     NF_VramSpriteGfx(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE + 1, false);
     NF_VramSpritePal(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE + 1);
+
+    NF_LoadSpriteGfx("sprite/map_icons", HUD_MAP_ICONS, 16, 16);
+    NF_LoadSpritePal("sprite/map_icons", HUD_MAP_ICONS);
+    NF_VramSpriteGfx(1, HUD_MAP_ICONS, HUD_MAP_ICONS + 1, false);
+    NF_VramSpritePal(1, HUD_MAP_ICONS, HUD_MAP_ICONS + 1);
+
+    // Load HUD
+    ToggleHud(true);
 }
 
 // Unload map and player
 void Game::UnLoadLabScene()
 {
     Transition(false, 0);
+    ToggleHud(false);
     map.Unload();
     player.Unload();
 
@@ -255,6 +290,9 @@ void Game::UnLoadLabScene()
     NF_FreeSpriteGfx(1, QUALITY_INDICATOR_SPRITE + 1);
     NF_UnloadSpriteGfx(QUALITY_INDICATOR_SPRITE);
     NF_UnloadSpritePal(QUALITY_INDICATOR_SPRITE);
+    NF_FreeSpriteGfx(1, HUD_MAP_ICONS + 1);
+    NF_UnloadSpriteGfx(HUD_MAP_ICONS);
+    NF_UnloadSpritePal(HUD_MAP_ICONS);
 }
 
 void Game::StartMenuScreen(bool debugMode)
@@ -268,7 +306,7 @@ void Game::StartMenuScreen(bool debugMode)
     // Quick-start debug game if the flag is set
     if (debugFlag)
     {
-        StartGame(false, 3, 0);
+        StartGame(false, 350, 0);
         return;
     }
 
@@ -347,8 +385,7 @@ void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLeng
     currentScriptLength = scriptLength;
 
     // Set lab background
-    NF_DeleteTiledBg(1, HUD_BG);
-    NF_UnloadTiledBg(HUD_BG_NAME);
+    ToggleHud(false);
     NF_LoadTiledBg(LAB_BG_NAME, LAB_BG_NAME, 256, 256);
     NF_CreateTiledBg(1, LAB_BG, LAB_BG_NAME);
 
@@ -371,14 +408,15 @@ void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLeng
 
 void Game::UpdateDialogue(uint32 keys)
 {
-    uint charsToPrint = (frame - currentLineStartFrame) / 3;
+    int charsToPrint = (frame - currentLineStartFrame) / 3;
     char currentLine[128];
     strncpy(currentLine, currentScript[currentLineIndex], 128);
     bool endOfLine = false;
-    if (charsToPrint >= strlen(currentLine))
+    int lineLength = strlen(currentLine);
+    if (charsToPrint >= lineLength)
     {
         endOfLine = true;
-        charsToPrint = strlen(currentLine);
+        charsToPrint = lineLength;
     }
 
     // Update speaker animation
@@ -393,15 +431,24 @@ void Game::UpdateDialogue(uint32 keys)
     }
 
     // Handle input
-    if (endOfLine && ((keys & KEY_A) || (keys & KEY_TOUCH)))
+    if (((keys & KEY_A) || (keys & KEY_TOUCH)))
     {
-        currentLineIndex++;
-        currentLineStartFrame = frame;
-
-        if (currentLineIndex >= currentScriptLength)
+        if (!endOfLine)
         {
-            ClearDialogue();
-            return;
+            currentLineStartFrame = -(lineLength * 10);
+            charsToPrint = lineLength;
+            endOfLine = true;
+        }
+        else
+        {
+            currentLineIndex++;
+            currentLineStartFrame = frame;
+
+            if (currentLineIndex >= currentScriptLength)
+            {
+                ClearDialogue();
+                return;
+            }
         }
     }
 
@@ -445,8 +492,7 @@ void Game::ClearDialogue()
     NF_FreeSpriteGfx(1, 0);
 
     // Load HUD
-    NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
-    NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
+    ToggleHud(true);
 }
 
 void Game::StartMinigame(Tile tile)
@@ -462,8 +508,7 @@ void Game::StartMinigame(Tile tile)
     }
 
     mode = MINIGAME;
-    NF_DeleteTiledBg(1, HUD_BG);
-    NF_UnloadTiledBg(HUD_BG_NAME);
+    ToggleHud(false);
     currentMinigame->Load();
 }
 
@@ -475,8 +520,7 @@ void Game::DeleteMinigame()
     }
     currentMinigame->Delete();
     currentMinigame = NULL;
-    NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
-    NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
+    ToggleHud(true);
 }
 
 void Game::ShowQualityIcon(MinigameResult indicator, int frames)
@@ -505,8 +549,7 @@ void Game::StartGameOver()
     }
     else
     {
-        NF_DeleteTiledBg(1, HUD_BG);
-        NF_UnloadTiledBg(HUD_BG_NAME);
+        ToggleHud(false);
     }
 
     // Set mode
@@ -653,6 +696,11 @@ void Game::Update()
                 DeleteMinigame();
             }
             break;
+        }
+
+        if (hudVisible)
+        {
+            UpdateHud();
         }
     }
     else

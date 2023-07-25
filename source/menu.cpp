@@ -6,7 +6,7 @@ Menu::Menu()
     highlightedItem = NONE;
 }
 
-int Menu::Load() 
+int Menu::Load()
 {
     backdrop = NE_ModelCreate(NE_Static);
     backdropMaterial = NE_MaterialCreate();
@@ -30,6 +30,9 @@ int Menu::Load()
         printf("Couldn't load logo/text textures...");
         return -1;
     }
+
+    // Sound test sequence
+    currentSequenceIndex = 0;
 
     // Assign material to the model
     NE_ModelSetMaterial(backdrop, backdropMaterial);
@@ -119,6 +122,13 @@ void Menu::SetState(MenuState newState, Sound *sound)
         sound->PlayBGM(BGM_TITLE_HOOK, false, 0);
     }
 
+    if (state == SOUND_TEST && newState == MENU)
+    {
+        sound->PlayBGM(BGM_TITLE_LOOP, true, 5);
+        currentSoundTestTrack = 1;
+    }
+
+    currentSequenceIndex = 0;
     state = newState;
 }
 
@@ -205,7 +215,7 @@ void Menu::Update(volatile int frame, Sound *sound)
         {
             NF_ShowSprite(1, BUTTONS[i], false);
         }
-        
+
         if (isRumbleInserted())
         {
             NF_WriteText(1, 0, 1, 7, "Rumble Pak detected.");
@@ -223,29 +233,71 @@ void Menu::Update(volatile int frame, Sound *sound)
             NF_WriteText(1, 0, 1, 12, "into SLOT-2 to enable rumble.");
         }
 
-        NF_WriteText(1, 0, 1, 14, "Touch the screen to continue.");
+        NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
+        break;
+
+    case SOUND_TEST:
+        NF_ShowSprite(1, START_SPRITE, false);
+        for (int i = 0; i < 4; i++)
+        {
+            NF_ShowSprite(1, BUTTONS[i], false);
+        }
+
+        NF_WriteText(1, 0, 1, 5, "Breaking Bad DS - SOUND TEST");
+        NF_WriteText(1, 0, 1, 6, "LEFT/RIGHT to change track.");
+        NF_WriteText(1, 0, 1, 10, "Currently playing:");
+        NF_WriteText(1, 0, 1, 11, BGM_NAMES[currentSoundTestTrack]);
+
+        NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
         break;
     }
 }
 
 MenuSelection Menu::HandleInput(Sound *sound)
 {
-    // If the touch screen
     touchPosition touch;
-    if (keysDown() & KEY_TOUCH)
+    switch (state)
     {
-        touchRead(&touch);
-
-        switch (state)
+    case LOGO:
+        if (keysDown() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
         {
-        case LOGO:
             return SKIP_LOGO;
-        case TITLE:
-        case RUMBLE_INFO:
+        }
+        return NONE;
+    case TITLE:
+        if (keysDown() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
+        {
             SetState(MENU, sound);
-            break;
+        }
+        return NONE;
+    case SOUND_TEST:
+        if (keysDown() & KEY_RIGHT || keysDown() & KEY_LEFT)
+        {
+            if (keysDown() & KEY_RIGHT)
+            {
+                currentSoundTestTrack++;
+            }
+            else if (keysDown() & KEY_LEFT)
+            {
+                currentSoundTestTrack--;
+            }
+            currentSoundTestTrack = (currentSoundTestTrack < 0)                 ? 0
+                                    : (currentSoundTestTrack > (BGM_COUNT - 1)) ? (BGM_COUNT - 1)
+                                                                                : currentSoundTestTrack;
+            sound->PlayBGM(static_cast<BGM>(currentSoundTestTrack), true, 0);
+        }
 
-        case MENU:
+    case RUMBLE_INFO:
+        if (keysDown() & KEY_TOUCH || keysDown() & KEY_B)
+        {
+            SetState(MENU, sound);
+        }
+        return NONE;
+    case MENU:
+        if (keysDown() & KEY_TOUCH)
+        {
+            touchRead(&touch);
+
             if (IsTouchInBox(BUTTON_COORDS[0], 64, touch))
             {
                 return CheckSelection(START_GAME);
@@ -261,6 +313,7 @@ MenuSelection Menu::HandleInput(Sound *sound)
                     SetState(TITLE, sound);
                     return BACK_TO_TITLE;
                 }
+                return NONE;
             }
             else if (IsTouchInBox(BUTTON_COORDS[3], 32, touch))
             {
@@ -269,10 +322,64 @@ MenuSelection Menu::HandleInput(Sound *sound)
                     SetState(RUMBLE_INFO, sound);
                     return TOGGLE_RUMBLE;
                 }
+                return NONE;
             }
             break;
         }
-        return NONE;
+
+        if (keysDown() & SOUND_TEST_SEQUENCE[currentSequenceIndex])
+        {
+            currentSequenceIndex++;
+            if (currentSequenceIndex == 11)
+            {
+                SetState(SOUND_TEST, sound);
+                return NONE;
+            }
+            else if (currentSequenceIndex > 8)
+            {
+                return NONE;
+            }
+        }
+        if (keysDown() & KEY_UP && !(highlightedItem == START_GAME || highlightedItem == START_TUTORIAL))
+        {
+            highlightedItem = (highlightedItem == TOGGLE_RUMBLE ? START_GAME : START_TUTORIAL);
+        }
+        else if (keysDown() & KEY_DOWN && !(highlightedItem == TOGGLE_RUMBLE || highlightedItem == BACK_TO_TITLE))
+        {
+            highlightedItem = (highlightedItem == START_GAME ? TOGGLE_RUMBLE : BACK_TO_TITLE);
+        }
+        else if (keysDown() & KEY_LEFT && !(highlightedItem == START_GAME || highlightedItem == TOGGLE_RUMBLE))
+        {
+            highlightedItem = (highlightedItem == START_TUTORIAL ? START_GAME : TOGGLE_RUMBLE);
+        }
+        else if (keysDown() & KEY_RIGHT && !(highlightedItem == BACK_TO_TITLE || highlightedItem == START_TUTORIAL))
+        {
+            highlightedItem = (highlightedItem == START_GAME ? START_TUTORIAL : BACK_TO_TITLE);
+        }
+
+        if (keysDown() & KEY_A || keysDown() & KEY_START)
+        {
+            switch (highlightedItem)
+            {
+            default:
+                return CheckSelection(highlightedItem);
+            case BACK_TO_TITLE:
+                if (CheckSelection(BACK_TO_TITLE))
+                {
+                    SetState(TITLE, sound);
+                    return BACK_TO_TITLE;
+                }
+                return NONE;
+            case TOGGLE_RUMBLE:
+                if (CheckSelection(TOGGLE_RUMBLE))
+                {
+                    SetState(RUMBLE_INFO, sound);
+                    return TOGGLE_RUMBLE;
+                }
+                return NONE;
+            }
+        }
+        break;
     }
 
     return NONE;

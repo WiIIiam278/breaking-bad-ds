@@ -45,6 +45,12 @@ private:
     const int BUTTONS[4] = {6, 7, 8, 9};
     const float BUTTON_COORDS[4][2] = {{20, 10}, {105, 10}, {105, 55}, {20, 55}};
 
+    const KEYPAD_BITS SOUND_TEST_SEQUENCE[11] = {KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN,
+                                                 KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT,
+                                                 KEY_B, KEY_A, KEY_START};
+    int currentSequenceIndex = 0;
+    int currentSoundTestTrack = 1;
+
 public:
     Menu();
 

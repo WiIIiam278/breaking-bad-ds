@@ -61,19 +61,27 @@ private:
     char currentScript[128][128];
     int currentScriptLength = 0;
     int currentLineIndex = 0;
-    int currentLineStartFrame = 0;
+    volatile int currentLineStartFrame = 0;
     int currentSpeakerAnimation = 0;
 
     // Tutorial
     bool isTutorial = false;
     int tutorialProgress = 0;
+    const float HUD_BATCH_PROGRESS_MARKER_COORDS[6][2] = {{-24.8, 1.9}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
 
     // Game
     int timeLimit = -1;
     int batchQuota = 1;
     int currentBatchProgress = 0;
     int gameOverFrame = 0;
-
+    
+    // HUD
+    const int HUD_MAP_ICONS = 6;
+    const int HUD_MAP_PLAYER_SPRITE = 6;
+    const int HUD_MAP_MARKER_SPRITE = 7;
+    const float HUD_MAP_ORIGIN_COORDS[2] = {136, 102};
+    bool hudVisible = false;
+    
     // Minigames
     const int QUALITY_INDICATOR_SPRITE = 12;
     int showingIndicatorFor = 0;
@@ -98,6 +106,10 @@ public:
     // Transition Control
     void Transition(bool fadeIn, int duration);
     void UpdateTransition();
+
+    // HUD
+    void ToggleHud(bool show);
+    void UpdateHud();
 
     // Camera
     void UpdateCamera();

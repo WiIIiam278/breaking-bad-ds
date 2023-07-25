@@ -50,7 +50,8 @@ enum MenuState
     TITLE,
     MENU,
     RUMBLE_INFO,
-    LOADING
+    LOADING,
+    SOUND_TEST
 };
 
 enum MinigameResult
