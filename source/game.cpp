@@ -74,10 +74,15 @@ void Game::Prepare3DGraphics()
     NE_TextureSystemReset(0, 0, NE_VRAM_AB);
 
     // Setup lighting
-    NE_LightSet(0, NE_White, 0, -1, -1);
+    NE_LightSet(0, NE_White, -0.5, -0.5, -0.5);
 
     // Setup background color
     NE_ClearColorSet(CLEAR_COLOR, 31, 63);
+
+    // Enable shading and outlining
+    NE_ShadingEnable(true);
+    NE_OutliningEnable(true);
+    NE_OutliningSetColor(1, NE_Black);
 
     // Create camera
     camera = NE_CameraCreate();
@@ -236,6 +241,8 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
                  -11.5, 1, 8.5,
                  0, 1, 0);
 
+    sound.PlayBGM(BGM_THE_COUSINS, true);
+
     // Start tutorial
     if (tutorialGame)
     {
@@ -357,7 +364,7 @@ void Game::UpdateMenuScreen()
         break;
     case START_GAME:
         UnLoadLogoScene();
-        StartGame(false, 30, 10);
+        StartGame(false, 340, 10);
         break;
     }
 }
@@ -507,6 +514,12 @@ void Game::StartMinigame(Tile tile)
         return;
     }
 
+    if (!currentMinigame->IsForCurrentBatch(currentBatchProgress))
+    {
+        currentMinigame = NULL;
+        return;
+    }
+
     mode = MINIGAME;
     ToggleHud(false);
     currentMinigame->Load();
@@ -555,7 +568,7 @@ void Game::StartGameOver()
     // Set mode
     mode = GAME_OVER;
     gameOverFrame = 0;
-    sound.PlayBGM(BGM_BABY_BLUE, false, 0);
+    sound.PlayBGM(BGM_BABY_BLUE, false);
     player.SetLyingDown(true);
     NE_CameraRotate(camera, 90, 0, 0);
 }
@@ -590,11 +603,11 @@ void Game::Tick()
 
 void Game::Render()
 {
-    // Set poly format
-    NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
-
     // Set camera
     NE_CameraUse(camera);
+    
+    // Set poly format
+    NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
 
     // Render title screen
     if (mode == MAIN_MENU)
@@ -738,6 +751,8 @@ void Game::Update()
             NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
         }
     }
+
+    sound.Update(frame);
 
     // Refresh shadow OAM copy
     NF_SpriteOamSet(1);

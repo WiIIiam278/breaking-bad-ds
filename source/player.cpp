@@ -28,12 +28,20 @@ int Player::Load()
     // Assign material to the model
     NE_ModelSetMaterial(model, material);
 
+    // Set some propierties to the material
+    NE_MaterialSetPropierties(material,
+                  RGB15(20, 20, 20), // Diffuse
+                  RGB15(11, 10, 9),    // Ambient
+                  RGB15(0, 0, 0),    // Specular
+                  RGB15(0, 0, 0),    // Emission
+                  false, false);     // Vertex color, use shininess table
+
     // Set position, rotation and scale
     x = 0;
     y = 0.4;
     z = 0;
     rotation = (facing + 1) * (512 / 4);
-    int scale = 5500;
+    int scale = 5550;
     NE_ModelSetRot(model, 0, rotation, 0);
     NE_ModelScaleI(model, scale, scale, scale);
     NE_ModelSetCoordI(model, x, y, z);
@@ -64,6 +72,7 @@ void Player::Move(Map &map)
     Tile target = map.GetTileAt(targetX, targetZ);
     if (target == WALL || target == VOID)
     {
+        setRumble(rand() % 2 == 0);
         targetX = tileX;
         targetZ = tileZ;
         walking = false;
@@ -183,6 +192,8 @@ void Player::HandleInput(uint32 keys)
 
 void Player::Draw()
 {
+    // Set poly format
+    NE_PolyFormat(31, 8, NE_LIGHT_0, NE_CULL_NONE, (NE_OtherFormatEnum)(NE_TOON_HIGHLIGHT_SHADING | NE_FOG_ENABLE));
     NE_ModelDraw(model);
 }
 

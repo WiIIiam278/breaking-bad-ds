@@ -27,6 +27,14 @@ int SecurityCamera::Load()
     // Assign material to the model
     NE_ModelSetMaterial(model, material);
 
+    // Set some propierties to the material
+    NE_MaterialSetPropierties(material,
+                  RGB15(24, 24, 24), // Diffuse
+                  RGB15(8, 8, 8),    // Ambient
+                  RGB15(0, 0, 0),    // Specular
+                  RGB15(0, 0, 0),    // Emission
+                  false, false);     // Vertex color, use shininess table
+
     // Set model rotation, position and scale
     int scale = 10250;
     NE_ModelScaleI(model, scale, scale, scale);
@@ -54,6 +62,7 @@ void SecurityCamera::FacePlayer(float playerX, float playerZ)
 void SecurityCamera::Draw()
 {
     // Draw the security camera
+    NE_PolyFormat(31, 8, NE_LIGHT_0, NE_CULL_NONE, (NE_OtherFormatEnum)(NE_TOON_HIGHLIGHT_SHADING | NE_FOG_ENABLE));
     NE_ModelDraw(model);
 }
 

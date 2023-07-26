@@ -13,7 +13,6 @@ void DeleteBackground(const char name[])
     NF_DeleteTiledBg(1, 2);
 }
 
-
 // Ventilaiton valve turning minigame
 ValveMinigame::ValveMinigame()
 {
@@ -21,6 +20,7 @@ ValveMinigame::ValveMinigame()
 
 void ValveMinigame::Load()
 {
+    rotation = 0;
     LoadBackground(VALVE_BACKGROUND_NAME);
 
     NF_LoadSpriteGfx(VALVE_SPRITE_NAME, VALVE_SPRITE, 64, 64);
@@ -78,12 +78,13 @@ void ValveMinigame::Update(volatile int frame, uint32 keys)
 
 bool ValveMinigame::IsComplete()
 {
-    return rotation >= targetRotation;
+    return rotation >= TARGET_ROTATION;
 }
 
 MinigameResult ValveMinigame::GetResult(int framesTaken)
 {
-    return (framesTaken < 480) ? GOOD : (framesTaken < 900) ? OKAY : BAD;
+    return (framesTaken < 480) ? GOOD : (framesTaken < 900) ? OKAY
+                                                            : BAD;
 }
 
 bool ValveMinigame::IsForCurrentBatch(int currentBatchProgress)

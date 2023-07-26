@@ -37,7 +37,8 @@ private:
     uint32 lastStylusPos[2] = {0, 0};
 
     int rotation = 0;
-    int targetRotation = 2048;
+    const int TARGET_ROTATION = 2048;
+
 public:
     ValveMinigame();
 

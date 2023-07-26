@@ -37,6 +37,14 @@ int Map::Load()
     // Assign material to the model
     NE_ModelSetMaterial(model, material);
 
+    // Set some propierties to the material
+    NE_MaterialSetPropierties(material,
+                  RGB15(18, 18, 18), // Diffuse
+                  RGB15(22, 21, 20),    // Ambient
+                  RGB15(0, 0, 0),    // Specular
+                  RGB15(0, 0, 0),    // Emission
+                  false, false);     // Vertex color, use shininess table
+
     // Load security camera
     if (securityCamera.Load() != 0)
     {

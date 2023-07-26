@@ -1,6 +1,6 @@
 #include "game.h"
 
-const bool debugMode = true;
+const bool debugMode = false;
 Game game;
 
 void RenderGame()

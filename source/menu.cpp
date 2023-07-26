@@ -37,7 +37,19 @@ int Menu::Load()
     // Assign material to the model
     NE_ModelSetMaterial(backdrop, backdropMaterial);
     NE_ModelSetMaterial(logo, logoMaterial);
+    NE_MaterialSetPropierties(logoMaterial,
+                  RGB15(24, 24, 24), // Diffuse
+                  RGB15(16, 16, 16),    // Ambient
+                  RGB15(8, 8, 8),    // Specular
+                  NE_White,    // Emission
+                  false, false);     // Vertex color, use shininess table
     NE_ModelSetMaterial(text, textMaterial);
+    NE_MaterialSetPropierties(textMaterial,
+                  RGB15(24, 24, 24), // Diffuse
+                  RGB15(16, 16, 16),    // Ambient
+                  RGB15(8, 8, 8),    // Specular
+                  NE_White,    // Emission
+                  false, false);     // Vertex color, use shininess table
 
     // Set model rotation and scale
     int scale = 8250;
@@ -111,7 +123,7 @@ void Menu::SetState(MenuState newState, Sound *sound)
     else if (state == LOGO && newState != LOGO)
     {
         NF_CreateTiledBg(1, TITLE_BG, TITLE_BG_NAME);
-        sound->PlayBGM(BGM_TITLE_LOOP, true, 5);
+        sound->PlayBGM(BGM_TITLE_LOOP, true);
     }
     else if (newState == LOGO)
     {
@@ -119,12 +131,12 @@ void Menu::SetState(MenuState newState, Sound *sound)
         {
             NF_DeleteTiledBg(1, TITLE_BG);
         }
-        sound->PlayBGM(BGM_TITLE_HOOK, false, 0);
+        sound->PlayBGM(BGM_TITLE_INTRO, false);
     }
 
     if (state == SOUND_TEST && newState == MENU)
     {
-        sound->PlayBGM(BGM_TITLE_LOOP, true, 5);
+        sound->PlayBGM(BGM_TITLE_LOOP, true);
         currentSoundTestTrack = 1;
     }
 
@@ -215,23 +227,15 @@ void Menu::Update(volatile int frame, Sound *sound)
         {
             NF_ShowSprite(1, BUTTONS[i], false);
         }
-
-        if (isRumbleInserted())
-        {
-            NF_WriteText(1, 0, 1, 7, "Rumble Pak detected.");
-            NF_WriteText(1, 0, 1, 8, "Rumble is now enabled.");
-            NF_WriteText(1, 0, 1, 10, "To disable rumble, power off");
-            NF_WriteText(1, 0, 1, 11, "the system and remove the");
-            NF_WriteText(1, 0, 1, 12, "Rumble Pak from SLOT-2.");
-            setRumble(frame % 2 == 0);
-        }
-        else
-        {
-            NF_WriteText(1, 0, 1, 8, "A Nintendo DS Rumble Pak is");
-            NF_WriteText(1, 0, 1, 9, "required for this feature.");
-            NF_WriteText(1, 0, 1, 11, "Please insert a Rumble Pak");
-            NF_WriteText(1, 0, 1, 12, "into SLOT-2 to enable rumble.");
-        }
+        
+        NF_WriteText(1, 0, 1, 6, "A DS Rumble Pak is required.");
+        NF_WriteText(1, 0, 1, 7, "to enable this feature. If a");
+        NF_WriteText(1, 0, 1, 8, "Rumble Pak is inserted into");
+        NF_WriteText(1, 0, 1, 9, "SLOT-2, you should now feel.");
+        NF_WriteText(1, 0, 1, 10, "the rumble effect.");
+        NF_WriteText(1, 0, 1, 12, "Remove the Rumble Pak from");
+        NF_WriteText(1, 0, 1, 13, "SLOT-2 to disable rumble.");
+        setRumble(frame % 2 == 0);
 
         NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
         break;
@@ -246,7 +250,8 @@ void Menu::Update(volatile int frame, Sound *sound)
         NF_WriteText(1, 0, 1, 5, "Breaking Bad DS - SOUND TEST");
         NF_WriteText(1, 0, 1, 6, "LEFT/RIGHT to change track.");
         NF_WriteText(1, 0, 1, 10, "Currently playing:");
-        NF_WriteText(1, 0, 1, 11, BGM_NAMES[currentSoundTestTrack]);
+        NF_WriteText(1, 0, 1, 11, BGMS[currentSoundTestTrack].name);
+        NF_WriteText(1, 0, 1, 12, sound->GetProgressString());
 
         NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
         break;
@@ -284,7 +289,8 @@ MenuSelection Menu::HandleInput(Sound *sound)
             currentSoundTestTrack = (currentSoundTestTrack < 0)                 ? 0
                                     : (currentSoundTestTrack > (BGM_COUNT - 1)) ? (BGM_COUNT - 1)
                                                                                 : currentSoundTestTrack;
-            sound->PlayBGM(static_cast<BGM>(currentSoundTestTrack), true, 0);
+            sound->PlayBGM(static_cast<TrackId>(currentSoundTestTrack), true);
+            setRumble(currentSoundTestTrack % 2 == 0);
         }
 
     case RUMBLE_INFO:
@@ -427,6 +433,7 @@ void Menu::Draw(volatile int frame)
     if (state != LOADING)
     {
         NE_ModelDraw(backdrop);
+        NE_PolyFormat(31, 8, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
         NE_ModelDraw(logo);
         NE_ModelDraw(text);
     }

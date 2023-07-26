@@ -32,7 +32,7 @@ private:
     Menu menu;
     Map map;
     Player player;
-    const u32 CLEAR_COLOR = RGB15(3, 3, 3);
+    const u32 CLEAR_COLOR = NE_Black;
 
     // Sound
     Sound sound;
@@ -67,7 +67,7 @@ private:
     // Tutorial
     bool isTutorial = false;
     int tutorialProgress = 0;
-    const float HUD_BATCH_PROGRESS_MARKER_COORDS[6][2] = {{-24.8, 1.9}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+    const float HUD_BATCH_PROGRESS_MARKER_COORDS[6][2] = {{-24.8, 1.9}, {-4, 6.8}, {-14.4, 4.2}, {-4, 16.2}, {-22.1, 9.1}, {-22.1, 16.2}};
 
     // Game
     int timeLimit = -1;

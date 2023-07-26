@@ -14,10 +14,15 @@ enum Tile
     VOID,
     // Collision tiles (not walkable)
     WALL,
-    // Empty floor tiles 
+    // Empty floor tiles
     FLOOR,
-    // Valve minigame
-    MINIGAME_VALVE
+    // Minigames
+    MINIGAME_VALVE,
+    MINIGAME_PESTLE,
+    MINIGAME_MIXING,
+    MINIGAME_PIPPETTE,
+    MINIGAME_TRAYS,
+    MINIGAME_PROVE
 };
 
 enum Mode
@@ -31,7 +36,7 @@ enum Mode
 
 enum Speaker
 {
-    GALE  
+    GALE
 };
 
 enum MenuSelection
