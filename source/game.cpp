@@ -313,7 +313,7 @@ void Game::StartMenuScreen(bool debugMode)
     // Quick-start debug game if the flag is set
     if (debugFlag)
     {
-        StartGame(false, 350, 0);
+        StartGame(false, 340, 0);
         return;
     }
 
@@ -566,6 +566,7 @@ void Game::StartGameOver()
     }
 
     // Set mode
+    NE_SpecialEffectSet(NE_NONE);
     mode = GAME_OVER;
     gameOverFrame = 0;
     sound.PlayBGM(BGM_BABY_BLUE, false);
@@ -680,6 +681,11 @@ void Game::Update()
             timeLimit--;
 
             // todo draw time limit to HUD
+            if (timeLimit < 30)
+            {
+                NE_SpecialEffectNoiseConfig((31 - timeLimit) / 4);
+                NE_SpecialEffectSet(NE_NOISE);
+            }
 
             if (timeLimit == 0)
             {
