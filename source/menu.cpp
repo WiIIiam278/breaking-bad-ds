@@ -111,7 +111,6 @@ void Menu::LoadButtons()
 
 void Menu::SetState(MenuState newState, Sound *sound)
 {
-
     if (newState == LOADING)
     {
         if (state != LOGO)
@@ -140,6 +139,8 @@ void Menu::SetState(MenuState newState, Sound *sound)
         currentSoundTestTrack = 1;
     }
 
+    sound->PlaySFX(MENU_DRUM);
+    setRumble(state % 2 == 0);
     currentSequenceIndex = 0;
     state = newState;
 }
@@ -251,7 +252,7 @@ void Menu::Update(volatile int frame, Sound *sound)
         NF_WriteText(1, 0, 1, 6, "LEFT/RIGHT to change track.");
         NF_WriteText(1, 0, 1, 10, "Currently playing:");
         NF_WriteText(1, 0, 1, 11, BGMS[currentSoundTestTrack].name);
-        NF_WriteText(1, 0, 1, 12, sound->GetProgressString());
+        NF_WriteText(1, 0, 1, 12, sound->GetBgmTrackProgressString());
 
         NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
         break;

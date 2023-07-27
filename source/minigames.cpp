@@ -42,7 +42,7 @@ void ValveMinigame::Delete()
     NF_FreeSpriteGfx(1, 0);
 }
 
-void ValveMinigame::Update(volatile int frame, uint32 keys)
+void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
 {
     if (IsComplete())
     {
@@ -67,12 +67,21 @@ void ValveMinigame::Update(volatile int frame, uint32 keys)
 
         // Rotate the valve
         NF_SpriteRotScale(1, VALVE_SPRITE, rotation, 386, 386);
+
+        // Play SFX, rumble
+        if (rotation == 0 || frame % 120 == 0)
+        {
+            sound->PlaySFX(VALVE_TURN);
+        }
+        setRumble(rotation % 3 == 0);
     }
     else
     {
         // Reset the last touch position
         lastStylusPos[0] = 0;
         lastStylusPos[1] = 0;
+
+        sound->StopSFX();
     }
 }
 

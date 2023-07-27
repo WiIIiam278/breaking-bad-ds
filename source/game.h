@@ -15,7 +15,7 @@
 #include "player.h"
 #include "minigames.h"
 #include "enums.h"
-#include "scripts.h"
+#include "dialogue.h"
 #include "debug.h"
 #include "sound.h"
 
@@ -56,13 +56,7 @@ private:
     NE_Camera *camera;
 
     // Dialogue
-    const int CHARACTERS_PER_DIALOGUE_LINE = 29;
-    Speaker currentSpeaker = GALE;
-    char currentScript[128][128];
-    int currentScriptLength = 0;
-    int currentLineIndex = 0;
-    volatile int currentLineStartFrame = 0;
-    int currentSpeakerAnimation = 0;
+    Dialogue dialogue;
 
     // Tutorial
     bool isTutorial = false;
@@ -72,14 +66,29 @@ private:
     // Game
     int timeLimit = -1;
     int batchQuota = 1;
+    int batchesComplete = 0;
     int currentBatchProgress = 0;
     int gameOverFrame = 0;
+    int batchPurity = 100;
+    volatile int idleFrames = 0;
     
     // HUD
     const int HUD_MAP_ICONS = 6;
+    const int HUD_CHECKBOXES = 7;
+    const int HUD_NUMBERS = 8;
     const int HUD_MAP_PLAYER_SPRITE = 6;
     const int HUD_MAP_MARKER_SPRITE = 7;
+    const int HUD_CHECKBOX_SPRITES[6] = {8, 9, 10, 11, 13, 14};
+    const int HUD_TIMER_SPRITES[3] = {20, 21, 22};
+    const int HUD_PURITY_SPRITES[3] = {23, 24, 25};
+    const int HUD_QUOTA_SPRITES[4] = {26, 27, 28, 29};
+    const float HUD_CHECKBOXES_COORDS[2] = {103, 55};
+    const int HUD_CHECKBOX_COUNT = 6;
+    const int HUD_CHECKBOX_Y_SPACING = 19;
     const float HUD_MAP_ORIGIN_COORDS[2] = {136, 102};
+    const float HUD_TIMER_COORDS[2] = {178, 125};
+    const float HUD_PURITY_COORDS[2] = {178, 144};
+    const float HUD_QUOTA_COORDS[2] = {176, 163};
     bool hudVisible = false;
     
     // Minigames
@@ -90,8 +99,6 @@ private:
     Minigame *currentMinigame = NULL;
 
     // Backgrounds
-    const int LAB_BG = 3;
-    const char LAB_BG_NAME[32] = "bg/lab";
     const int HUD_BG = 1;
     const char HUD_BG_NAME[32] = "bg/hud";
 
@@ -111,6 +118,11 @@ public:
     void ToggleHud(bool show);
     void UpdateHud();
 
+    // Dialogue
+    void StartDialogue(ScriptId scriptId);
+    void EndDialogue();
+    void CheckTutorials();
+
     // Camera
     void UpdateCamera();
     void TranslateCamera(float x, float y, float z);
@@ -126,15 +138,10 @@ public:
     void UnLoadLogoScene();
     void UpdateMenuScreen();
 
-    // Dialogue
-    void SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame);
-    void UpdateDialogue(uint32 keys);
-    void ClearDialogue();
-
     // Minigame stuff
     void StartMinigame(Tile tile);
     void DeleteMinigame();
-    void ShowQualityIcon(MinigameResult indicator, int frames);
+    void ShowMinigameResult(MinigameResult indicator, int frames);
 
     // Game Over
     void StartGameOver();

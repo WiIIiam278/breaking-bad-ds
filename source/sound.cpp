@@ -10,20 +10,24 @@ void Sound::LoadSound()
     soundEnable();
     NF_InitRawSoundBuffers();
 
-    // Load sound
+    // Load raw sounds
     int currentSlot = 0;
+
+    // Load BGMS
     for (int i = 0; i < BGM_COUNT; i++)
     {
-        for (int j = 0; j < 64; j++)
+        for (int j = 0; j < BGMS[i].fileCount; j++)
         {
-            if (BGMS[i].fileNames[j][0] == '\0')
-            {
-                break;
-            }
-
-            NF_LoadRawSound(BGMS[i].fileNames[j], currentSlot, BGM_SAMPLE_RATE, 0);
+            NF_LoadRawSound(BGMS[i].fileNames[j], currentSlot, SAMPLE_RATE, 0);
             currentSlot++;
         }
+    }
+
+    // Load SFX
+    for (int i = 0; i < SFX_COUNT; i++)
+    {
+        NF_LoadRawSound(SFXS[i].fileName, currentSlot, SAMPLE_RATE, 0);
+        currentSlot++;
     }
 }
 
@@ -32,13 +36,8 @@ int Sound::GetTrackFileCount(TrackId bgm)
     int files = 0;
     for (int i = 0; i < BGM_COUNT; i++)
     {
-        for (int j = 0; j < 64; j++)
+        for (int j = 0; j < BGMS[i].fileCount; j++)
         {
-            if (BGMS[i].fileNames[j][0] == '\0')
-            {
-                break;
-            }
-
             if (BGMS[i].track == bgm)
             {
                 files++;
@@ -48,19 +47,26 @@ int Sound::GetTrackFileCount(TrackId bgm)
     return files;
 }
 
-int Sound::GetFirstRamAddressFor(TrackId bgm)
+int Sound::GetSoundRamAddress(int id, bool sfx)
 {
     int currentSlot = 0;
     for (int i = 0; i < BGM_COUNT; i++)
     {
-        for (int j = 0; j < BGM_COUNT; j++)
+        for (int j = 0; j < BGMS[i].fileCount; j++)
         {
-            if (BGMS[i].fileNames[j][0] == '\0')
+            if ((BGMS[i].track == id) && !sfx)
             {
-                break;
+                return currentSlot;
             }
-
-            if (BGMS[i].track == bgm)
+            currentSlot++;
+        }
+    }
+    
+    if (sfx)
+    {
+        for (int i = 0; i < SFX_COUNT; i++)
+        {
+            if (SFXS[i].effect == id)
             {
                 return currentSlot;
             }
@@ -87,8 +93,6 @@ void Sound::PlayBGM(TrackId bgm, bool loop)
     StopBGM();
     currentBgm = bgm;
     looping = loop;
-    currentBgmFrame = 0;
-    currentBgmFile = 0;
     singleFile = (looping && GetTrackFileCount(BGMS[currentBgm].track) == 1);
 }
 
@@ -112,10 +116,10 @@ void Sound::Update(volatile int frame)
     }
     if (currentBgmFrame == 0)
     {
-	    NF_PlayRawSound(
-            (GetFirstRamAddressFor(BGMS[currentBgm].track) + currentBgmFile), 
+	    currentBgmSoundId = NF_PlayRawSound(
+            (GetSoundRamAddress(BGMS[currentBgm].track, false) + currentBgmFile), 
             BGMS[currentBgm].volume,
-            BGM_PAN,
+            SOUND_PAN,
             singleFile && looping,
             0
         );
@@ -123,7 +127,7 @@ void Sound::Update(volatile int frame)
     currentBgmFrame++;
 }
 
-char* Sound::GetProgressString()
+char* Sound::GetBgmTrackProgressString()
 {
     // return a string in the format xx:xx. Assume 60fps.
     const int trackFiles = GetTrackFileCount(currentBgm);
@@ -153,16 +157,24 @@ char* Sound::GetProgressString()
 
 void Sound::StopBGM()
 {
-    soundKill(0);
+    soundKill(currentBgmSoundId);
+    currentBgmFrame = 0;
+    currentBgmFile = 0;
+    looping = false;
 }
 
 void Sound::PlaySFX(EffectId sfx)
 {
-    StopSFX();
-    // Play sound effect
+    currentSfxSoundId = NF_PlayRawSound(
+        GetSoundRamAddress(sfx, true),
+        127,
+        SOUND_PAN,
+        false,
+        0
+    );
 }
 
 void Sound::StopSFX()
 {
-    soundKill(0);
+    soundKill(currentSfxSoundId);
 }

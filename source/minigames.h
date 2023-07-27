@@ -10,6 +10,7 @@
 #include <nf_lib.h>
 
 #include "enums.h"
+#include "sound.h"
 
 void LoadBackground(const char name[]);
 void DeleteBackground(const char name[]);
@@ -19,7 +20,7 @@ class Minigame
 public:
     virtual void Load() = 0;
     virtual void Delete() = 0;
-    virtual void Update(volatile int frame, uint32 keys) = 0;
+    virtual void Update(volatile int frame, uint32 keys, Sound *sound) = 0;
     virtual bool IsComplete() = 0;
     virtual MinigameResult GetResult(int framesTaken) = 0;
     virtual bool IsForCurrentBatch(int currentBatchProgress) = 0;
@@ -44,7 +45,7 @@ public:
 
     void Load();
     void Delete();
-    void Update(volatile int frame, uint32 keys);
+    void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
     bool IsForCurrentBatch(int currentBatchProgress);

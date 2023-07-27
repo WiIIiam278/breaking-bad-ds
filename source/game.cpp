@@ -63,7 +63,6 @@ void Game::Prepare2DGraphics()
 
 void Game::Prepare3DGraphics()
 {
-
     // When using nflib for the 2D sub screen engine, banks C and H are used for
     // backgrounds and banks D and I are used for sprites. Nitro Engine only
     // uses bank E for palettes, so the only thing we need to do is to tell
@@ -185,10 +184,38 @@ void Game::ToggleHud(bool show)
     {
         NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
         NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
+        
+        // Player marker
         NF_CreateSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
         NF_SpriteFrame(1, HUD_MAP_PLAYER_SPRITE, 0);
+        
+        // Map marker
         NF_CreateSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
         NF_SpriteFrame(1, HUD_MAP_MARKER_SPRITE, 3);
+        
+        // Checkboxes
+        for (int i = 0; i < HUD_CHECKBOX_COUNT; i++)
+        {
+            NF_CreateSprite(1, HUD_CHECKBOX_SPRITES[i], HUD_CHECKBOXES + 1, HUD_CHECKBOXES + 1, HUD_CHECKBOXES_COORDS[0] + (i / 2), HUD_CHECKBOXES_COORDS[1] + (i * HUD_CHECKBOX_Y_SPACING));
+            NF_SpriteFrame(1, HUD_CHECKBOX_SPRITES[i], 0);
+        }
+
+        // Timer and purity
+        for (int i = 0; i < 3; i++)
+        {
+            NF_CreateSprite(1, HUD_TIMER_SPRITES[i], HUD_NUMBERS + 1, HUD_NUMBERS + 1, HUD_TIMER_COORDS[0] + (i * 16), HUD_TIMER_COORDS[1]);
+            NF_SpriteFrame(1, HUD_TIMER_SPRITES[i], 0);
+            NF_CreateSprite(1, HUD_PURITY_SPRITES[i], HUD_NUMBERS + 1, HUD_NUMBERS + 1, HUD_PURITY_COORDS[0] + (i * 16), HUD_PURITY_COORDS[1]);
+            NF_SpriteFrame(1, HUD_PURITY_SPRITES[i], 0);
+        }
+
+        // Quota
+        for (int i = 0; i < 4; i++)
+        {
+            NF_CreateSprite(1, HUD_QUOTA_SPRITES[i], HUD_NUMBERS + 1, HUD_NUMBERS + 1, (HUD_QUOTA_COORDS[0] + (i >= 2 ? 12 : 0)) + (i * 16), HUD_QUOTA_COORDS[1]);
+            NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], 0);
+        }
+
     }
     else if (hudVisible)
     {
@@ -196,6 +223,19 @@ void Game::ToggleHud(bool show)
         NF_UnloadTiledBg(HUD_BG_NAME);
         NF_DeleteSprite(1, HUD_MAP_PLAYER_SPRITE);
         NF_DeleteSprite(1, HUD_MAP_MARKER_SPRITE);
+        for (int i = 0; i < HUD_CHECKBOX_COUNT; i++)
+        {
+            NF_DeleteSprite(1, HUD_CHECKBOX_SPRITES[i]);
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            NF_DeleteSprite(1, HUD_TIMER_SPRITES[i]);
+            NF_DeleteSprite(1, HUD_PURITY_SPRITES[i]);
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            NF_DeleteSprite(1, HUD_QUOTA_SPRITES[i]);
+        }
     }
     hudVisible = show;
 }
@@ -206,6 +246,58 @@ void Game::UpdateHud()
     {
         NF_MoveSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (player.x * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (player.z * 4.4));
         NF_MoveSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][0] * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][1] * 4.4));
+        for (int i = 0; i < HUD_CHECKBOX_COUNT; i++)
+        {
+            NF_SpriteFrame(1, HUD_CHECKBOX_SPRITES[i], currentBatchProgress > i ? 1 : 0);
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            NF_SpriteFrame(1, HUD_TIMER_SPRITES[i], (int) (timeLimit / pow(10, 2 - i)) % 10);
+            NF_SpriteFrame(1, HUD_PURITY_SPRITES[i], (int) (batchPurity / pow(10, 2 - i)) % 10);
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int) ((i < 2 ? batchesComplete : batchQuota) / pow(10, 3 - i)) % 10);
+        }
+    }
+}
+
+void Game::StartDialogue(ScriptId script)
+{
+    if (mode == DIALOGUE) {
+        return;
+    }
+    if (mode == MINIGAME)
+    {
+        currentMinigame->Delete();
+    }
+    mode = DIALOGUE;
+    ToggleHud(false);
+    player.facing = DOWN;
+    dialogue.Load(script, frame);
+}
+
+void Game::EndDialogue()
+{
+    if (mode != DIALOGUE)
+    {
+        return;
+    }
+    dialogue.Unload();
+    ToggleHud(true);
+    mode = MOVE;
+}
+
+void Game::CheckTutorials()
+{
+    if (isTutorial)
+    {
+        int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress);
+        if (dialogueId != -1)
+        {
+            tutorialProgress++;
+            StartDialogue((ScriptId) dialogueId);
+        }
     }
 }
 
@@ -217,6 +309,7 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
     tutorialProgress = 0;
     mode = MOVE;
     currentBatchProgress = 0;
+    batchesComplete = 0;
 
     this->timeLimit = timeLimit;
     this->batchQuota = batchQuota;
@@ -244,11 +337,7 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
     sound.PlayBGM(BGM_THE_COUSINS, true);
 
     // Start tutorial
-    if (tutorialGame)
-    {
-        SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_INTRO, SCRIPT_GALE_TUTORIAL_INTRO_LENGTH, frame);
-        tutorialProgress++;
-    }
+    CheckTutorials();
     Transition(true, 60);
 }
 
@@ -278,6 +367,16 @@ void Game::LoadLabScene()
     NF_VramSpriteGfx(1, HUD_MAP_ICONS, HUD_MAP_ICONS + 1, false);
     NF_VramSpritePal(1, HUD_MAP_ICONS, HUD_MAP_ICONS + 1);
 
+    NF_LoadSpriteGfx("sprite/menu_checkboxes", HUD_CHECKBOXES, 16, 16);
+    NF_LoadSpritePal("sprite/menu_checkboxes", HUD_CHECKBOXES);
+    NF_VramSpriteGfx(1, HUD_CHECKBOXES, HUD_CHECKBOXES + 1, false);
+    NF_VramSpritePal(1, HUD_CHECKBOXES, HUD_CHECKBOXES + 1);
+
+    NF_LoadSpriteGfx("sprite/segment_numbers", HUD_NUMBERS, 16, 16);
+    NF_LoadSpritePal("sprite/segment_numbers", HUD_NUMBERS);
+    NF_VramSpriteGfx(1, HUD_NUMBERS, HUD_NUMBERS + 1, false);
+    NF_VramSpritePal(1, HUD_NUMBERS, HUD_NUMBERS + 1);
+
     // Load HUD
     ToggleHud(true);
 }
@@ -300,6 +399,12 @@ void Game::UnLoadLabScene()
     NF_FreeSpriteGfx(1, HUD_MAP_ICONS + 1);
     NF_UnloadSpriteGfx(HUD_MAP_ICONS);
     NF_UnloadSpritePal(HUD_MAP_ICONS);
+    NF_FreeSpriteGfx(1, HUD_CHECKBOXES + 1);
+    NF_UnloadSpriteGfx(HUD_CHECKBOXES);
+    NF_UnloadSpritePal(HUD_CHECKBOXES);
+    NF_FreeSpriteGfx(1, HUD_NUMBERS + 1);
+    NF_UnloadSpriteGfx(HUD_NUMBERS);
+    NF_UnloadSpritePal(HUD_NUMBERS);
 }
 
 void Game::StartMenuScreen(bool debugMode)
@@ -313,7 +418,7 @@ void Game::StartMenuScreen(bool debugMode)
     // Quick-start debug game if the flag is set
     if (debugFlag)
     {
-        StartGame(false, 340, 0);
+        StartGame(false, 999, 1);
         return;
     }
 
@@ -369,139 +474,6 @@ void Game::UpdateMenuScreen()
     }
 }
 
-void Game::SetDialogue(Speaker speaker, const char script[][128], int scriptLength, int startFrame)
-{
-    if (mode == DIALOGUE)
-    {
-        return;
-    }
-    mode = DIALOGUE;
-    player.facing = DOWN;
-
-    // Set dialog params
-    currentSpeaker = speaker;
-    currentLineIndex = 0;
-    currentLineStartFrame = startFrame;
-    currentSpeakerAnimation = 0;
-
-    // copy script to currentScript
-    for (int i = 0; i < scriptLength; i++)
-    {
-        strncpy(currentScript[i], script[i], 128);
-    }
-    currentScriptLength = scriptLength;
-
-    // Set lab background
-    ToggleHud(false);
-    NF_LoadTiledBg(LAB_BG_NAME, LAB_BG_NAME, 256, 256);
-    NF_CreateTiledBg(1, LAB_BG, LAB_BG_NAME);
-
-    // Load sprite files from NitroFS
-    switch (currentSpeaker)
-    {
-    case GALE:
-        NF_LoadSpriteGfx("sprite/gale", 1, 64, 64);
-        NF_LoadSpritePal("sprite/gale", 1);
-        break;
-    }
-    NF_VramSpriteGfx(1, 1, 0, false); // This keeps unused frames in RAM
-    NF_VramSpritePal(1, 1, 0);
-
-    // Create, position & scale sprite
-    NF_CreateSprite(1, currentSpeaker + 10, 0, 0, 64, 32);
-    NF_EnableSpriteRotScale(1, currentSpeaker + 10, currentSpeaker + 10, true);
-    NF_SpriteRotScale(1, currentSpeaker + 10, 0, 386, 386);
-}
-
-void Game::UpdateDialogue(uint32 keys)
-{
-    int charsToPrint = (frame - currentLineStartFrame) / 3;
-    char currentLine[128];
-    strncpy(currentLine, currentScript[currentLineIndex], 128);
-    bool endOfLine = false;
-    int lineLength = strlen(currentLine);
-    if (charsToPrint >= lineLength)
-    {
-        endOfLine = true;
-        charsToPrint = lineLength;
-    }
-
-    // Update speaker animation
-    if (!endOfLine && (frame - currentLineStartFrame) % 10 == 0)
-    {
-        currentSpeakerAnimation++;
-        if (currentSpeakerAnimation > 7)
-        {
-            currentSpeakerAnimation = 0;
-        }
-        NF_SpriteFrame(1, currentSpeaker + 10, currentSpeakerAnimation);
-    }
-
-    // Handle input
-    if (((keys & KEY_A) || (keys & KEY_TOUCH)))
-    {
-        if (!endOfLine)
-        {
-            currentLineStartFrame = -(lineLength * 10);
-            charsToPrint = lineLength;
-            endOfLine = true;
-        }
-        else
-        {
-            currentLineIndex++;
-            currentLineStartFrame = frame;
-
-            if (currentLineIndex >= currentScriptLength)
-            {
-                ClearDialogue();
-                return;
-            }
-        }
-    }
-
-    char lineToPrint[charsToPrint];
-    strncpy(lineToPrint, currentLine, charsToPrint);
-    NF_ClearTextLayer(1, 0);
-
-    // Print dialogue lines
-    int line1Chars = charsToPrint > CHARACTERS_PER_DIALOGUE_LINE ? CHARACTERS_PER_DIALOGUE_LINE : charsToPrint;
-    char line1[line1Chars];
-    strncpy(line1, lineToPrint, line1Chars);
-    line1[line1Chars] = '\0';
-    NF_WriteText(1, 0, 1, 21, line1);
-
-    int line2Chars = charsToPrint > CHARACTERS_PER_DIALOGUE_LINE ? charsToPrint - CHARACTERS_PER_DIALOGUE_LINE : 0;
-    if (line2Chars > 0)
-    {
-        char line2[line2Chars];
-        strncpy(line2, lineToPrint + CHARACTERS_PER_DIALOGUE_LINE, line2Chars);
-        line2[line2Chars] = '\0';
-        NF_WriteText(1, 0, 1, 22, line2);
-    }
-}
-
-void Game::ClearDialogue()
-{
-    if (mode != DIALOGUE)
-    {
-        return;
-    }
-    mode = MOVE;
-
-    NF_DeleteTiledBg(1, LAB_BG);
-    NF_UnloadTiledBg(LAB_BG_NAME);
-    NF_DeleteSprite(1, currentSpeaker + 10);
-    NF_ClearTextLayer(1, 0);
-
-    // Unload from RAM, VRAM
-    NF_UnloadSpriteGfx(1);
-    NF_UnloadSpritePal(1);
-    NF_FreeSpriteGfx(1, 0);
-
-    // Load HUD
-    ToggleHud(true);
-}
-
 void Game::StartMinigame(Tile tile)
 {
     switch (tile)
@@ -536,7 +508,7 @@ void Game::DeleteMinigame()
     ToggleHud(true);
 }
 
-void Game::ShowQualityIcon(MinigameResult indicator, int frames)
+void Game::ShowMinigameResult(MinigameResult indicator, int frames)
 {
     int animation = indicator;
     showingIndicatorFor = frames;
@@ -545,6 +517,11 @@ void Game::ShowQualityIcon(MinigameResult indicator, int frames)
     NF_SpriteFrame(1, QUALITY_INDICATOR_SPRITE, animation);
     NF_EnableSpriteRotScale(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE, true);
     NF_SpriteRotScale(1, QUALITY_INDICATOR_SPRITE, 0, 300, 300);
+
+    if (indicator == GOOD)
+    {
+        sound.PlaySFX(SUCCESS_BELL);
+    }
 }
 
 void Game::StartGameOver()
@@ -661,12 +638,34 @@ void Game::Update()
     if (mode != MAIN_MENU && mode != DIALOGUE && mode != GAME_OVER)
     {
         player.HandleInput(keysHeld());
+
+        if (mode == MOVE && !player.walking && keysHeld() == 0)
+        {
+            idleFrames++;
+
+            if (idleFrames == 4000)
+            {
+                player.facing = DOWN;
+            }
+            if (isTutorial && idleFrames > 6000)
+            {
+                idleFrames = 0;
+                StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
+            }
+        }
+        else 
+        {
+            idleFrames = 0;
+        }
     }
 
     // Update dialogue
     if (mode == DIALOGUE)
     {
-        UpdateDialogue(keysDown());
+        if (dialogue.Update(frame, keysDown(), &sound))
+        {
+            EndDialogue();
+        }
     }
 
     // Update camera
@@ -680,29 +679,31 @@ void Game::Update()
         {
             timeLimit--;
 
-            // todo draw time limit to HUD
-            if (timeLimit < 30)
+            if (batchesComplete < batchQuota)
             {
-                NE_SpecialEffectNoiseConfig((31 - timeLimit) / 4);
-                NE_SpecialEffectSet(NE_NOISE);
-            }
+                if (timeLimit < 30)
+                {
+                    NE_SpecialEffectNoiseConfig((31 - timeLimit) / 4);
+                    NE_SpecialEffectSet(NE_NOISE);
+                }
 
-            if (timeLimit == 0)
-            {
-                StartGameOver(); // todo
-                return;
+                if (timeLimit < 10)
+                {
+                    sound.PlaySFX(MENU_DRUM);
+                }
+
+                if (timeLimit == 0)
+                {
+                    StartGameOver(); // todo
+                    return;
+                }
             }
         }
 
         switch (map.GetTileAt(player.tileX, player.tileZ))
         {
         case MINIGAME_VALVE:
-            if (isTutorial && tutorialProgress == 1)
-            {
-                SetDialogue(GALE, SCRIPT_GALE_TUTORIAL_VALVE, SCRIPT_GALE_TUTORIAL_VALVE_LENGTH, frame);
-                tutorialProgress++;
-                break;
-            }
+            CheckTutorials();
             if (mode == MOVE)
             {
                 StartMinigame(MINIGAME_VALVE);
@@ -731,10 +732,10 @@ void Game::Update()
     if (mode == MINIGAME)
     {
         inMinigameFor++;
-        currentMinigame->Update(frame, keysHeld());
+        currentMinigame->Update(frame, keysHeld(), &sound);
         if (currentMinigame->IsComplete() && currentMinigame->IsForCurrentBatch(currentBatchProgress))
         {
-            ShowQualityIcon(currentMinigame->GetResult(inMinigameFor), 90);
+            ShowMinigameResult(currentMinigame->GetResult(inMinigameFor), 90);
             currentBatchProgress++;
         }
     }
@@ -755,6 +756,7 @@ void Game::Update()
         if (showingIndicatorFor == 0)
         {
             NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
+            CheckTutorials();
         }
     }
 
