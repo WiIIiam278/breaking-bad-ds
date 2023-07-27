@@ -31,7 +31,8 @@ enum Mode
     DIALOGUE,
     MOVE,
     MINIGAME,
-    GAME_OVER
+    GAME_OVER,
+    PAUSED
 };
 
 enum Speaker

@@ -101,6 +101,8 @@ private:
     // Backgrounds
     const int HUD_BG = 1;
     const char HUD_BG_NAME[32] = "bg/hud";
+    const int PAUSED_BG = 2;
+    const char PAUSED_BG_NAME[32] = "bg/paused";
 
 public:
     Game();
@@ -113,6 +115,9 @@ public:
     // Transition Control
     void Transition(bool fadeIn, int duration);
     void UpdateTransition();
+
+    // Pause menu
+    void TogglePauseMenu();
 
     // HUD
     void ToggleHud(bool show);

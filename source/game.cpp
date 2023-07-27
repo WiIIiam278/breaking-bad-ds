@@ -98,6 +98,7 @@ void Game::UpdateCamera()
         cameraTz = BASE_TITLE_CAMERA_POS[2];
         break;
     case DIALOGUE:
+    case PAUSED:
         cameraTx = player.x;
         cameraTy = 7.5;
         cameraTz = -2.5 + (player.z / 6);
@@ -177,6 +178,34 @@ void Game::UpdateTransition()
     setBrightness(3, -brightness);
 }
 
+void Game::TogglePauseMenu()
+{
+    if (!(mode == MOVE || mode == PAUSED))
+    {
+        return;
+    }
+    bool pausing = mode == MOVE;
+
+    sound.PlaySFX(SFX_MENU_SELECT);
+    if (pausing)
+    {
+        player.canMove = false;
+        player.walking = false;
+        ToggleHud(false);
+        NF_LoadTiledBg(PAUSED_BG_NAME, PAUSED_BG_NAME, 256, 256);
+        NF_CreateTiledBg(1, PAUSED_BG, PAUSED_BG_NAME);
+        mode = PAUSED;
+    }
+    else
+    {
+        NF_DeleteTiledBg(1, PAUSED_BG);
+        NF_UnloadTiledBg(PAUSED_BG_NAME);
+        ToggleHud(true);
+        player.canMove = true;
+        mode = MOVE;
+    }
+}
+
 // Show/hide bottom screen HUD
 void Game::ToggleHud(bool show)
 {
@@ -252,7 +281,10 @@ void Game::UpdateHud()
         }
         for (int i = 0; i < 3; i++)
         {
-            NF_SpriteFrame(1, HUD_TIMER_SPRITES[i], (int) (timeLimit / pow(10, 2 - i)) % 10);
+            if (timeLimit > -1)
+            {
+                NF_SpriteFrame(1, HUD_TIMER_SPRITES[i], (int) (timeLimit / pow(10, 2 - i)) % 10);
+            }
             NF_SpriteFrame(1, HUD_PURITY_SPRITES[i], (int) (batchPurity / pow(10, 2 - i)) % 10);
         }
         for (int i = 0; i < 4; i++)
@@ -292,11 +324,11 @@ void Game::CheckTutorials()
 {
     if (isTutorial)
     {
-        int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress);
+        int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress, currentBatchProgress);
         if (dialogueId != -1)
         {
-            tutorialProgress++;
             StartDialogue((ScriptId) dialogueId);
+            tutorialProgress++;
         }
     }
 }
@@ -309,6 +341,7 @@ void Game::StartGame(bool tutorialGame, int timeLimit, int batchQuota)
     tutorialProgress = 0;
     mode = MOVE;
     currentBatchProgress = 0;
+    batchPurity = 100;
     batchesComplete = 0;
 
     this->timeLimit = timeLimit;
@@ -476,6 +509,12 @@ void Game::UpdateMenuScreen()
 
 void Game::StartMinigame(Tile tile)
 {
+    CheckTutorials();
+    if (mode == MINIGAME || mode == DIALOGUE)
+    {
+        return;
+    }
+    
     switch (tile)
     {
     case MINIGAME_VALVE:
@@ -520,7 +559,7 @@ void Game::ShowMinigameResult(MinigameResult indicator, int frames)
 
     if (indicator == GOOD)
     {
-        sound.PlaySFX(SUCCESS_BELL);
+        sound.PlaySFX(SFX_SUCCESS_BELL);
     }
 }
 
@@ -565,13 +604,6 @@ void Game::UpdateGameOver()
         UnLoadLabScene();
         StartMenuScreen(false);
     }
-
-    if (debugFlag)
-    {
-        char gameOver[100];
-        sprintf(gameOver, "GOFrame: %d", gameOverFrame);
-        NF_WriteText(1, 0, 1, 19, gameOver);
-    }
 }
 
 void Game::Tick()
@@ -594,9 +626,15 @@ void Game::Render()
         return;
     }
 
-    player.Update(frame);
-    player.Move(map);
-    map.RotateSecurityCamera(player.x, player.z);
+    // Update objects
+    if (mode != PAUSED)
+    {
+        player.Update(frame);
+        player.Move(map);
+        map.RotateSecurityCamera(player.x, player.z);
+    }
+
+    // Draw objects
     map.Draw();
     player.Draw();
 }
@@ -626,7 +664,7 @@ void Game::Update()
         sprintf(timeLeft, "Time: %ds, Frame: %d", timeLimit, frame);
         NF_WriteText(1, 0, 1, 18, timeLeft);
     }
-
+    
     // Update transition
     UpdateTransition();
 
@@ -637,9 +675,27 @@ void Game::Update()
     scanKeys();
     if (mode != MAIN_MENU && mode != DIALOGUE && mode != GAME_OVER)
     {
-        player.HandleInput(keysHeld());
+        if (mode == MOVE || mode == MINIGAME)
+        {
+            player.HandleInput(keysHeld());
+        }
 
-        if (mode == MOVE && !player.walking && keysHeld() == 0)
+        if ((mode == PAUSED) && (keysDown() & KEY_B))
+        {
+            UnLoadLabScene();
+            NF_DeleteTiledBg(1, PAUSED_BG);
+            NF_UnloadTiledBg(PAUSED_BG_NAME);
+            NE_SpecialEffectSet(NE_NONE);
+            StartMenuScreen(false);
+            sound.StopBGM();
+            sound.PlaySFX(SFX_MENU_SELECT);
+            return;
+        }
+        else if ((mode == MOVE || mode == PAUSED) && (keysDown() & KEY_START))
+        {
+            TogglePauseMenu();
+        }
+        else if (mode == MOVE && !player.walking && keysHeld() == 0)
         {
             idleFrames++;
 
@@ -657,6 +713,17 @@ void Game::Update()
         {
             idleFrames = 0;
         }
+
+        // Update status indicators
+        if (showingIndicatorFor > 0)
+        {
+            showingIndicatorFor--;
+            if (showingIndicatorFor == 0)
+            {
+                NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
+                CheckTutorials();
+            }
+        }
     }
 
     // Update dialogue
@@ -671,8 +738,8 @@ void Game::Update()
     // Update camera
     UpdateCamera();
 
-    // Tutorials check
-    if (mode != MAIN_MENU && mode != GAME_OVER)
+    // Update timer
+    if (mode != MAIN_MENU && mode != GAME_OVER && mode != PAUSED)
     {
         // Update timer
         if (frame % 60 == 0 && timeLimit > -1 && mode != DIALOGUE)
@@ -689,7 +756,7 @@ void Game::Update()
 
                 if (timeLimit < 10)
                 {
-                    sound.PlaySFX(MENU_DRUM);
+                    sound.PlaySFX(SFX_MENU_DRUM);
                 }
 
                 if (timeLimit == 0)
@@ -703,7 +770,6 @@ void Game::Update()
         switch (map.GetTileAt(player.tileX, player.tileZ))
         {
         case MINIGAME_VALVE:
-            CheckTutorials();
             if (mode == MOVE)
             {
                 StartMinigame(MINIGAME_VALVE);
@@ -747,17 +813,6 @@ void Game::Update()
     if (mode == GAME_OVER)
     {
         UpdateGameOver();
-    }
-
-    // Update status indicators
-    if (showingIndicatorFor > 0)
-    {
-        showingIndicatorFor--;
-        if (showingIndicatorFor == 0)
-        {
-            NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
-            CheckTutorials();
-        }
     }
 
     sound.Update(frame);

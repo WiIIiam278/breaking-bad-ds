@@ -64,7 +64,7 @@ bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
         int speechFrame = (frame - currentLineStartFrame);
         if (speechFrame % 5 == 0)
         {
-            sound->PlaySFX(DIALOGUE_BLEEP);
+            sound->PlaySFX(SFX_DIALOGUE_BLEEP);
         }
         if (speechFrame % 10 == 0)
         {
@@ -90,7 +90,7 @@ bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
         {
             currentLineIndex++;
             currentLineStartFrame = frame;
-            sound->PlaySFX(MENU_SELECT);
+            sound->PlaySFX(SFX_MENU_SELECT);
 
             if (currentLineIndex >= currentScriptLength)
             {
@@ -134,7 +134,7 @@ void Dialogue::Unload()
     NF_FreeSpriteGfx(1, 0);
 }
 
-int Dialogue::GetTutorialDialogue(int tutorialProgress)
+int Dialogue::GetTutorialDialogue(int tutorialProgress, int batchProgress)
 {
     switch (tutorialProgress)
     {
@@ -143,7 +143,7 @@ int Dialogue::GetTutorialDialogue(int tutorialProgress)
         case 1:
             return SCRIPT_GALE_TUTORIAL_VALVE;
         case 2:
-            return SCRIPT_GALE_TUTORIAL_VALVE_COMPLETE;
+            return batchProgress == 1 ? SCRIPT_GALE_TUTORIAL_VALVE_COMPLETE : -1;
     }
     return -1;
 }

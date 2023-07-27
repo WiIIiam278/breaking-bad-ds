@@ -71,7 +71,7 @@ void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
         // Play SFX, rumble
         if (rotation == 0 || frame % 120 == 0)
         {
-            sound->PlaySFX(VALVE_TURN);
+            sound->PlaySFX(SFX_VALVE_TURN);
         }
         setRumble(rotation % 3 == 0);
     }

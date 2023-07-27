@@ -139,8 +139,11 @@ void Menu::SetState(MenuState newState, Sound *sound)
         currentSoundTestTrack = 1;
     }
 
-    sound->PlaySFX(MENU_DRUM);
-    setRumble(state % 2 == 0);
+    if (state != LOGO)
+    {
+        sound->PlaySFX(SFX_MENU_DRUM);
+        setRumble(state % 2 == 0);
+    }
     currentSequenceIndex = 0;
     state = newState;
 }
@@ -350,18 +353,28 @@ MenuSelection Menu::HandleInput(Sound *sound)
         if (keysDown() & KEY_UP && !(highlightedItem == START_GAME || highlightedItem == START_TUTORIAL))
         {
             highlightedItem = (highlightedItem == TOGGLE_RUMBLE ? START_GAME : START_TUTORIAL);
+            sound->PlaySFX(SFX_MENU_SELECT);
         }
         else if (keysDown() & KEY_DOWN && !(highlightedItem == TOGGLE_RUMBLE || highlightedItem == BACK_TO_TITLE))
         {
             highlightedItem = (highlightedItem == START_GAME ? TOGGLE_RUMBLE : BACK_TO_TITLE);
+            sound->PlaySFX(SFX_MENU_SELECT);
         }
         else if (keysDown() & KEY_LEFT && !(highlightedItem == START_GAME || highlightedItem == TOGGLE_RUMBLE))
         {
             highlightedItem = (highlightedItem == START_TUTORIAL ? START_GAME : TOGGLE_RUMBLE);
+            sound->PlaySFX(SFX_MENU_SELECT);
         }
         else if (keysDown() & KEY_RIGHT && !(highlightedItem == BACK_TO_TITLE || highlightedItem == START_TUTORIAL))
         {
             highlightedItem = (highlightedItem == START_GAME ? START_TUTORIAL : BACK_TO_TITLE);
+            sound->PlaySFX(SFX_MENU_SELECT);
+        }
+
+        if (keysDown() & KEY_B)
+        {
+            SetState(TITLE, sound);
+            return BACK_TO_TITLE;
         }
 
         if (keysDown() & KEY_A || keysDown() & KEY_START)

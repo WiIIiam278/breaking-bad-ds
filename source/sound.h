@@ -66,11 +66,11 @@ const BGM BGMS[BGM_COUNT] =
 
 enum EffectId
 {
-    MENU_DRUM,
-    MENU_SELECT,
-    DIALOGUE_BLEEP,
-    SUCCESS_BELL,
-    VALVE_TURN
+    SFX_MENU_DRUM,
+    SFX_MENU_SELECT,
+    SFX_DIALOGUE_BLEEP,
+    SFX_SUCCESS_BELL,
+    SFX_VALVE_TURN
 };
 
 struct SFX
@@ -82,11 +82,11 @@ struct SFX
 const int SFX_COUNT = 5;
 const SFX SFXS[SFX_COUNT] =
     {
-        {MENU_DRUM, "sfx/menu_drum"},
-        {MENU_SELECT, "sfx/menu_select"},
-        {DIALOGUE_BLEEP, "sfx/dialogue_bleep"},
-        {SUCCESS_BELL, "sfx/success_bell"},
-        {VALVE_TURN, "sfx/valve_turn"},
+        {SFX_MENU_DRUM, "sfx/menu_drum"},
+        {SFX_MENU_SELECT, "sfx/menu_select"},
+        {SFX_DIALOGUE_BLEEP, "sfx/dialogue_bleep"},
+        {SFX_SUCCESS_BELL, "sfx/success_bell"},
+        {SFX_VALVE_TURN, "sfx/valve_turn"},
     };
 
 class Sound

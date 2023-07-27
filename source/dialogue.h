@@ -22,21 +22,32 @@ struct Script
 
 enum ScriptId
 {
+    SCRIPT_GALE_TUTORIAL_IDLE,
     SCRIPT_GALE_TUTORIAL_INTRO,
     SCRIPT_GALE_TUTORIAL_VALVE,
     SCRIPT_GALE_TUTORIAL_VALVE_COMPLETE,
-    SCRIPT_GALE_TUTORIAL_IDLE,
 };
 
 const Script SCRIPTS[64] = {
     {GALE,
+     5,
+     {
+         "GALE: M-Mister White, we're  wasting time!",
+         "GALE: We need to get back    to work!",
+         "GALE: Are you feeling okay?",
+         "GALE: If you're lost, check  the Floor Plan.",
+         "GALE: Your next step is      marked with a little red X!",
+    }},
+    {GALE,
      6,
-     {"GALE: M-Mister White!",
-      "GALE: How good it is to see  you again!",
-      "GALE: I-I'd be delighted to  give you a little refresher.",
-      "GALE: Allow me to take the   lead now!",
-      "GALE: First and foremost,    head to the control valve.",
-      "GALE: I've marked it on the  floor plan with a fun red X!"}},
+     {
+         "GALE: M-Mister White!",
+         "GALE: How good it is to see  you again!",
+         "GALE: I-I'd be delighted to  give you a little refresher.",
+         "GALE: Allow me to take the   lead now!",
+         "GALE: First and foremost,    head to the control valve.",
+         "GALE: I've marked it on the  floor plan with a fun red X!"
+     }},
     {GALE,
      5,
      {
@@ -59,36 +70,28 @@ const Script SCRIPTS[64] = {
          "GALE: Next up, we'll need    to pestle the critical solutes",
          "GALE: to a fine powder for   dissolving. To the mortar!",
      }},
-    {GALE,
-     5,
-     {
-         "GALE: M-Mister White, we're  wasting time!",
-         "GALE: We need to get back    to work!",
-         "GALE: Are you feeling okay?",
-         "GALE: If you're lost, check  the Floor Plan.",
-         "GALE: Your next step is      marked with a little red X!",
-     }}
-};
+    };
 
 class Dialogue
 {
-    private:
-        const int CHARACTERS_PER_DIALOGUE_LINE = 29;
-        const int LAB_BG = 3;
-        const char LAB_BG_NAME[32] = "bg/lab";
+private:
+    const int CHARACTERS_PER_DIALOGUE_LINE = 29;
+    const int LAB_BG = 3;
+    const char LAB_BG_NAME[32] = "bg/lab";
 
-        Speaker currentSpeaker = GALE;
-        char currentScript[64][128];
-        int currentScriptLength = 0;
-        int currentLineIndex = 0;
-        volatile int currentLineStartFrame = 0;
-        int currentSpeakerAnimation = 0;
+    Speaker currentSpeaker = GALE;
+    char currentScript[64][128];
+    int currentScriptLength = 0;
+    int currentLineIndex = 0;
+    volatile int currentLineStartFrame = 0;
+    int currentSpeakerAnimation = 0;
 
-        void Start(Speaker speaker, const char script[][128], int scriptLength, int startFrame);
-    public:
-        Dialogue();
-        void Load(ScriptId script, volatile int frame);
-        bool Update(volatile int frame, uint32 keys, Sound *sound);
-        void Unload();
-        int GetTutorialDialogue(int tutorialProgress);
+    void Start(Speaker speaker, const char script[][128], int scriptLength, int startFrame);
+
+public:
+    Dialogue();
+    void Load(ScriptId script, volatile int frame);
+    bool Update(volatile int frame, uint32 keys, Sound *sound);
+    void Unload();
+    int GetTutorialDialogue(int tutorialProgress, int batchProgress);
 };
