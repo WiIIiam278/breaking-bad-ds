@@ -91,6 +91,7 @@ void Player::Update(volatile int frame)
 
     // Don't move walter if he's dead
     if (lyingDown) {
+        lyingDownFrames++;
         return;
     }
 
@@ -190,9 +191,53 @@ void Player::HandleInput(uint32 keys)
     }
 }
 
+void Player::DrawShadow(float radius, u32 color)
+{
+    // Set the number of points to create the circle approximation
+    const int numPoints = 12;
+
+    // Calculate the angle between each point on the circle
+    const float angleIncrement = 2.0f * 3.14159265359f / numPoints;
+
+    // Calculate the positions of points forming the circle
+    float circlePoints[numPoints][3];
+    for (int i = 0; i < numPoints; ++i)
+    {
+        float angle = i * angleIncrement;
+        circlePoints[i][0] = radius * cos(angle);
+        circlePoints[i][1] = 0.6;
+        circlePoints[i][2] = radius * sin(angle);
+    }
+
+    // Draw the triangles that form the circle
+    float offset[3] = {x, 0, z + (lyingDown ? 1.5f : 0)};
+    for (int i = 1; i < numPoints - 1; i++)
+    {
+        float *vertices[3] = {circlePoints[0], circlePoints[i], circlePoints[i + 1]};
+        DrawTriangle(vertices, offset, color);
+    }
+}
+
+
+void Player::DrawTriangle(float *vertices[], float offset[3], u32 color)
+{
+    NE_PolyBegin(GL_TRIANGLE);
+    NE_PolyColor(color);
+    glTranslatef(offset[0], offset[1], offset[2]);
+    for (int i = 0; i < 3; ++i)
+    {
+        v16 x = floattov16(vertices[i][0]);
+        v16 y = floattov16(vertices[i][1]);
+        v16 z = floattov16(vertices[i][2]);
+        NE_PolyVertexI(x, y, z);
+    }
+    glTranslatef(-offset[0], -offset[1], -offset[2]);
+}
+
 void Player::Draw()
 {
-    // Set poly format
+    NE_PolyFormat(lyingDown ? 26 : 16, 8, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
+    DrawShadow(lyingDown ? 0.85f + (float) std::min(0.85f, (float) (lyingDownFrames / 500.0f)) : 0.85f, lyingDown ? NE_Red : NE_Black);
     NE_PolyFormat(31, 8, NE_LIGHT_0, NE_CULL_NONE, (NE_OtherFormatEnum)(NE_TOON_HIGHLIGHT_SHADING | NE_FOG_ENABLE));
     NE_ModelDraw(model);
 }

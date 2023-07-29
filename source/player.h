@@ -18,6 +18,8 @@ private:
     const float SPEED = 0.125;
     const float TILE_SIZE = 0.05;
 
+    volatile float lyingDownFrames = 0;
+
     NE_Model *model;
     NE_Material *material;
 
@@ -47,6 +49,8 @@ public:
     void PrintCoords(Map& map);
     void HandleInput(uint32 keys);
     void SetLyingDown(bool lyingDown);
+    void DrawShadow(float radius, u32 color);
+    void DrawTriangle(float *vertexes[], float offset[3], u32 color);
     void Draw();
     void Unload();
 };
