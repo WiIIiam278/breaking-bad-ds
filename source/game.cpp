@@ -585,10 +585,9 @@ void Game::StartGameOver()
 
     // Set mode
     sound.StopBGM();
-    sound.PlaySFX(SFX_GOODBYE_WALTER);
     NE_SpecialEffectSet(NE_NONE);
     mode = GAME_OVER;
-    gameOverFrame = -140;
+    gameOverFrame = -170;
     player.SetLyingDown(true);
     NE_CameraRotate(camera, 90, 0, 0);
 }
@@ -596,22 +595,27 @@ void Game::StartGameOver()
 void Game::UpdateGameOver()
 {
     gameOverFrame++;
-    if (gameOverFrame == 0)
-    {
-        sound.PlayBGM(BGM_BABY_BLUE, false);
-        Transition(true, 60);
-    }
 
-    if (gameOverFrame == 530)
+    switch (gameOverFrame)
     {
-        Transition(false, 0);
-        return;
-    }
-
-    if (gameOverFrame == 620)
-    {
-        UnLoadLabScene();
-        StartMenuScreen(false);
+        case -150:
+            sound.PlaySFX(SFX_GOODBYE_WALTER);
+            break;
+        case -10:
+            sound.StopSFX();
+            break;
+        case 0:
+            sound.PlayBGM(BGM_BABY_BLUE, false);
+            Transition(true, 60);
+            break;
+        case 520:
+            Transition(false, 0);
+            break;
+        case 620:
+            sound.StopBGM();
+            UnLoadLabScene();
+            StartMenuScreen(false);
+            break;
     }
 }
 
