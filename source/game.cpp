@@ -104,6 +104,7 @@ void Game::UpdateCamera()
         cameraTz = -2.5 + (player.z / 6);
         break;
     case GAME_OVER:
+        if (gameOverFrame < -10) return;
         cameraTx = player.x - 0.5f;
         cameraTy = 5 + (((float)gameOverFrame / 500.0f) * 13.0f);
         cameraTz = player.z + 1.5f;
@@ -451,7 +452,7 @@ void Game::StartMenuScreen(bool debugMode)
     // Quick-start debug game if the flag is set
     if (debugFlag)
     {
-        StartGame(false, 999, 1);
+        StartGame(false, 3, 1);
         return;
     }
 
@@ -570,6 +571,7 @@ void Game::StartGameOver()
         return;
     }
     player.walking = false;
+    Transition(false, 0);
 
     // Clear other elements
     if (mode == MINIGAME)
@@ -582,10 +584,11 @@ void Game::StartGameOver()
     }
 
     // Set mode
+    sound.StopBGM();
+    sound.PlaySFX(SFX_GOODBYE_WALTER);
     NE_SpecialEffectSet(NE_NONE);
     mode = GAME_OVER;
-    gameOverFrame = 0;
-    sound.PlayBGM(BGM_BABY_BLUE, false);
+    gameOverFrame = -140;
     player.SetLyingDown(true);
     NE_CameraRotate(camera, 90, 0, 0);
 }
@@ -593,6 +596,12 @@ void Game::StartGameOver()
 void Game::UpdateGameOver()
 {
     gameOverFrame++;
+    if (gameOverFrame == 0)
+    {
+        sound.PlayBGM(BGM_BABY_BLUE, false);
+        Transition(true, 60);
+    }
+
     if (gameOverFrame == 530)
     {
         Transition(false, 0);

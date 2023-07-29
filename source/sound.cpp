@@ -94,6 +94,8 @@ void Sound::PlayBGM(TrackId bgm, bool loop)
     currentBgm = bgm;
     looping = loop;
     singleFile = (looping && GetTrackFileCount(BGMS[currentBgm].track) == 1);
+    currentBgmFile = 0;
+    currentBgmFrame = 0;
 }
 
 void Sound::Update(volatile int frame)
@@ -158,8 +160,6 @@ char* Sound::GetBgmTrackProgressString()
 void Sound::StopBGM()
 {
     soundKill(currentBgmSoundId);
-    currentBgmFrame = 0;
-    currentBgmFile = 0;
     looping = false;
 }
 
