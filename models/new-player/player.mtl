@@ -1,0 +1,12 @@
+# Blender 3.6.0 MTL File: 'new_player.blend'
+# www.blender.org
+
+newmtl Material.001
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd NewPlayerModel.psd
+map_d NewPlayerModel.psd

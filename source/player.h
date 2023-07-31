@@ -24,6 +24,8 @@ private:
     NE_Material *material;
 
 public:
+    bool isPlayer2 = false;
+    bool isJessie = false;
     bool canMove = true;
     Direction facing = DOWN;
     bool walking = false;
@@ -41,7 +43,7 @@ public:
 
     Player();
 
-    int Load();
+    int Load(bool isJessie);
     void Move(Map& map);
     void Update(volatile int frame);
     void Translate(float x, float y, float z);

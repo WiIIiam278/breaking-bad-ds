@@ -18,6 +18,7 @@
 #include "dialogue.h"
 #include "debug.h"
 #include "sound.h"
+#include "multiplayer.h"
 
 using namespace std;
 
@@ -27,15 +28,20 @@ private:
     volatile int frame = 0;
     bool debugFlag = true;
     Mode mode = MOVE;
+    bool isQuitting = false;
 
-    // 3D Gameplay
+    // Main game settings
+    GameType gameType;
     Menu menu;
     Map map;
     Player player;
+    Sound sound;
     const u32 CLEAR_COLOR = NE_Black;
 
-    // Sound
-    Sound sound;
+    // Multiplayer
+    Player *player2 = NULL;
+    int player2BatchProgress = 0;
+    int player2batchesComplete = 0;
 
     // Transition
     bool isTransitioning = false;
@@ -59,7 +65,6 @@ private:
     Dialogue dialogue;
 
     // Tutorial
-    bool isTutorial = false;
     int tutorialProgress = 0;
     const float HUD_BATCH_PROGRESS_MARKER_COORDS[6][2] = {{-24.8, 1.9}, {-4, 6.8}, {-14.4, 4.2}, {-4, 16.2}, {-22.1, 9.1}, {-22.1, 16.2}};
 
@@ -123,6 +128,9 @@ public:
     void ToggleHud(bool show);
     void UpdateHud();
 
+    // Quit to title
+    void QuitToTitle();
+
     // Dialogue
     void StartDialogue(ScriptId scriptId);
     void EndDialogue();
@@ -133,9 +141,11 @@ public:
     void TranslateCamera(float x, float y, float z);
 
     // Start game
-    void StartGame(bool tutorialGame, int timeLimit, int batchQuota);
+    void StartGame(GameType gameType, int timeLimit, int batchQuota);
     void LoadLabScene();
     void UnLoadLabScene();
+
+    // Multiplayer
 
     // Start title screen
     void StartMenuScreen(bool debugMode);
@@ -157,3 +167,12 @@ public:
     void Update();
     void Render();
 };
+
+extern "C" {
+    Client* getOpponent();
+    Client* getLocalClient();
+    void tickMultiplayer();
+    void disableMultiplayer();
+    int getMultiplayerStatus();
+    bool isHostClient();
+}

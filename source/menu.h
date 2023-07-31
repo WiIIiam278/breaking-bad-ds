@@ -11,6 +11,7 @@
 
 #include "enums.h"
 #include "sound.h"
+#include "multiplayer.h"
 
 class Menu
 {
@@ -24,11 +25,13 @@ private:
     NE_Model *text;
     NE_Material *textMaterial;
 
-    MenuState state = LOGO;
+    MenuState state = MENU_LOGO;
     MenuSelection highlightedItem = NONE;
 
-    const int TITLE_BG = 2;
+    const int MENU_BG_ID = 1;
     const char TITLE_BG_NAME[32] = "bg/title";
+    const char MP_BG_NAME[32] = "bg/multiplayer";
+    int currentBackground = 0; // 0 = none, 1 = bg/title, 2 = bg/multiplayer
 
     const float TARGET_X = 1;
     const float X_SPEED = 0.025;
@@ -43,7 +46,9 @@ private:
     bool showStartSprite = true;
 
     const int BUTTONS[4] = {6, 7, 8, 9};
-    const float BUTTON_COORDS[4][2] = {{20, 10}, {105, 10}, {105, 55}, {20, 55}};
+    const float MAIN_BUTTON_COORDS[4][2] = {{20, 10}, {105, 10}, {105, 55}, {20, 55}};
+    const float GAME_BUTTON_COORDS[4][2] = {{20, 8}, {105, -10}, {60, 62}, {105, 25}};
+    bool buttonsVisible = false;
 
     const KEYPAD_BITS SOUND_TEST_SEQUENCE[11] = {KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN,
                                                  KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT,
@@ -51,18 +56,36 @@ private:
     int currentSequenceIndex = 0;
     int currentSoundTestTrack = 1;
 
+    const int MP_STATUS_SPRITE = 11;
+    int mpCurrentStatus = -1;
+    bool mpCreatingRoom;
+    bool mpShowingStatus;
+
 public:
     Menu();
 
     int Load();
     void LoadSplashSprite();
-    void LoadButtons();
+    void ShowButtons();
+    void ShowBackground();
     void Update(volatile int frame, Sound *sound);
     void Draw(volatile int frame);
     void SetState(MenuState newState, Sound *sound);
     void PositionLogo();
+    void StartMultiplayer(bool mpCreatingRoom);
+    void UpdateMultiplayer();
+    void ShowMultiplayerStatus(bool showSprite);
     MenuSelection HandleInput(Sound *sound);
     bool IsTouchInBox(const float coords[2], int boxHeight, touchPosition touch);
     MenuSelection CheckSelection(MenuSelection tappedBox);
     void Unload(Sound *sound);
 };
+
+extern "C" {
+    void nifiInit();
+    void joinMultiplayer(bool hostRoom);
+    void tickMultiplayer();
+    void disableMultiplayer();
+    int getMultiplayerStatus();
+    Client *getOpponent();
+}

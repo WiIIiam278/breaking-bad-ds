@@ -4,24 +4,37 @@ Player::Player()
 {
 }
 
-int Player::Load()
+int Player::Load(bool isJessie)
 {
+    this->isJessie = isJessie;
     model = NE_ModelCreate(NE_Static);
     material = NE_MaterialCreate();
     lyingDown = false;
 
     // Load assets from the filesystem
-    if (NE_ModelLoadStaticMeshFAT(model, "model/walter.dl") == 0)
+    if (NE_ModelLoadStaticMeshFAT(model, "model/player.dl") == 0)
     {
         consoleDemoInit();
-        printf("Couldn't load walter mesh...");
+        printf("Couldn't load player mesh...");
         return -1;
     }
 
-    if (NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/walter_tex.bin") == 0)
+    //todo make p2 jessie
+    int modelLoaded = 0;
+    if (!isJessie)
+    {
+        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128, 
+            NE_TEXGEN_TEXCOORD, "model/walter_tex.bin");
+    }
+    else
+    {
+        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128, 
+            NE_TEXGEN_TEXCOORD, "model/jessie_tex.bin");
+    }
+    if (modelLoaded == 0)
     {
         consoleDemoInit();
-        printf("Couldn't load walter textures...");
+        printf("Couldn't load player textures...");
         return -1;
     }
 

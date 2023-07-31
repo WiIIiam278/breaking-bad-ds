@@ -45,6 +45,11 @@
         "typeinfo": "cpp",
         "iostream": "cpp",
         "istream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "gl2d.h": "c",
+        "dswifi9.h": "c",
+        "stdio.h": "c",
+        "nds.h": "c",
+        "multiplayer.h": "c"
     }
 }

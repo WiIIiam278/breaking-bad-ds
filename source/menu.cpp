@@ -2,7 +2,7 @@
 
 Menu::Menu()
 {
-    state = LOADING;
+    state = MENU_LOADING;
     highlightedItem = NONE;
 }
 
@@ -38,18 +38,18 @@ int Menu::Load()
     NE_ModelSetMaterial(backdrop, backdropMaterial);
     NE_ModelSetMaterial(logo, logoMaterial);
     NE_MaterialSetPropierties(logoMaterial,
-                  RGB15(24, 24, 24), // Diffuse
-                  RGB15(16, 16, 16),    // Ambient
-                  RGB15(8, 8, 8),    // Specular
-                  NE_White,    // Emission
-                  false, false);     // Vertex color, use shininess table
+                              RGB15(24, 24, 24), // Diffuse
+                              RGB15(16, 16, 16), // Ambient
+                              RGB15(8, 8, 8),    // Specular
+                              NE_White,          // Emission
+                              false, false);     // Vertex color, use shininess table
     NE_ModelSetMaterial(text, textMaterial);
     NE_MaterialSetPropierties(textMaterial,
-                  RGB15(24, 24, 24), // Diffuse
-                  RGB15(16, 16, 16),    // Ambient
-                  RGB15(8, 8, 8),    // Specular
-                  NE_White,    // Emission
-                  false, false);     // Vertex color, use shininess table
+                              RGB15(24, 24, 24), // Diffuse
+                              RGB15(16, 16, 16), // Ambient
+                              RGB15(8, 8, 8),    // Specular
+                              NE_White,          // Emission
+                              false, false);     // Vertex color, use shininess table
 
     // Set model rotation and scale
     int scale = 8250;
@@ -69,10 +69,6 @@ int Menu::Load()
 
     // Prepare sprites
     LoadSplashSprite();
-    LoadButtons();
-
-    // Load tiled BG
-    NF_LoadTiledBg(TITLE_BG_NAME, TITLE_BG_NAME, 256, 256);
     return 0;
 }
 
@@ -90,62 +86,136 @@ void Menu::LoadSplashSprite()
     NF_SpriteRotScale(1, START_SPRITE, 0, 283, 283);
 }
 
-void Menu::LoadButtons()
+void Menu::ShowButtons()
 {
-    // Load button sprite
-    NF_LoadSpriteGfx("sprite/buttons", 2, 64, 64);
-    NF_LoadSpritePal("sprite/buttons", 2);
-    NF_VramSpriteGfx(1, 2, 1, false);
-    NF_VramSpritePal(1, 2, 1);
-
-    // Load all buttons
-    for (int i = 0; i < 4; i++)
+    if (buttonsVisible)
     {
-        // Create, position & scale sprite
-        NF_CreateSprite(1, BUTTONS[i], 1, 1, BUTTON_COORDS[i][0], BUTTON_COORDS[i][1]);
-        NF_EnableSpriteRotScale(1, BUTTONS[i], BUTTONS[i], true);
-        NF_SpriteRotScale(1, BUTTONS[i], 0, 300, 300);
-        NF_SpriteFrame(1, BUTTONS[i], i * 2);
+        for (int i = 0; i < 4; i++)
+        {
+            NF_DeleteSprite(1, BUTTONS[i]);
+        }
+        NF_UnloadSpriteGfx(2);
+        NF_UnloadSpritePal(2);
+        NF_FreeSpriteGfx(1, 1);
+    }
+    switch (state)
+    {
+    default:
+        buttonsVisible = false;
+        break;
+    case MENU_MAIN:
+        highlightedItem = NONE;
+        NF_LoadSpriteGfx("sprite/buttons", 2, 64, 64);
+        NF_LoadSpritePal("sprite/buttons", 2);
+        NF_VramSpriteGfx(1, 2, 1, false);
+        NF_VramSpritePal(1, 2, 1);
+        for (int i = 0; i < 4; i++)
+        {
+            // Create, position & scale sprite
+            NF_CreateSprite(1, BUTTONS[i], 1, 1, MAIN_BUTTON_COORDS[i][0], MAIN_BUTTON_COORDS[i][1]);
+            NF_EnableSpriteRotScale(1, BUTTONS[i], BUTTONS[i], true);
+            NF_SpriteRotScale(1, BUTTONS[i], 0, 300, 300);
+            NF_SpriteFrame(1, BUTTONS[i], i * 2);
+        }
+        buttonsVisible = true;
+        break;
+    case MENU_GAME_SELECT:
+        highlightedItem = NONE;
+        NF_LoadSpriteGfx("sprite/game_buttons", 2, 64, 64);
+        NF_LoadSpritePal("sprite/game_buttons", 2);
+        NF_VramSpriteGfx(1, 2, 1, false);
+        NF_VramSpritePal(1, 2, 1);
+        for (int i = 0; i < 4; i++)
+        {
+            // Create, position & scale sprite
+            NF_CreateSprite(1, BUTTONS[i], 1, 1, GAME_BUTTON_COORDS[i][0], GAME_BUTTON_COORDS[i][1]);
+            NF_EnableSpriteRotScale(1, BUTTONS[i], BUTTONS[i], true);
+            NF_SpriteRotScale(1, BUTTONS[i], 0, 300, 300);
+            NF_SpriteFrame(1, BUTTONS[i], i * 2);
+        }
+        buttonsVisible = true;
+        break;
+    }
+}
+
+void Menu::ShowBackground()
+{
+    if ((state == MENU_LOGO || state == MENU_LOADING))
+    {
+        if (currentBackground != 0)
+        {
+            NF_DeleteTiledBg(1, MENU_BG_ID);
+            NF_UnloadTiledBg(currentBackground == 1 ? TITLE_BG_NAME : MP_BG_NAME);
+        }
+        currentBackground = 0;
+    }
+    else if ((state == MENU_MP_HOST_ROOM || state == MENU_MP_JOIN_ROOM) && currentBackground != 2)
+    {
+        if (currentBackground == 1)
+        {
+            NF_DeleteTiledBg(1, MENU_BG_ID);
+            NF_UnloadTiledBg(TITLE_BG_NAME);
+        }
+        NF_LoadTiledBg(MP_BG_NAME, MP_BG_NAME, 256, 256);
+        NF_CreateTiledBg(1, MENU_BG_ID, MP_BG_NAME);
+        currentBackground = 2;
+    }
+    else if (currentBackground != 1)
+    {
+        if (currentBackground == 2)
+        {
+            NF_DeleteTiledBg(1, MENU_BG_ID);
+            NF_UnloadTiledBg(MP_BG_NAME);
+        }
+        NF_LoadTiledBg(TITLE_BG_NAME, TITLE_BG_NAME, 256, 256);
+        NF_CreateTiledBg(1, MENU_BG_ID, TITLE_BG_NAME);
+        currentBackground = 1;
     }
 }
 
 void Menu::SetState(MenuState newState, Sound *sound)
 {
-    if (newState == LOADING)
+    if (newState == MENU_LOADING)
     {
-        if (state != LOGO)
-        {
-            NF_DeleteTiledBg(1, TITLE_BG);
-        }
         sound->StopBGM();
     }
-    else if (state == LOGO && newState != LOGO)
+    else if (state == MENU_LOGO && newState != MENU_LOGO)
     {
-        NF_CreateTiledBg(1, TITLE_BG, TITLE_BG_NAME);
         sound->PlayBGM(BGM_TITLE_LOOP, true);
     }
-    else if (newState == LOGO)
+    else if (newState == MENU_LOGO)
     {
-        if (!(state == LOADING || state == LOGO))
-        {
-            NF_DeleteTiledBg(1, TITLE_BG);
-        }
         sound->PlayBGM(BGM_TITLE_INTRO, false);
     }
 
-    if (state == SOUND_TEST && newState == MENU)
+    if (state == MENU_SOUND_TEST && newState == MENU_MAIN)
     {
         sound->PlayBGM(BGM_TITLE_LOOP, true);
         currentSoundTestTrack = 1;
     }
 
-    if (state != LOGO)
+    if ((state == MENU_MP_HOST_ROOM || state == MENU_MP_JOIN_ROOM) && (newState != MENU_MP_HOST_ROOM && newState != MENU_MP_JOIN_ROOM))
+    {
+        ShowMultiplayerStatus(false);
+    }
+    else if (newState == MENU_MP_HOST_ROOM)
+    {
+        StartMultiplayer(true);
+    }
+    else if (newState == MENU_MP_JOIN_ROOM)
+    {
+        StartMultiplayer(false);
+    }
+
+    if (state != MENU_LOGO)
     {
         sound->PlaySFX(SFX_MENU_DRUM);
         setRumble(state % 2 == 0);
     }
     currentSequenceIndex = 0;
     state = newState;
+    ShowButtons();
+    ShowBackground();
 }
 
 void Menu::PositionLogo()
@@ -157,21 +227,56 @@ void Menu::PositionLogo()
     NE_ModelTranslate(text, TARGET_TEXT_X, Y + 0.1, Z + 4.55);
 }
 
+void Menu::StartMultiplayer(bool mpCreatingRoom)
+{
+    this->mpCreatingRoom = mpCreatingRoom;
+    joinMultiplayer(mpCreatingRoom);
+}
+
+void Menu::UpdateMultiplayer()
+{
+    tickMultiplayer();
+    mpCurrentStatus = getMultiplayerStatus();
+    ShowMultiplayerStatus(true);
+}
+
+void Menu::ShowMultiplayerStatus(bool showSprite)
+{
+    if (!showSprite && mpShowingStatus)
+    {
+        NF_DeleteSprite(1, MP_STATUS_SPRITE);
+        NF_UnloadSpriteGfx(MP_STATUS_SPRITE);
+        NF_UnloadSpritePal(MP_STATUS_SPRITE);
+        NF_FreeSpriteGfx(1, MP_STATUS_SPRITE);
+    }
+    else if (showSprite)
+    {
+        if (!mpShowingStatus && mpCurrentStatus > -1)
+        {
+            NF_LoadSpriteGfx("sprite/multiplayer_status", MP_STATUS_SPRITE, 64, 64);
+            NF_LoadSpritePal("sprite/multiplayer_status", MP_STATUS_SPRITE);
+            NF_VramSpriteGfx(1, MP_STATUS_SPRITE, MP_STATUS_SPRITE, false);
+            NF_VramSpritePal(1, MP_STATUS_SPRITE, MP_STATUS_SPRITE);
+            NF_CreateSprite(1, MP_STATUS_SPRITE, MP_STATUS_SPRITE, MP_STATUS_SPRITE, 64, 42);
+            NF_EnableSpriteRotScale(1, MP_STATUS_SPRITE, MP_STATUS_SPRITE, true);
+            NF_SpriteRotScale(1, MP_STATUS_SPRITE, 0, 283, 283);
+        }
+        NF_SpriteFrame(1, MP_STATUS_SPRITE, mpCurrentStatus);
+    }
+    mpShowingStatus = showSprite;
+}
+
 void Menu::Update(volatile int frame, Sound *sound)
 {
     NF_ClearTextLayer(1, 0);
     switch (state)
     {
-    case LOADING:
+    case MENU_LOADING:
         // Hide buttons and backgrounds
         NF_ShowSprite(1, START_SPRITE, false);
-        for (int i = 0; i < 4; i++)
-        {
-            NF_ShowSprite(1, BUTTONS[i], false);
-        }
         break;
 
-    case LOGO:
+    case MENU_LOGO:
         if (x < TARGET_X)
         {
             x += X_SPEED;
@@ -185,27 +290,15 @@ void Menu::Update(volatile int frame, Sound *sound)
 
         NF_SpriteFrame(1, START_SPRITE, (frame > 345) ? 1 : 0);
 
-        // Hide buttons
-        for (int i = 0; i < 4; i++)
-        {
-            NF_ShowSprite(1, BUTTONS[i], false);
-        }
-
         if (frame >= 690)
         {
-            SetState(TITLE, sound);
+            SetState(MENU_TITLE, sound);
             return;
         }
         break;
 
-    case TITLE:
+    case MENU_TITLE:
         NF_SpriteFrame(1, START_SPRITE, 2);
-
-        // Hide buttons
-        for (int i = 0; i < 4; i++)
-        {
-            NF_ShowSprite(1, BUTTONS[i], false);
-        }
 
         if (frame % 30 == 0)
         {
@@ -214,24 +307,19 @@ void Menu::Update(volatile int frame, Sound *sound)
         }
         break;
 
-    case MENU:
-        // Show buttons
+    case MENU_MAIN:
+        // Update button highlighting
         for (int i = 0; i < 4; i++)
         {
-            NF_ShowSprite(1, BUTTONS[i], true);
             NF_SpriteFrame(1, BUTTONS[i], (i * 2) + (((i + 1) == highlightedItem) ? 1 : 0));
         }
 
         NF_ShowSprite(1, START_SPRITE, false);
         break;
 
-    case RUMBLE_INFO:
+    case MENU_RUMBLE:
         NF_ShowSprite(1, START_SPRITE, false);
-        for (int i = 0; i < 4; i++)
-        {
-            NF_ShowSprite(1, BUTTONS[i], false);
-        }
-        
+
         NF_WriteText(1, 0, 1, 6, "A DS Rumble Pak is required.");
         NF_WriteText(1, 0, 1, 7, "to enable this feature. If a");
         NF_WriteText(1, 0, 1, 8, "Rumble Pak is inserted into");
@@ -244,12 +332,8 @@ void Menu::Update(volatile int frame, Sound *sound)
         NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
         break;
 
-    case SOUND_TEST:
+    case MENU_SOUND_TEST:
         NF_ShowSprite(1, START_SPRITE, false);
-        for (int i = 0; i < 4; i++)
-        {
-            NF_ShowSprite(1, BUTTONS[i], false);
-        }
 
         NF_WriteText(1, 0, 1, 5, "Breaking Bad DS - SOUND TEST");
         NF_WriteText(1, 0, 1, 6, "LEFT/RIGHT to change track.");
@@ -259,6 +343,21 @@ void Menu::Update(volatile int frame, Sound *sound)
 
         NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
         break;
+
+    case MENU_GAME_SELECT:
+        // Show buttons
+        for (int i = 0; i < 4; i++)
+        {
+            NF_SpriteFrame(1, BUTTONS[i], (i * 2) + (((i + 5) == (highlightedItem)) ? 1 : 0));
+        }
+
+        NF_ShowSprite(1, START_SPRITE, false);
+        break;
+
+    case MENU_MP_HOST_ROOM:
+    case MENU_MP_JOIN_ROOM:
+        UpdateMultiplayer();
+        break;
     }
 }
 
@@ -267,19 +366,19 @@ MenuSelection Menu::HandleInput(Sound *sound)
     touchPosition touch;
     switch (state)
     {
-    case LOGO:
+    case MENU_LOGO:
         if (keysDown() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
         {
             return SKIP_LOGO;
         }
         return NONE;
-    case TITLE:
+    case MENU_TITLE:
         if (keysDown() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
         {
-            SetState(MENU, sound);
+            SetState(MENU_MAIN, sound);
         }
         return NONE;
-    case SOUND_TEST:
+    case MENU_SOUND_TEST:
         if (keysDown() & KEY_RIGHT || keysDown() & KEY_LEFT)
         {
             if (keysDown() & KEY_RIGHT)
@@ -297,39 +396,44 @@ MenuSelection Menu::HandleInput(Sound *sound)
             setRumble(currentSoundTestTrack % 2 == 0);
         }
 
-    case RUMBLE_INFO:
+    case MENU_RUMBLE:
         if (keysDown() & KEY_TOUCH || keysDown() & KEY_B)
         {
-            SetState(MENU, sound);
+            SetState(MENU_MAIN, sound);
         }
         return NONE;
-    case MENU:
+    case MENU_MAIN:
         if (keysDown() & KEY_TOUCH)
         {
             touchRead(&touch);
 
-            if (IsTouchInBox(BUTTON_COORDS[0], 64, touch))
+            if (IsTouchInBox(MAIN_BUTTON_COORDS[0], 64, touch))
             {
-                return CheckSelection(START_GAME);
+                if (CheckSelection(OPEN_GAME_MENU))
+                {
+                    SetState(MENU_GAME_SELECT, sound);
+                    return OPEN_GAME_MENU;
+                }
+                return NONE;
             }
-            else if (IsTouchInBox(BUTTON_COORDS[1], 64, touch))
+            else if (IsTouchInBox(MAIN_BUTTON_COORDS[1], 64, touch))
             {
                 return CheckSelection(START_TUTORIAL);
             }
-            else if (IsTouchInBox(BUTTON_COORDS[2], 32, touch))
+            else if (IsTouchInBox(MAIN_BUTTON_COORDS[2], 32, touch))
             {
                 if (CheckSelection(BACK_TO_TITLE))
                 {
-                    SetState(TITLE, sound);
+                    SetState(MENU_TITLE, sound);
                     return BACK_TO_TITLE;
                 }
                 return NONE;
             }
-            else if (IsTouchInBox(BUTTON_COORDS[3], 32, touch))
+            else if (IsTouchInBox(MAIN_BUTTON_COORDS[3], 32, touch))
             {
                 if (CheckSelection(TOGGLE_RUMBLE))
                 {
-                    SetState(RUMBLE_INFO, sound);
+                    SetState(MENU_RUMBLE, sound);
                     return TOGGLE_RUMBLE;
                 }
                 return NONE;
@@ -342,7 +446,7 @@ MenuSelection Menu::HandleInput(Sound *sound)
             currentSequenceIndex++;
             if (currentSequenceIndex == 11)
             {
-                SetState(SOUND_TEST, sound);
+                SetState(MENU_SOUND_TEST, sound);
                 return NONE;
             }
             else if (currentSequenceIndex > 8)
@@ -350,30 +454,30 @@ MenuSelection Menu::HandleInput(Sound *sound)
                 return NONE;
             }
         }
-        if (keysDown() & KEY_UP && !(highlightedItem == START_GAME || highlightedItem == START_TUTORIAL))
+        if (keysDown() & KEY_UP && !(highlightedItem == OPEN_GAME_MENU || highlightedItem == START_TUTORIAL))
         {
-            highlightedItem = (highlightedItem == TOGGLE_RUMBLE ? START_GAME : START_TUTORIAL);
+            highlightedItem = (highlightedItem == TOGGLE_RUMBLE ? OPEN_GAME_MENU : START_TUTORIAL);
             sound->PlaySFX(SFX_MENU_SELECT);
         }
         else if (keysDown() & KEY_DOWN && !(highlightedItem == TOGGLE_RUMBLE || highlightedItem == BACK_TO_TITLE))
         {
-            highlightedItem = (highlightedItem == START_GAME ? TOGGLE_RUMBLE : BACK_TO_TITLE);
+            highlightedItem = (highlightedItem == OPEN_GAME_MENU ? TOGGLE_RUMBLE : BACK_TO_TITLE);
             sound->PlaySFX(SFX_MENU_SELECT);
         }
-        else if (keysDown() & KEY_LEFT && !(highlightedItem == START_GAME || highlightedItem == TOGGLE_RUMBLE))
+        else if (keysDown() & KEY_LEFT && !(highlightedItem == OPEN_GAME_MENU || highlightedItem == TOGGLE_RUMBLE))
         {
-            highlightedItem = (highlightedItem == START_TUTORIAL ? START_GAME : TOGGLE_RUMBLE);
+            highlightedItem = (highlightedItem == START_TUTORIAL ? OPEN_GAME_MENU : TOGGLE_RUMBLE);
             sound->PlaySFX(SFX_MENU_SELECT);
         }
         else if (keysDown() & KEY_RIGHT && !(highlightedItem == BACK_TO_TITLE || highlightedItem == START_TUTORIAL))
         {
-            highlightedItem = (highlightedItem == START_GAME ? START_TUTORIAL : BACK_TO_TITLE);
+            highlightedItem = (highlightedItem == OPEN_GAME_MENU ? START_TUTORIAL : BACK_TO_TITLE);
             sound->PlaySFX(SFX_MENU_SELECT);
         }
 
         if (keysDown() & KEY_B)
         {
-            SetState(TITLE, sound);
+            SetState(MENU_TITLE, sound);
             return BACK_TO_TITLE;
         }
 
@@ -383,21 +487,182 @@ MenuSelection Menu::HandleInput(Sound *sound)
             {
             default:
                 return CheckSelection(highlightedItem);
+            case OPEN_GAME_MENU:
+                if (CheckSelection(OPEN_GAME_MENU))
+                {
+                    SetState(MENU_GAME_SELECT, sound);
+                    return OPEN_GAME_MENU;
+                }
             case BACK_TO_TITLE:
                 if (CheckSelection(BACK_TO_TITLE))
                 {
-                    SetState(TITLE, sound);
+                    SetState(MENU_TITLE, sound);
                     return BACK_TO_TITLE;
                 }
                 return NONE;
             case TOGGLE_RUMBLE:
                 if (CheckSelection(TOGGLE_RUMBLE))
                 {
-                    SetState(RUMBLE_INFO, sound);
+                    SetState(MENU_RUMBLE, sound);
                     return TOGGLE_RUMBLE;
                 }
                 return NONE;
             }
+        }
+        break;
+
+    case MENU_GAME_SELECT:
+        if (keysDown() & KEY_TOUCH)
+        {
+            touchRead(&touch);
+
+            if (IsTouchInBox(GAME_BUTTON_COORDS[0], 64, touch))
+            {
+                return CheckSelection(START_1P_GAME);
+            }
+            else if (IsTouchInBox(GAME_BUTTON_COORDS[1], 32, touch))
+            {
+                if (CheckSelection(OPEN_ROOM))
+                {
+                    SetState(MENU_MP_HOST_ROOM, sound);
+                    return OPEN_GAME_MENU;
+                }
+                return NONE;
+            }
+            else if (IsTouchInBox(GAME_BUTTON_COORDS[2], 32, touch))
+            {
+                if (CheckSelection(BACK_TO_MAIN_MENU))
+                {
+                    SetState(MENU_MAIN, sound);
+                    return BACK_TO_MAIN_MENU;
+                }
+                return NONE;
+            }
+            else if (IsTouchInBox(GAME_BUTTON_COORDS[3], 32, touch))
+            {
+                if (CheckSelection(SEARCH_FOR_ROOMS))
+                {
+                    SetState(MENU_MP_JOIN_ROOM, sound);
+                    return SEARCH_FOR_ROOMS;
+                }
+                return NONE;
+            }
+            break;
+        }
+
+        if (keysDown() & KEY_UP)
+        {
+            if (highlightedItem == SEARCH_FOR_ROOMS)
+            {
+                highlightedItem = OPEN_ROOM;
+            }
+            else
+            {
+                highlightedItem = SEARCH_FOR_ROOMS;
+            }
+            sound->PlaySFX(SFX_MENU_SELECT);
+        }
+        else if (keysDown() & KEY_DOWN)
+        {
+            if (highlightedItem == OPEN_ROOM)
+            {
+                highlightedItem = SEARCH_FOR_ROOMS;
+            }
+            else
+            {
+                highlightedItem = BACK_TO_MAIN_MENU;
+            }
+            sound->PlaySFX(SFX_MENU_SELECT);
+        }
+        else if ((keysDown() & KEY_LEFT) && (highlightedItem == OPEN_ROOM || highlightedItem == SEARCH_FOR_ROOMS))
+        {
+            highlightedItem = START_1P_GAME;
+            sound->PlaySFX(SFX_MENU_SELECT);
+        }
+        else if ((keysDown() & KEY_RIGHT) && (highlightedItem == START_1P_GAME))
+        {
+            highlightedItem = OPEN_ROOM;
+            sound->PlaySFX(SFX_MENU_SELECT);
+        }
+
+        if (keysDown() & KEY_B)
+        {
+            SetState(MENU_MAIN, sound);
+            return NONE;
+        }
+
+        if (keysDown() & KEY_A || keysDown() & KEY_START)
+        {
+            switch (highlightedItem)
+            {
+            default:
+                return CheckSelection(highlightedItem);
+            case BACK_TO_MAIN_MENU:
+                if (CheckSelection(BACK_TO_MAIN_MENU))
+                {
+                    SetState(MENU_MAIN, sound);
+                }
+                return NONE;
+            case OPEN_ROOM:
+                if (CheckSelection(OPEN_ROOM))
+                {
+                    SetState(MENU_MP_HOST_ROOM, sound);
+                    return TOGGLE_RUMBLE;
+                }
+                return NONE;
+            case SEARCH_FOR_ROOMS:
+                if (CheckSelection(SEARCH_FOR_ROOMS))
+                {
+                    SetState(MENU_MP_JOIN_ROOM, sound);
+                    return TOGGLE_RUMBLE;
+                }
+                return NONE;
+            }
+        }
+        break;
+
+    case MENU_MP_HOST_ROOM:
+        if (mpCurrentStatus == MP_HOST_READY)
+        {
+            if (keysDown() & KEY_A)
+            {
+                sound->PlaySFX(SFX_MENU_DRUM);
+                return START_MP_GAME;
+            }
+            break;
+        }
+        if (keysDown() & KEY_B)
+        {
+            if (mpCurrentStatus == MP_HOST_READY || mpCurrentStatus == MP_CLIENT_READY)
+            {
+                setRumble(touch.px % 2 == 0);
+                break;
+            }
+            SetState(MENU_GAME_SELECT, sound);
+            mpCurrentStatus = -1;
+            disableMultiplayer();
+            sound->PlaySFX(SFX_MENU_DRUM);
+            return BACK_TO_GAME_MENU;
+        }
+        break;
+    case MENU_MP_JOIN_ROOM:
+        if (mpCurrentStatus == MP_CLIENT_READY && (getOpponent()->timeLeft > -1))
+        {
+            sound->PlaySFX(SFX_MENU_DRUM);
+            return START_MP_GAME;
+        }
+        if (keysDown() & KEY_B)
+        {
+            if (mpCurrentStatus == MP_HOST_READY || mpCurrentStatus == MP_CLIENT_READY)
+            {
+                setRumble(touch.px % 2 == 0);
+                break;
+            }
+            SetState(MENU_GAME_SELECT, sound);
+            mpCurrentStatus = -1;
+            disableMultiplayer();
+            sound->PlaySFX(SFX_MENU_DRUM);
+            return BACK_TO_GAME_MENU;
         }
         break;
     }
@@ -444,7 +709,7 @@ MenuSelection Menu::CheckSelection(MenuSelection tappedBox)
 
 void Menu::Draw(volatile int frame)
 {
-    if (state != LOADING)
+    if (state != MENU_LOADING)
     {
         NE_ModelDraw(backdrop);
         NE_PolyFormat(31, 8, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
@@ -455,7 +720,9 @@ void Menu::Draw(volatile int frame)
 
 void Menu::Unload(Sound *sound)
 {
-    SetState(LOADING, sound);
+    SetState(MENU_LOADING, sound);
+    ShowButtons();
+    ShowBackground();
 
     // Free the model and material
     NE_ModelDelete(logo);
@@ -466,21 +733,10 @@ void Menu::Unload(Sound *sound)
     NE_MaterialDelete(textMaterial);
     NE_MaterialDelete(backdropMaterial);
 
-    // Delete sprites
+    // Delete sprite
+    ShowMultiplayerStatus(false);
     NF_DeleteSprite(1, START_SPRITE);
-    for (int i = 0; i < 4; i++)
-    {
-        NF_DeleteSprite(1, BUTTONS[i]);
-    }
-
-    // Unload sprite assets
     NF_UnloadSpriteGfx(1);
     NF_UnloadSpritePal(1);
     NF_FreeSpriteGfx(1, 0);
-    NF_UnloadSpriteGfx(2);
-    NF_UnloadSpritePal(2);
-    NF_FreeSpriteGfx(1, 1);
-
-    // Unload tiled BG
-    NF_UnloadTiledBg(TITLE_BG_NAME);
 }
