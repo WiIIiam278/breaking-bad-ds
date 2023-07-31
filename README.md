@@ -4,7 +4,7 @@
     Breaking Bad DS
 </h1>
 
-*Breaking Bad*, as a Nintendo DS game, complete with 3D graphics and models. Master the art of the cook on your Nintendo DS system and prepare the perfect batch&mdash;lest you meet the wrong end of Gus. Hone your cook in both Singleplayer and Local Multiplayer Vs.
+*Breaking Bad*, as a Nintendo DS game, complete with 3D graphics and models. Master the art of the cook on your Nintendo DS system and prepare the perfect batch&mdash;lest you meet the wrong end of Gus. Hone your cook in both Singleplayer and Local Multiplayer VS.
 
 ## Playing
 For the absolute best experience, pop the ROM on a flashcart and enjoy!
@@ -18,11 +18,8 @@ To run this on melonDS, you'll need to go into the Emulator Config -> DLDI -> En
 Sorry, this *won't work on a DSi/3DS with TwiLight Menu++* (for now). This also *won't work on the Wii U Virtual Console emulator*. I'm sorry to ruin your dreams. If you run this on a cool setup, take a picture and [email me](mailto:will27528+brbads@gmail.com).
 
 ## Instructions
-### Singleplayer (1P)
-In singleplayer mode, you must 
-
 ### Local Multiplayer (2P)
-Breaking Bad for Nintendo DS also supports up to two Nintendo DS systems playing together in a Multiplayer Vs. Battle to see who can complete their batches the quickest. You can emulate this through multiple instances on MelonDS currently, or run on hardware with two systems and two flashcarts. To set this up:
+Breaking Bad for Nintendo DS also supports up to two Nintendo DS systems playing together in a Multiplayer VS. Battle to see who can complete their batches the quickest. You can emulate this through multiple instances on MelonDS currently, or run on hardware with two systems and two flashcarts. To set this up:
 
 * On the first system, launch the game. Touch to start, then tap "Start Game → Host."
 * If you're using MelonDS: On the menu bar, select "System → Multiplayer → Launch new instance" and open the ROM.
