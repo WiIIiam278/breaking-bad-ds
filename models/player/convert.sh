@@ -1,3 +1,4 @@
+# Sadly we're only exporting the static player model as the dsma library seems to have issues with the armature when loading the converted version in-game :(
 cd ../../../../nitro-engine/tools/obj2dl &&
 python obj2dl.py --input ../../../projects/breaking-bad-ds/models/new-player/player.obj \
                 --texture 128 128 \
