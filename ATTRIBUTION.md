@@ -17,7 +17,7 @@ Breaking Bad and related properties are owned and copyrighted by their respectiv
 - 3D graphics: Nitro-Engine by AntonioND (https://github.com/AntonioND/nitro-engine/)
 - 2D graphics: NightFoxLib by NightFox (https://github.com/knightfox75/nds_nflib/)
 - devKitARM and libnds by the devKitPro team (https://github.com/devkitPro/libnds)
-- Nintendo DS NiFi Template by Fewnity (https://github.com/Fewnity/Nintendo-DS-Nifi-Template/), based on jpenny19993 and Stephen Stair's original work
+- Nintendo DS NiFi Template by Fewnity (https://github.com/Fewnity/Nintendo-DS-Nifi-Template/), based on jpenny19993 and Stephen Stair's original work (libwifi)
 
 #### Sound
 - Metal sound 12 (drumming sink) by giddster (https://freesound.org/people/giddster/sounds/387958/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
