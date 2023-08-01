@@ -33,7 +33,7 @@ bool tryJoinRoom = false;		  // Is the client trying to join a room
 bool skipData;					  // If true, the client will skip data of the current wifi packet
 
 // Other variables
-const bool MP_DEBUG = false;
+const bool MP_DEBUG = true;
 int mpStatus = MP_CLIENT_SEARCHING;
 
 void joinMultiplayer(bool hostRoom)
@@ -45,6 +45,8 @@ void joinMultiplayer(bool hostRoom)
 	}
     else 
 	{
+		mpStatus = MP_CLIENT_SEARCHING;
+		joinRoomTimer = WIFI_TIMEOUT;
         tryJoinRoom = true;
         resetNifiValues();
     }
@@ -61,6 +63,7 @@ void tickMultiplayer()
             // Reset the timer
             joinRoomTimer = WIFI_TIMEOUT;
         }
+		return;
     }
 
     // Check if the local client has lost the connection with the host
@@ -84,13 +87,13 @@ void disableMultiplayer()
 {
 	isHost = false;
 	joinRoomTimer = WIFI_TIMEOUT;
-	for (int i = 0; i < MAX_CLIENT; i++)
+	for (int i = 1; i < MAX_CLIENT; i++)
 	{
 		removeClient(&clients[i]);
 	}
 	resetNifiValues();
 	Wifi_DisableWifi();
-	mpStatus = 0;
+	mpStatus = MP_CONNECTION_LOST;
 }
 
 /**
@@ -333,6 +336,7 @@ void treatData()
 								int FoundId = EMPTY;
 								sscanf(params[i], "%d", &FoundId);
 								addClient(FoundId, false);
+								mpStatus = MP_CLIENT_READY;
 							}
 						}
 					}
@@ -503,12 +507,17 @@ void resetClientValues(Client *client)
 {
 	client->id = EMPTY;
 	if (client != localClient)
+	{
 		strcpy(client->macAddress, "");
+		client->playerTargetX = client->playerTileX = isHost ? 3 : 4;
+	}
 	else
+	{
 		skipData = false;
+		client->playerTargetX = client->playerTileX = !isHost ? 3 : 4;
+	}
 	strcpy(client->sendBuffer, "");
 	client->lastMessageId = 0;
-	client->playerTargetX = client->playerTileX = 4;
 	client->playerTargetZ = client->playerTileZ = 1;
 	client->batchesComplete = client->currentBatchStep = 0;
 	client->playerFacing = 1;
@@ -577,7 +586,9 @@ void addClient(int id, bool addHost)
 
 				// Store the host index
 				if (addHost)
+				{
 					hostIndex = i;
+				}
 				addedClientIndex = i;
 				break;
 			}

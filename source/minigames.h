@@ -19,7 +19,7 @@ class Minigame
 {
 public:
     virtual void Load() = 0;
-    virtual void Delete() = 0;
+    virtual void Unload() = 0;
     virtual void Update(volatile int frame, uint32 keys, Sound *sound) = 0;
     virtual bool IsComplete() = 0;
     virtual MinigameResult GetResult(int framesTaken) = 0;
@@ -44,7 +44,82 @@ public:
     ValveMinigame();
 
     void Load();
-    void Delete();
+    void Unload();
+    void Update(volatile int frame, uint32 keys, Sound *sound);
+    bool IsComplete();
+    MinigameResult GetResult(int framesTaken);
+    bool IsForCurrentBatch(int currentBatchProgress);
+};
+
+class PestleMinigame : public Minigame
+{
+private:
+
+public:
+    PestleMinigame();
+
+    void Load();
+    void Unload();
+    void Update(volatile int frame, uint32 keys, Sound *sound);
+    bool IsComplete();
+    MinigameResult GetResult(int framesTaken);
+    bool IsForCurrentBatch(int currentBatchProgress);
+};
+
+class MixMinigame : public Minigame
+{
+private:
+
+public:
+    MixMinigame();
+
+    void Load();
+    void Unload();
+    void Update(volatile int frame, uint32 keys, Sound *sound);
+    bool IsComplete();
+    MinigameResult GetResult(int framesTaken);
+    bool IsForCurrentBatch(int currentBatchProgress);
+};
+
+class PipetteMinigame : public Minigame
+{
+private:
+
+public:
+    PipetteMinigame();
+
+    void Load();
+    void Unload();
+    void Update(volatile int frame, uint32 keys, Sound *sound);
+    bool IsComplete();
+    MinigameResult GetResult(int framesTaken);
+    bool IsForCurrentBatch(int currentBatchProgress);
+};
+
+class PourMinigame : public Minigame
+{
+private:
+
+public:
+    PourMinigame();
+
+    void Load();
+    void Unload();
+    void Update(volatile int frame, uint32 keys, Sound *sound);
+    bool IsComplete();
+    MinigameResult GetResult(int framesTaken);
+    bool IsForCurrentBatch(int currentBatchProgress);
+};
+
+class CrackMinigame : public Minigame
+{
+private:
+
+public:
+    CrackMinigame();
+
+    void Load();
+    void Unload();
     void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);

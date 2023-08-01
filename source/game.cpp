@@ -9,7 +9,7 @@ Game::Game()
     if (!nitroFSInit(NULL))
     {
         printf("\x1B[31mFailed to start nitroFS\n");
-        printf("\x1B[31mPress POWER or RESET to continue\n");
+        printf("\x1B[31mPlease reset the system\n");
 
         while (1)
         {
@@ -80,7 +80,9 @@ void Game::Prepare3DGraphics()
     // Enable shading and outlining
     NE_ShadingEnable(true);
     NE_OutliningEnable(true);
-    NE_OutliningSetColor(1, NE_Black);
+    NE_OutliningSetColor(1, NE_Black); // Singleplayer player outline
+    NE_OutliningSetColor(2, NE_Green); // Multiplayer Player 1 outline
+    NE_OutliningSetColor(3, NE_LightBlue); // Multiplayer: Player 2 outline
 
     // Create camera
     camera = NE_CameraCreate();
@@ -209,14 +211,21 @@ void Game::TogglePauseMenu()
 // Show/hide bottom screen HUD
 void Game::ToggleHud(bool show)
 {
+    bool isMultiplayer = gameType == MULTIPLAYER_GAME;
     if (show && !hudVisible)
     {
-        NF_LoadTiledBg(HUD_BG_NAME, HUD_BG_NAME, 256, 256);
-        NF_CreateTiledBg(1, HUD_BG, HUD_BG_NAME);
+        NF_LoadTiledBg(isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME, isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME, 256, 256);
+        NF_CreateTiledBg(1, HUD_BG, isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME);
         
-        // Player marker
+        // Player markers
+        int playerSpriteFrame = isMultiplayer ? isHostClient() ? 1 : 2 : 0;
         NF_CreateSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
-        NF_SpriteFrame(1, HUD_MAP_PLAYER_SPRITE, 0);
+        NF_SpriteFrame(1, HUD_MAP_PLAYER_SPRITE, playerSpriteFrame);
+        if (playerSpriteFrame > 0)
+        {
+            NF_CreateSprite(1, HUD_MAP_PLAYER2_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
+            NF_SpriteFrame(1, HUD_MAP_PLAYER2_SPRITE, playerSpriteFrame == 1 ? 2 : 1);
+        }
         
         // Map marker
         NF_CreateSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
@@ -238,7 +247,7 @@ void Game::ToggleHud(bool show)
             NF_SpriteFrame(1, HUD_PURITY_SPRITES[i], 0);
         }
 
-        // Quota
+        // Quota / Multiplayer Vs. Score
         for (int i = 0; i < 4; i++)
         {
             NF_CreateSprite(1, HUD_QUOTA_SPRITES[i], HUD_NUMBERS + 1, HUD_NUMBERS + 1, (HUD_QUOTA_COORDS[0] + (i >= 2 ? 12 : 0)) + (i * 16), HUD_QUOTA_COORDS[1]);
@@ -249,8 +258,12 @@ void Game::ToggleHud(bool show)
     else if (hudVisible)
     {
         NF_DeleteTiledBg(1, HUD_BG);
-        NF_UnloadTiledBg(HUD_BG_NAME);
+        NF_UnloadTiledBg(isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME);
         NF_DeleteSprite(1, HUD_MAP_PLAYER_SPRITE);
+        if (isMultiplayer)
+        {
+            NF_DeleteSprite(1, HUD_MAP_PLAYER2_SPRITE);
+        }
         NF_DeleteSprite(1, HUD_MAP_MARKER_SPRITE);
         for (int i = 0; i < HUD_CHECKBOX_COUNT; i++)
         {
@@ -271,22 +284,28 @@ void Game::ToggleHud(bool show)
 
 void Game::UpdateHud()
 {
+    bool isMultiplayer = gameType == MULTIPLAYER_GAME;
     if (mode == MOVE)
     {
         NF_MoveSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (player.x * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (player.z * 4.4));
+        if (isMultiplayer)
+        {
+            NF_MoveSprite(1, HUD_MAP_PLAYER2_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (player2->x * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (player2->z * 4.4));
+        }
         NF_MoveSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][0] * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][1] * 4.4));
         for (int i = 0; i < HUD_CHECKBOX_COUNT; i++)
         {
-            bool p1Completed = currentBatchProgress > i;
-            if (gameType == MULTIPLAYER_GAME)
+            if (isMultiplayer)
             {
-                bool p2Completed = (getOpponent()->currentBatchStep > i);
+                bool isHost = isHostClient();
+                bool p1Completed = isHost ? (currentBatchProgress > i) : (getOpponent()->currentBatchStep > i);
+                bool p2Completed = isHost ? (getOpponent()->currentBatchStep > i) : (currentBatchProgress > i);
                 int totalProgress = (p1Completed && p2Completed) ? 4 : p1Completed && !p2Completed ? 2 : !p1Completed && p2Completed ? 3 : 0;
                 NF_SpriteFrame(1, HUD_CHECKBOX_SPRITES[i], totalProgress);
             }
             else 
             {
-                NF_SpriteFrame(1, HUD_CHECKBOX_SPRITES[i], p1Completed ? 1 : 0);
+                NF_SpriteFrame(1, HUD_CHECKBOX_SPRITES[i], currentBatchProgress > i ? 1 : 0);
             }
         }
         for (int i = 0; i < 3; i++)
@@ -299,7 +318,7 @@ void Game::UpdateHud()
         }
         for (int i = 0; i < 4; i++)
         {
-            NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int) ((i < 2 ? batchesComplete : batchQuota) / pow(10, 3 - i)) % 10);
+            NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int) ((i < 2 ? batchesComplete : (isMultiplayer ? player2batchesComplete : batchQuota)) / pow(10, 3 - i)) % 10);
         }
     }
 }
@@ -311,6 +330,10 @@ void Game::QuitToTitle()
         return;
     }
     isQuitting = true;
+    if (gameType == MULTIPLAYER_GAME)
+    {
+        disableMultiplayer();
+    }
     UnLoadLabScene();
     NE_SpecialEffectSet(NE_NONE);
     StartMenuScreen(false);
@@ -325,7 +348,7 @@ void Game::StartDialogue(ScriptId script)
     }
     if (mode == MINIGAME)
     {
-        currentMinigame->Delete();
+        currentMinigame->Unload();
     }
     mode = DIALOGUE;
     ToggleHud(false);
@@ -377,21 +400,24 @@ void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
     LoadLabScene();
 
     // Move player to starting position
-    player.Translate(-11.5, 0, 4.5);
-    player.targetX = 4;
-    player.tileX = 4;
-    player.targetZ = 1;
-    player.tileZ = 1;
 
     // Player 2 setup
     if (gameType == MULTIPLAYER_GAME)
     {
-        player2->Translate(-11.5, 0, 4.5);
-        player2->targetX = 4;
-        player2->tileX = 4;
-        player2->targetZ = 1;
-        player2->tileZ = 1;
+        bool isHost = isHostClient();
+        player.Translate(isHost ? -11.5 : -9.0, 0, 4.5);
+        player.targetX = player.tileX = isHost ? 4 : 3;
+
+        player2->Translate(!isHost ? -11.5 : -9.0, 0, 4.5);
+        player2->targetX = player2->tileX = !isHost ? 4 : 3;
+        player2->targetZ = player2->tileZ = 1;
     }
+    else
+    {
+        player.Translate(-11.5, 0, 4.5);
+        player.targetX = player.tileX = 4;
+    }
+    player.targetZ = player.tileZ = 1;
 
     // Setup camera
     cameraX = BASE_MOVE_CAMERA_POS[0];
@@ -411,16 +437,18 @@ void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
 
 void Game::LoadLabScene()
 {
+    bool isMultiplayer = gameType == MULTIPLAYER_GAME;
+
     // Load map and player
     if (map.Load() == -1)
     {
         WaitLoop();
     }
-    if (player.Load(gameType == MULTIPLAYER_GAME && !isHostClient()) == -1)
+    if (player.Load(isMultiplayer && !isHostClient()) == -1)
     {
         WaitLoop();
     }
-    if (gameType == MULTIPLAYER_GAME)
+    if (isMultiplayer)
     {
         player2 = new Player();
         player2->isPlayer2 = true;
@@ -470,7 +498,6 @@ void Game::UnLoadLabScene()
     if (mode == MULTIPLAYER_GAME)
     {
         player2->Unload();
-        disableMultiplayer();
     }
 
     // Remove fog
@@ -557,7 +584,7 @@ void Game::UpdateMenuScreen()
         break;
     case START_MP_GAME:
         UnLoadLogoScene();
-        StartGame(MULTIPLAYER_GAME, 200, 10);
+        StartGame(MULTIPLAYER_GAME, 300, 99);
         break;
     }
 }
@@ -597,7 +624,7 @@ void Game::DeleteMinigame()
     {
         return;
     }
-    currentMinigame->Delete();
+    currentMinigame->Unload();
     currentMinigame = NULL;
     ToggleHud(true);
 }
@@ -674,9 +701,7 @@ void Game::UpdateGameOver()
             Transition(false, 0);
             break;
         case 620:
-            sound.StopBGM();
-            UnLoadLabScene();
-            StartMenuScreen(false);
+            QuitToTitle();
             break;
     }
 }
@@ -718,10 +743,10 @@ void Game::Render()
 
     // Draw objects
     map.Draw();
-    player.Draw();
+    player.Draw(gameType == MULTIPLAYER_GAME ? (isHostClient() ? 1 : 2) : 0);
     if (gameType == MULTIPLAYER_GAME && mode != GAME_OVER)
     {
-        player2->Draw();
+        player2->Draw(!isHostClient() ? 1 : 2);
     }
 }
 

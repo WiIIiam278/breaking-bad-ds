@@ -53,6 +53,6 @@ public:
     void SetLyingDown(bool lyingDown);
     void DrawShadow(float radius, u32 color);
     void DrawTriangle(float *vertexes[], float offset[3], u32 color);
-    void Draw();
+    void Draw(u32 outline);
     void Unload();
 };

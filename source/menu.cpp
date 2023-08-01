@@ -640,6 +640,7 @@ MenuSelection Menu::HandleInput(Sound *sound)
             }
             SetState(MENU_GAME_SELECT, sound);
             mpCurrentStatus = -1;
+            mpCreatingRoom = false;
             disableMultiplayer();
             sound->PlaySFX(SFX_MENU_DRUM);
             return BACK_TO_GAME_MENU;

@@ -82,8 +82,9 @@ private:
     const int HUD_CHECKBOXES = 7;
     const int HUD_NUMBERS = 8;
     const int HUD_MAP_PLAYER_SPRITE = 6;
-    const int HUD_MAP_MARKER_SPRITE = 7;
-    const int HUD_CHECKBOX_SPRITES[6] = {8, 9, 10, 11, 13, 14};
+    const int HUD_MAP_PLAYER2_SPRITE = 7;
+    const int HUD_MAP_MARKER_SPRITE = 8;
+    const int HUD_CHECKBOX_SPRITES[6] = {9, 10, 11, 12, 13, 14};
     const int HUD_TIMER_SPRITES[3] = {20, 21, 22};
     const int HUD_PURITY_SPRITES[3] = {23, 24, 25};
     const int HUD_QUOTA_SPRITES[4] = {26, 27, 28, 29};
@@ -97,7 +98,7 @@ private:
     bool hudVisible = false;
     
     // Minigames
-    const int QUALITY_INDICATOR_SPRITE = 12;
+    const int QUALITY_INDICATOR_SPRITE = 5;
     int showingIndicatorFor = 0;
     int inMinigameFor = 0;
     ValveMinigame valveMinigame;
@@ -105,7 +106,8 @@ private:
 
     // Backgrounds
     const int HUD_BG = 1;
-    const char HUD_BG_NAME[32] = "bg/hud";
+    const char SP_HUD_BG_NAME[32] = "bg/hud";
+    const char MP_HUD_BG_NAME[32] = "bg/multiplayer_hud";
     const int PAUSED_BG = 2;
     const char PAUSED_BG_NAME[32] = "bg/paused";
 

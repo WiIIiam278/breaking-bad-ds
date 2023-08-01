@@ -10,7 +10,7 @@
 #define EMPTY -1
 
 // Nifi settings
-#define MAX_CLIENT 6         // Max number of clients
+#define MAX_CLIENT 3         // Max number of clients
 #define WIFI_RATE 240        // Read/Write rate per second
 #define WIFI_TIMEOUT 10      // Number of wifi rate before the message is considered lost
 #define MAX_TIMEOUT_RETRY 10 // Number of try before client is considered as disconnected

@@ -247,11 +247,11 @@ void Player::DrawTriangle(float *vertices[], float offset[3], u32 color)
     glTranslatef(-offset[0], -offset[1], -offset[2]);
 }
 
-void Player::Draw()
+void Player::Draw(u32 outline)
 {
     NE_PolyFormat(lyingDown ? 26 : 16, 8, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
     DrawShadow(lyingDown ? 0.85f + (float) std::min(0.85f, (float) (lyingDownFrames / 500.0f)) : 0.85f, lyingDown ? NE_Red : NE_Black);
-    NE_PolyFormat(31, 8, NE_LIGHT_0, NE_CULL_NONE, (NE_OtherFormatEnum)(NE_TOON_HIGHLIGHT_SHADING | NE_FOG_ENABLE));
+    NE_PolyFormat(31, (8 + (outline * 8)), NE_LIGHT_0, NE_CULL_NONE, (NE_OtherFormatEnum)(NE_TOON_HIGHLIGHT_SHADING | NE_FOG_ENABLE));
     NE_ModelDraw(model);
 }
 
