@@ -22,7 +22,7 @@ void PipetteMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
 
 bool PipetteMinigame::IsComplete()
 {
-    return false;
+    return true;
 }
 
 MinigameResult PipetteMinigame::GetResult(int framesTaken)

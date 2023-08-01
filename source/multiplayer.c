@@ -33,7 +33,7 @@ bool tryJoinRoom = false;		  // Is the client trying to join a room
 bool skipData;					  // If true, the client will skip data of the current wifi packet
 
 // Other variables
-const bool MP_DEBUG = true;
+const bool MP_MODE = false;
 int mpStatus = MP_CLIENT_SEARCHING;
 
 void joinMultiplayer(bool hostRoom)
@@ -213,7 +213,7 @@ void treatData()
 				SplitCount++;
 				ptr = strtok(NULL, ";");
 
-				if (MP_DEBUG)
+				if (MP_MODE)
 				{
 					NF_WriteText(1, 0, 1, 4 + SplitCount, ptr);
 				}
@@ -426,7 +426,7 @@ void createRequest(Client *clientSender, Client *clientToUpdate, enum RequestTyp
 		break;
 	}
 
-	if (MP_DEBUG)
+	if (MP_MODE)
 	{
 		NF_WriteText(1, 0, 1, 2, buffer);
 	}

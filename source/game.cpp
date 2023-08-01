@@ -600,7 +600,22 @@ void Game::StartMinigame(Tile tile)
     switch (tile)
     {
     case MINIGAME_VALVE:
-        currentMinigame = &valveMinigame;
+        currentMinigame = new ValveMinigame();
+        break;
+    case MINIGAME_PESTLE:
+        currentMinigame = new PestleMinigame();
+        break;
+    case MINIGAME_PIPETTE:
+        currentMinigame = new PipetteMinigame();
+        break;
+    case MINIGAME_MIX:
+        currentMinigame = new MixMinigame();
+        break;
+    case MINIGAME_POUR:
+        currentMinigame = new PourMinigame();
+        break;
+    case MINIGAME_CRACK:
+        currentMinigame = new CrackMinigame();
         break;
     default:
         currentMinigame = NULL;
@@ -920,12 +935,18 @@ void Game::Update()
             }
         }
 
-        switch (map.GetTileAt(player.tileX, player.tileZ))
+        Tile tile = map.GetTileAt(player.tileX, player.tileZ);
+        switch (tile)
         {
         case MINIGAME_VALVE:
+        case MINIGAME_PESTLE:
+        case MINIGAME_PIPETTE:
+        case MINIGAME_MIX:
+        case MINIGAME_POUR:
+        case MINIGAME_CRACK:
             if (mode == MOVE)
             {
-                StartMinigame(MINIGAME_VALVE);
+                StartMinigame(tile);
             }
             break;
         default:

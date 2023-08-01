@@ -1,6 +1,6 @@
 #include "game.h"
 
-const bool MP_DEBUG = false;
+const bool DEBUG_MODE = true;
 Game game;
 
 void RenderGame()
@@ -15,7 +15,7 @@ int main(void)
     game.Prepare2DGraphics();
 
     // Start the game
-    game.StartMenuScreen(MP_DEBUG);
+    game.StartMenuScreen(DEBUG_MODE);
 
     // Run the game loop
     while (true)

@@ -101,7 +101,6 @@ private:
     const int QUALITY_INDICATOR_SPRITE = 5;
     int showingIndicatorFor = 0;
     int inMinigameFor = 0;
-    ValveMinigame valveMinigame;
     Minigame *currentMinigame = NULL;
 
     // Backgrounds

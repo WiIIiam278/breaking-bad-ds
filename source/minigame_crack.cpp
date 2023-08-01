@@ -22,7 +22,7 @@ void CrackMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
 
 bool CrackMinigame::IsComplete()
 {
-    return false;
+    return true;
 }
 
 MinigameResult CrackMinigame::GetResult(int framesTaken)

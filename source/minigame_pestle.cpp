@@ -22,7 +22,7 @@ void PestleMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
 
 bool PestleMinigame::IsComplete()
 {
-    return false;
+    return true;
 }
 
 MinigameResult PestleMinigame::GetResult(int framesTaken)

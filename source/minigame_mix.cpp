@@ -22,7 +22,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
 
 bool MixMinigame::IsComplete()
 {
-    return false;
+    return true;
 }
 
 MinigameResult MixMinigame::GetResult(int framesTaken)

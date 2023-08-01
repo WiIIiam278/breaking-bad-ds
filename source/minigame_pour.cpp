@@ -22,7 +22,7 @@ void PourMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
 
 bool PourMinigame::IsComplete()
 {
-    return false;
+    return true;
 }
 
 MinigameResult PourMinigame::GetResult(int framesTaken)
