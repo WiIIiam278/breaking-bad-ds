@@ -146,8 +146,6 @@ public:
     void LoadLabScene();
     void UnLoadLabScene();
 
-    // Multiplayer
-
     // Start title screen
     void StartMenuScreen(bool debugMode);
     void LoadLogoScene();

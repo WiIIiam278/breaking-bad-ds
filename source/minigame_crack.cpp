@@ -29,8 +29,3 @@ MinigameResult CrackMinigame::GetResult(int framesTaken)
 {
     return GOOD;
 }
-
-bool CrackMinigame::IsForCurrentBatch(int currentBatchProgress)
-{
-    return currentBatchProgress == 5;
-}

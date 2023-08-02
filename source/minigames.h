@@ -23,7 +23,8 @@ public:
     virtual void Update(volatile int frame, uint32 keys, Sound *sound) = 0;
     virtual bool IsComplete() = 0;
     virtual MinigameResult GetResult(int framesTaken) = 0;
-    virtual bool IsForCurrentBatch(int currentBatchProgress) = 0;
+
+    virtual ~Minigame() {}
 };
 
 class ValveMinigame : public Minigame
@@ -32,8 +33,8 @@ private:
     const int VALVE_ROTATION_SPEED = 4;
 
     const u32 VALVE_SPRITE = 15;
-    const char VALVE_SPRITE_NAME[13] = "sprite/valve";
-    const char VALVE_BACKGROUND_NAME[18] = "bg/valve_minigame";
+    const char VALVE_SPRITE_NAME[32] = "sprite/valve";
+    const char VALVE_BACKGROUND_NAME[32] = "bg/valve_minigame";
 
     uint32 lastStylusPos[2] = {0, 0};
 
@@ -48,13 +49,32 @@ public:
     void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
-    bool IsForCurrentBatch(int currentBatchProgress);
 };
 
 class PestleMinigame : public Minigame
 {
 private:
+    const u32 PESTLE_SPRITE = 15;
+    const u32 SOLUTE_SPRITES[3] = { 16, 17, 18 };
+    const char PESTLE_SPRITES_NAME[32] = "sprite/pestle";
+    const char PESTLE_BACKGROUND_NAME[32] = "bg/pestle_minigame";
+    int lastSfxPlay = 0;
+        
+    const int SOLUTE_MAX_DAMAGE = 12;
+    int soluteDamage[3] = { 0, 0, 0 };
+    u16 solutePos[3][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 } };
+    int soluteRot[3] = { 0, 0, 0 };
 
+    const int SWING_LENGTH = 10;
+    const u16 VELOCITY_THRESHOLD = 800;
+    const u16 PESTLE_PROXIMITY = 32;
+    const int SFX_DURATION = 70;
+    int pestleRotation = 0;
+    u16 pestlePos[2] = { 0, 0 };
+    u16 lastPestlePos[2] = { 0, 0 };
+    int lastVelocityCheckFrame = 0;
+    u16 velocity = 0;
+    
 public:
     PestleMinigame();
 
@@ -63,12 +83,19 @@ public:
     void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
-    bool IsForCurrentBatch(int currentBatchProgress);
 };
 
 class MixMinigame : public Minigame
 {
 private:
+    const int PIPE_COUNT = 12;
+    const u32 PIPE_SPRITES[12] = { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 };
+    const char PIPE_SPRITES_NAME[32] = "sprite/mixing_pipes";
+    const char MIX_BACKGROUND_NAME[32] = "bg/mix_minigame";
+    const int PIPE_ORIGIN_POS[2] = { -182, -38 };
+    const u32 PIPE_OFFSET = 40;
+
+    const int headPos[2] = { 0, 64 };
 
 public:
     MixMinigame();
@@ -78,7 +105,6 @@ public:
     void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
-    bool IsForCurrentBatch(int currentBatchProgress);
 };
 
 class PipetteMinigame : public Minigame
@@ -93,7 +119,6 @@ public:
     void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
-    bool IsForCurrentBatch(int currentBatchProgress);
 };
 
 class PourMinigame : public Minigame
@@ -108,7 +133,6 @@ public:
     void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
-    bool IsForCurrentBatch(int currentBatchProgress);
 };
 
 class CrackMinigame : public Minigame
@@ -123,5 +147,4 @@ public:
     void Update(volatile int frame, uint32 keys, Sound *sound);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
-    bool IsForCurrentBatch(int currentBatchProgress);
 };

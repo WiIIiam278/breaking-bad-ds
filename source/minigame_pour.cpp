@@ -29,8 +29,3 @@ MinigameResult PourMinigame::GetResult(int framesTaken)
 {
     return GOOD;
 }
-
-bool PourMinigame::IsForCurrentBatch(int currentBatchProgress)
-{
-    return currentBatchProgress == 4;
-}

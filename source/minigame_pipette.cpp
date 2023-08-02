@@ -29,8 +29,3 @@ MinigameResult PipetteMinigame::GetResult(int framesTaken)
 {
     return GOOD;
 }
-
-bool PipetteMinigame::IsForCurrentBatch(int currentBatchProgress)
-{
-    return currentBatchProgress == 3;
-}

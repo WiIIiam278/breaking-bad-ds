@@ -80,8 +80,8 @@ void Game::Prepare3DGraphics()
     // Enable shading and outlining
     NE_ShadingEnable(true);
     NE_OutliningEnable(true);
-    NE_OutliningSetColor(1, NE_Black); // Singleplayer player outline
-    NE_OutliningSetColor(2, NE_Green); // Multiplayer Player 1 outline
+    NE_OutliningSetColor(1, NE_Black);     // Singleplayer player outline
+    NE_OutliningSetColor(2, NE_Green);     // Multiplayer Player 1 outline
     NE_OutliningSetColor(3, NE_LightBlue); // Multiplayer: Player 2 outline
 
     // Create camera
@@ -105,7 +105,8 @@ void Game::UpdateCamera()
         cameraTz = -2.5 + (player.z / 6);
         break;
     case GAME_OVER:
-        if (gameOverFrame < -10) return;
+        if (gameOverFrame < -10)
+            return;
         cameraTx = player.x - 0.5f;
         cameraTy = 5 + (((float)gameOverFrame / 500.0f) * 13.0f);
         cameraTz = player.z + 1.5f;
@@ -216,7 +217,7 @@ void Game::ToggleHud(bool show)
     {
         NF_LoadTiledBg(isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME, isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME, 256, 256);
         NF_CreateTiledBg(1, HUD_BG, isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME);
-        
+
         // Player markers
         int playerSpriteFrame = isMultiplayer ? isHostClient() ? 1 : 2 : 0;
         NF_CreateSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
@@ -226,11 +227,11 @@ void Game::ToggleHud(bool show)
             NF_CreateSprite(1, HUD_MAP_PLAYER2_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
             NF_SpriteFrame(1, HUD_MAP_PLAYER2_SPRITE, playerSpriteFrame == 1 ? 2 : 1);
         }
-        
+
         // Map marker
         NF_CreateSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ICONS + 1, HUD_MAP_ICONS + 1, HUD_MAP_ORIGIN_COORDS[0], HUD_MAP_ORIGIN_COORDS[1]);
         NF_SpriteFrame(1, HUD_MAP_MARKER_SPRITE, 3);
-        
+
         // Checkboxes
         for (int i = 0; i < HUD_CHECKBOX_COUNT; i++)
         {
@@ -253,7 +254,6 @@ void Game::ToggleHud(bool show)
             NF_CreateSprite(1, HUD_QUOTA_SPRITES[i], HUD_NUMBERS + 1, HUD_NUMBERS + 1, (HUD_QUOTA_COORDS[0] + (i >= 2 ? 12 : 0)) + (i * 16), HUD_QUOTA_COORDS[1]);
             NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], 0);
         }
-
     }
     else if (hudVisible)
     {
@@ -300,10 +300,12 @@ void Game::UpdateHud()
                 bool isHost = isHostClient();
                 bool p1Completed = isHost ? (currentBatchProgress > i) : (getOpponent()->currentBatchStep > i);
                 bool p2Completed = isHost ? (getOpponent()->currentBatchStep > i) : (currentBatchProgress > i);
-                int totalProgress = (p1Completed && p2Completed) ? 4 : p1Completed && !p2Completed ? 2 : !p1Completed && p2Completed ? 3 : 0;
+                int totalProgress = (p1Completed && p2Completed) ? 4 : p1Completed && !p2Completed ? 2
+                                                                   : !p1Completed && p2Completed   ? 3
+                                                                                                   : 0;
                 NF_SpriteFrame(1, HUD_CHECKBOX_SPRITES[i], totalProgress);
             }
-            else 
+            else
             {
                 NF_SpriteFrame(1, HUD_CHECKBOX_SPRITES[i], currentBatchProgress > i ? 1 : 0);
             }
@@ -312,13 +314,13 @@ void Game::UpdateHud()
         {
             if (timeLimit > -1)
             {
-                NF_SpriteFrame(1, HUD_TIMER_SPRITES[i], (int) (timeLimit / pow(10, 2 - i)) % 10);
+                NF_SpriteFrame(1, HUD_TIMER_SPRITES[i], (int)(timeLimit / pow(10, 2 - i)) % 10);
             }
-            NF_SpriteFrame(1, HUD_PURITY_SPRITES[i], (int) (batchPurity / pow(10, 2 - i)) % 10);
+            NF_SpriteFrame(1, HUD_PURITY_SPRITES[i], (int)(batchPurity / pow(10, 2 - i)) % 10);
         }
         for (int i = 0; i < 4; i++)
         {
-            NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int) ((i < 2 ? batchesComplete : (isMultiplayer ? player2batchesComplete : batchQuota)) / pow(10, 3 - i)) % 10);
+            NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int)((i < 2 ? batchesComplete : (isMultiplayer ? player2batchesComplete : batchQuota)) / pow(10, 3 - i)) % 10);
         }
     }
 }
@@ -343,7 +345,8 @@ void Game::QuitToTitle()
 
 void Game::StartDialogue(ScriptId script)
 {
-    if (mode == DIALOGUE) {
+    if (mode == DIALOGUE)
+    {
         return;
     }
     if (mode == MINIGAME)
@@ -374,7 +377,7 @@ void Game::CheckTutorials()
         int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress, currentBatchProgress);
         if (dialogueId != -1)
         {
-            StartDialogue((ScriptId) dialogueId);
+            StartDialogue((ScriptId)dialogueId);
             tutorialProgress++;
         }
     }
@@ -530,6 +533,7 @@ void Game::StartMenuScreen(bool debugMode)
     if (debugFlag)
     {
         StartGame(SINGLEPLAYER_GAME, 999, 1);
+        currentBatchProgress = 2;
         return;
     }
 
@@ -596,7 +600,14 @@ void Game::StartMinigame(Tile tile)
     {
         return;
     }
-    
+
+    if (tile > 2 && currentBatchProgress != ((int)tile - 3))
+    {
+        currentMinigame = NULL;
+        delete currentMinigame;
+        return;
+    }
+
     switch (tile)
     {
     case MINIGAME_VALVE:
@@ -619,12 +630,7 @@ void Game::StartMinigame(Tile tile)
         break;
     default:
         currentMinigame = NULL;
-        return;
-    }
-
-    if (!currentMinigame->IsForCurrentBatch(currentBatchProgress))
-    {
-        currentMinigame = NULL;
+        delete currentMinigame;
         return;
     }
 
@@ -694,30 +700,30 @@ void Game::UpdateGameOver()
 
     switch (gameOverFrame)
     {
-        case -150:
-            sound.PlaySFX(SFX_GOODBYE_WALTER);
-            break;
-        case -55:
-        case -56:
-        case -57:
-        case -58:
-        case -59:
-        case -60:
-            setRumble(gameOverFrame % 2 == 0);
-            break;
-        case -10:
-            sound.StopSFX();
-            break;
-        case 0:
-            sound.PlayBGM(BGM_BABY_BLUE, false);
-            Transition(true, 60);
-            break;
-        case 520:
-            Transition(false, 0);
-            break;
-        case 620:
-            QuitToTitle();
-            break;
+    case -150:
+        sound.PlaySFX(SFX_GOODBYE_WALTER);
+        break;
+    case -55:
+    case -56:
+    case -57:
+    case -58:
+    case -59:
+    case -60:
+        setRumble(gameOverFrame % 2 == 0);
+        break;
+    case -10:
+        sound.StopSFX();
+        break;
+    case 0:
+        sound.PlayBGM(BGM_BABY_BLUE, false);
+        Transition(true, 60);
+        break;
+    case 520:
+        Transition(false, 0);
+        break;
+    case 620:
+        QuitToTitle();
+        break;
     }
 }
 
@@ -730,7 +736,7 @@ void Game::Render()
 {
     // Set camera
     NE_CameraUse(camera);
-    
+
     // Set poly format
     NE_PolyFormat(31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
 
@@ -771,7 +777,7 @@ void Game::Update()
     {
         if (getMultiplayerStatus() == MP_CONNECTION_LOST)
         {
-            QuitToTitle(); //todo display that connection was lost
+            QuitToTitle(); // todo display that connection was lost
         }
         else
         {
@@ -803,7 +809,7 @@ void Game::Update()
                     timeLimit = opponent->timeLeft;
                 }
             }
-            
+
             tickMultiplayer();
         }
     }
@@ -826,12 +832,8 @@ void Game::Update()
         char memUsage[100];
         sprintf(memUsage, "Mem: %d (%d)", getMemUsed(), getMemFree());
         NF_WriteText(1, 0, 1, 5, memUsage);
-
-        char timeLeft[100];
-        sprintf(timeLeft, "Time: %ds, Frame: %d", timeLimit, frame);
-        NF_WriteText(1, 0, 1, 18, timeLeft);
     }
-    
+
     // Update transition
     UpdateTransition();
 
@@ -847,7 +849,7 @@ void Game::Update()
             player.HandleInput(keysHeld());
         }
 
-        if (gameType != MULTIPLAYER_GAME && 
+        if (gameType != MULTIPLAYER_GAME &&
             (mode == PAUSED) && (keysDown() & KEY_B))
         {
             NF_DeleteTiledBg(1, PAUSED_BG);
@@ -856,7 +858,7 @@ void Game::Update()
             return;
         }
         else if (gameType != MULTIPLAYER_GAME &&
-            (mode == MOVE || mode == PAUSED) && (keysDown() & KEY_START))
+                 (mode == MOVE || mode == PAUSED) && (keysDown() & KEY_START))
         {
             TogglePauseMenu();
         }
@@ -874,7 +876,7 @@ void Game::Update()
                 StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
             }
         }
-        else 
+        else
         {
             idleFrames = 0;
         }
@@ -973,10 +975,24 @@ void Game::Update()
     {
         inMinigameFor++;
         currentMinigame->Update(frame, keysHeld(), &sound);
-        if (currentMinigame->IsComplete() && currentMinigame->IsForCurrentBatch(currentBatchProgress))
+        if (currentMinigame->IsComplete() && currentBatchProgress == ((int)player.GetPlayerTile(map) - 3))
         {
-            ShowMinigameResult(currentMinigame->GetResult(inMinigameFor), 90);
+            MinigameResult result = currentMinigame->GetResult(inMinigameFor);
+            ShowMinigameResult(result, 90);
             currentBatchProgress++;
+            if (result == BAD)
+            {
+                batchPurity -= (16 + (frame % 5));
+            }
+            else if (result == OKAY)
+            {
+                batchPurity -= (6 + (frame % 3));
+            }
+
+            if (batchPurity < 5)
+            {
+                batchPurity = 5;
+            }
         }
     }
     else

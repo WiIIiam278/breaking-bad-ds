@@ -82,8 +82,3 @@ MinigameResult ValveMinigame::GetResult(int framesTaken)
     return (framesTaken < 480) ? GOOD : (framesTaken < 900) ? OKAY
                                                             : BAD;
 }
-
-bool ValveMinigame::IsForCurrentBatch(int currentBatchProgress)
-{
-    return currentBatchProgress == 0;
-}
