@@ -95,15 +95,19 @@ private:
     const char PIPE_SPRITES_NAME[32] = "sprite/mixing_pipes";
     const char MIX_BACKGROUND_NAME[32] = "bg/mix_minigame";
     const u32 PIPE_OFFSET = 40;
+    const int TARGET_PIPE_POS[2] = { 110, 60 };
+    const int TARGET_POS_VARIENCE = 2;
     int pipePos[2] = { 0, 0 };
+    bool pipeInPlace = false;
+    int pipeInPlaceFrames = 0;
     
     
-    const u32 CRANK_SPRITES[2] = { 24, 25 };
+    const u32 CRANK_SPRITES[2] = { 14, 15 };
     const int CRANK_POS[2][2] = { { 10, 55 }, { 125, 90 } };
     int crankRot[2] = { 0, 0 };
     int rotatingCrank = -1;
     
-    u16 lastStylusPos[2] = {0, 0};
+    int lastStylusPos[2] = {-1, -1};
 
 public:
     MixMinigame();

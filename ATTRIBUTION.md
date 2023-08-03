@@ -27,6 +27,9 @@ Breaking Bad and related properties are owned and copyrighted by their respectiv
 - squeaky valve by Richard Frohlich (https://freesound.org/people/FreqMan/sounds/31380/) &mdash; Licensed under Creative Commons Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/)
 - Homemade Gunshot by Noah Fletcher (https://freesound.org/people/Noah_Fletcher/sounds/200245/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
 - Mortar and pestle cooking; loud by Australopithecusman (https://freesound.org/people/Australopithecusman/sounds/388900/) &mdash; Licensed under Creative Commons Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/)
+- Crank by MasterSuite (https://freesound.org/people/MasterSuite/sounds/667389/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
+- CLICK - plastic bottle lid - SNAP by Duisterwho (https://freesound.org/people/Duisterwho/sounds/644049/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
+- Shopvac by Dnab55 (https://freesound.org/people/Dnab55/sounds/129347/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
 
 #### Everything else
 - by William278 (me! &mdash; https://william278.net/)

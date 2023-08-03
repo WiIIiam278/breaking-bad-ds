@@ -72,7 +72,10 @@ enum EffectId
     SFX_SUCCESS_BELL,
     SFX_VALVE_TURN,
     SFX_GOODBYE_WALTER,
-    SFX_PESTLE
+    SFX_PESTLE,
+    SFX_CRANK,
+    SFX_CLICK,
+    SFX_VACCUM
 };
 
 struct SFX
@@ -81,7 +84,7 @@ struct SFX
     const char fileName[64];
 };
 
-const int SFX_COUNT = 7;
+const int SFX_COUNT = 10;
 const SFX SFXS[SFX_COUNT] =
     {
         {SFX_MENU_DRUM, "sfx/menu_drum"},
@@ -90,7 +93,10 @@ const SFX SFXS[SFX_COUNT] =
         {SFX_SUCCESS_BELL, "sfx/success_bell"},
         {SFX_VALVE_TURN, "sfx/valve_turn"},
         {SFX_GOODBYE_WALTER, "sfx/goodbye_walter"},
-        {SFX_PESTLE, "sfx/pestle"}
+        {SFX_PESTLE, "sfx/pestle"},
+        {SFX_CRANK, "sfx/crank"},
+        {SFX_CLICK, "sfx/click"},
+        {SFX_VACCUM, "sfx/vaccum"}
     };
 
 class Sound

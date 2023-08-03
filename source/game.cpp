@@ -530,12 +530,12 @@ void Game::StartMenuScreen(bool debugMode)
     mode = MAIN_MENU;
 
     // Quick-start debug game if the flag is set
-    if (debugFlag)
-    {
-        StartGame(SINGLEPLAYER_GAME, 999, 1);
-        currentBatchProgress = 2;
-        return;
-    }
+    // if (debugFlag)
+    // {
+    //     StartGame(SINGLEPLAYER_GAME, 999, 1);
+    //     currentBatchProgress = 2;
+    //     return;
+    // }
 
     // Load logo
     LoadLogoScene();
@@ -821,9 +821,12 @@ void Game::Update()
     oamUpdate(&oamSub);
 
     // Debug - print debug info
-    if (debugFlag && (mode != MAIN_MENU && mode != MINIGAME && mode != DIALOGUE))
+    if (debugFlag)
     {
-        player.PrintCoords(map);
+        if (mode != MAIN_MENU && mode != MINIGAME && mode != DIALOGUE)
+        {
+            player.PrintCoords(map);
+        }
 
         char modeText[100];
         sprintf(modeText, "Mode: %d", mode);
