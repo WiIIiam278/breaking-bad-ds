@@ -52,17 +52,17 @@ const BGM BGMS[BGM_COUNT] =
         {"The Cousins (Lab Theme)",
          BGM_THE_COUSINS,
          77,
-         8,
+         /* 8 */ 4,
          {"bgm/the_cousins_hook_1",
           "bgm/the_cousins_hook_2",
-          "bgm/the_cousins_hook_3",
-          "bgm/the_cousins_hook_4",
-          "bgm/the_cousins_hook_5",
-          "bgm/the_cousins_hook_6",
+        //   "bgm/the_cousins_hook_3",
+        //   "bgm/the_cousins_hook_4",
+        //   "bgm/the_cousins_hook_5",
+        //   "bgm/the_cousins_hook_6",
           "bgm/the_cousins_loop_1",
           "bgm/the_cousins_loop_2"},
-         {585, 585, 585, 585, 585, 585, 585, 585},
-         3}};
+         {585, 585, /* 585, 585, 585, 585, */ 585, 585},
+         /* 3 */ 1}};
 
 enum EffectId
 {
