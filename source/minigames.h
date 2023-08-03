@@ -88,14 +88,22 @@ public:
 class MixMinigame : public Minigame
 {
 private:
-    const int PIPE_COUNT = 12;
-    const u32 PIPE_SPRITES[12] = { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 };
+    const int PIPE_COUNT = 8;
+    const int HORIZONTAL_PIPE_COUNT = 5;
+    const u32 PIPE_SPRITES[8] = { 16, 17, 18, 19, 20, 21, 22, 23 };
+
     const char PIPE_SPRITES_NAME[32] = "sprite/mixing_pipes";
     const char MIX_BACKGROUND_NAME[32] = "bg/mix_minigame";
-    const int PIPE_ORIGIN_POS[2] = { -182, -38 };
     const u32 PIPE_OFFSET = 40;
-
-    const int headPos[2] = { 0, 64 };
+    int pipePos[2] = { 0, 0 };
+    
+    
+    const u32 CRANK_SPRITES[2] = { 24, 25 };
+    const int CRANK_POS[2][2] = { { 10, 55 }, { 125, 90 } };
+    int crankRot[2] = { 0, 0 };
+    int rotatingCrank = -1;
+    
+    u16 lastStylusPos[2] = {0, 0};
 
 public:
     MixMinigame();

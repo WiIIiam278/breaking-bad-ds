@@ -56,7 +56,7 @@ void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
         NF_SpriteRotScale(1, VALVE_SPRITE, rotation, 386, 386);
 
         // Play SFX, rumble
-        if (rotation == 0 || frame % 120 == 0)
+        if (rotation < 30 || frame % 120 == 0)
         {
             sound->PlaySFX(SFX_VALVE_TURN);
         }
@@ -67,8 +67,6 @@ void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
         // Reset the last touch position
         lastStylusPos[0] = 0;
         lastStylusPos[1] = 0;
-
-        sound->StopSFX();
     }
 }
 
