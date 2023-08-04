@@ -150,7 +150,7 @@ void Player::Translate(float x, float y, float z)
     NE_ModelTranslate(model, x, y, z);
 }
 
-Tile Player::GetPlayerTile(Map &map)
+Tile Player::GetTile(Map &map)
 {
     return map.GetTileAt(tileX, tileZ);
 }
@@ -166,7 +166,7 @@ void Player::PrintCoords(Map &map)
     NF_WriteText(1, 0, 1, 2, tileCoords);
 
     char tileType[100];
-    sprintf(tileType, "tileType: %i", GetPlayerTile(map));
+    sprintf(tileType, "tileType: %i", GetTile(map));
     NF_WriteText(1, 0, 1, 3, tileType);
 }
 

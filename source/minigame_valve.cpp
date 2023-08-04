@@ -56,7 +56,7 @@ void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
         NF_SpriteRotScale(1, VALVE_SPRITE, rotation, 386, 386);
 
         // Play SFX, rumble
-        if (rotation < 30 || frame % 120 == 0)
+        if (frame % 120 == 0)
         {
             sound->PlaySFX(SFX_VALVE_TURN);
         }

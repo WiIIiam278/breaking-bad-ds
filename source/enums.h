@@ -42,11 +42,6 @@ enum Tile
     MINIGAME_CRACK
 };
 
-enum Speaker
-{
-    GALE
-};
-
 enum MenuSelection
 {
     NONE,

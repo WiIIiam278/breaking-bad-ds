@@ -374,7 +374,7 @@ void Game::CheckTutorials()
 {
     if (gameType == TUTORIAL_GAME)
     {
-        int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress, currentBatchProgress);
+        int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress, currentBatchProgress, player.GetTile(map));
         if (dialogueId != -1)
         {
             StartDialogue((ScriptId)dialogueId);
@@ -530,12 +530,12 @@ void Game::StartMenuScreen(bool debugMode)
     mode = MAIN_MENU;
 
     // Quick-start debug game if the flag is set
-    // if (debugFlag)
-    // {
-    //     StartGame(SINGLEPLAYER_GAME, 999, 1);
-    //     currentBatchProgress = 2;
-    //     return;
-    // }
+    if (debugFlag)
+    {
+        StartGame(TUTORIAL_GAME, 999, 1);
+        // currentBatchProgress = 2;
+        return;
+    }
 
     // Load logo
     LoadLogoScene();
@@ -901,6 +901,7 @@ void Game::Update()
     {
         if (dialogue.Update(frame, keysDown(), &sound))
         {
+            sound.PlaySFX(SFX_MENU_DRUM);
             EndDialogue();
         }
     }
@@ -934,7 +935,7 @@ void Game::Update()
 
                 if (timeLimit == 0)
                 {
-                    StartGameOver(); // todo
+                    StartGameOver();
                     return;
                 }
             }
@@ -978,7 +979,7 @@ void Game::Update()
     {
         inMinigameFor++;
         currentMinigame->Update(frame, keysHeld(), &sound);
-        if (currentMinigame->IsComplete() && currentBatchProgress == ((int)player.GetPlayerTile(map) - 3))
+        if (currentMinigame->IsComplete() && currentBatchProgress == ((int)player.GetTile(map) - 3))
         {
             MinigameResult result = currentMinigame->GetResult(inMinigameFor);
             ShowMinigameResult(result, 90);

@@ -33,7 +33,7 @@ ICON     :=
 NITRO    := nitrofiles
 
 # These set the information text in the nds file
-GAME_TITLE     := Breaking Bad DS
+GAME_TITLE     := Breaking Bad
 GAME_SUBTITLE1 := William278
 GAME_SUBTITLE2 := 2023
 
