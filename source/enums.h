@@ -82,3 +82,17 @@ enum MinigameResult
     OKAY,
     BAD
 };
+
+enum TransitionScreen
+{
+    TS_TOP = 0,
+    TS_BOTTOM = 1,
+    TS_BOTH = 2
+};
+
+enum Character
+{
+    CHAR_WALT = 0,
+    CHAR_JESSIE = 1,
+    CHAR_YEPPERS = 2
+};

@@ -15,7 +15,8 @@
 
 enum Speaker
 {
-    GALE
+    GALE,
+    GUS
 };
 
 enum Emote
@@ -45,6 +46,7 @@ struct Portrait
 
 enum ScriptId
 {
+    SCRIPT_GUS_TEST,
     SCRIPT_GALE_TUTORIAL_IDLE,
     SCRIPT_GALE_TUTORIAL_INTRO,
     SCRIPT_GALE_TUTORIAL_VALVE,
@@ -52,6 +54,18 @@ enum ScriptId
 };
 
 const Script SCRIPTS[64] = {
+    {GUS,
+     5,
+     {"Walter.",
+      "We have a deal, Walter.",
+      "You're going to cook for me.",
+      "And you will do so with...      ...efficiency.",
+      "300 pounds a week. That is your goal."},
+     {EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE}},
     {GALE,
      5,
      {
@@ -60,49 +74,40 @@ const Script SCRIPTS[64] = {
          "Are you feeling okay?",
          "If you're lost, check the    Floor Plan.",
          "Your next step is marked witha little red X!",
-    },
-    {
-        EMOTE_EXCLAMATION,
-        EMOTE_NONE,
-        EMOTE_QUESTION,
-        EMOTE_NONE,
-        EMOTE_NONE
-    }
-    },
+     },
+     {EMOTE_EXCLAMATION,
+      EMOTE_NONE,
+      EMOTE_QUESTION,
+      EMOTE_NONE,
+      EMOTE_NONE}},
     {GALE,
      6,
-     {
-         "M-Mister White!",
-         "How good it is to see you    again!",
-         "I-I'd be delighted to give   you a little refresher.",
-         "Allow me to take the lead!",
-         "First and foremost, head to  the control valve.",
-         "I've marked it on the floor  plan with a fun red X!"
-     },
-    {
-        EMOTE_EXCLAMATION,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE
-    }},
+     {"M-Mister White!",
+      "How good it is to see you    again!",
+      "I-I'd be delighted to give   you a little refresher.",
+      "Allow me to take the lead!",
+      "First and foremost, head to  the control valve.",
+      "I've marked it on the floor  plan with a fun red X!"},
+     {EMOTE_EXCLAMATION,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE}},
     {GALE,
      5,
      {
-         "Very good! This valve        controls the lab ventilation.",
+         "Very good! You've turned on  the lab ventilation.",
          "By the way, did you see the  Batch Checklist?",
          "As you work, items will be   checked off.",
          "You'll need to cook batches  to finish your quota!",
          "Now! Let's turn on the lab   ventillation!",
      },
-    {
-        EMOTE_NONE,
-        EMOTE_QUESTION,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_EXCLAMATION
-    }},
+     {EMOTE_NONE,
+      EMOTE_QUESTION,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_EXCLAMATION}},
     {GALE,
      9,
      {
@@ -116,31 +121,30 @@ const Script SCRIPTS[64] = {
          "Next up, we'll need to       pestle the critical solutes",
          "...to a fine powder for      dissolving. To the mortar!",
      },
-     {
-        EMOTE_NONE,
-        EMOTE_EXCLAMATION,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE,
-        EMOTE_NONE
-    }},
-    };
+     {EMOTE_NONE,
+      EMOTE_EXCLAMATION,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_NONE}},
+};
 
 const Portrait PORTRAITS[64] = {
     {GALE, "sprite/gale", "bg/lab_gale", {0, 1}, {2, 3, 4, 5}},
+    {GUS, "sprite/gus", "bg/pollos_gus", {0, 1}, {2, 3, 4, 5}},
 };
 
 class Dialogue
 {
 private:
     const char DIALOGUE_EMOTES_SPRITE_NAME[32] = "sprite/dialogue_emotes";
-    const int DIALOGUE_EMOTE_POS[2] = { 144, -10 };
+    const int DIALOGUE_EMOTE_POS[2] = {144, -10};
     const int CHARACTERS_PER_DIALOGUE_LINE = 29;
     const int SCRIPT_BG = 1;
-    const int DIALOGUE_EMOTES_SPRITE = 9; 
+    const int DIALOGUE_EMOTES_SPRITE = 9;
 
     Speaker currentSpeaker = GALE;
     char currentScript[64][128];

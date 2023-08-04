@@ -46,14 +46,14 @@ void Dialogue::Start(Speaker speaker, const char script[][128], const Emote emot
     NF_SpriteRotScale(1, DIALOGUE_EMOTES_SPRITE, 0, 512, 512);
 
     // Create, position & scale sprite
-    NF_CreateSprite(1, currentSpeaker + 10, 0, 0, 64, -21);
-    NF_SpriteFrame(1, currentSpeaker + 10, PORTRAITS[currentSpeaker].eyes[0]);
-    NF_CreateSprite(1, currentSpeaker + 11, 0, 0, 64, 43);
-    NF_SpriteFrame(1, currentSpeaker + 10, PORTRAITS[currentSpeaker].mouthes[0]);
-    NF_EnableSpriteRotScale(1, currentSpeaker + 10, 12, true);
-    NF_EnableSpriteRotScale(1, currentSpeaker + 11, 12, true);
-    NF_SpriteRotScale(1, currentSpeaker + 10, 0, 512, 512);
-    NF_SpriteRotScale(1, currentSpeaker + 11, 0, 512, 512);
+    NF_CreateSprite(1, 10, 0, 0, 64, -21);
+    NF_SpriteFrame(1, 10, PORTRAITS[currentSpeaker].eyes[0]);
+    NF_CreateSprite(1, 11, 0, 0, 64, 43);
+    NF_SpriteFrame(1, 11, PORTRAITS[currentSpeaker].mouthes[0]);
+    NF_EnableSpriteRotScale(1, 10, 12, true);
+    NF_EnableSpriteRotScale(1, 11, 12, true);
+    NF_SpriteRotScale(1, 10, 0, 512, 512);
+    NF_SpriteRotScale(1, 11, 0, 512, 512);
 }
 
 bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
@@ -100,7 +100,7 @@ bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
     {
         lastBlink = frame + (rand() % 100) + 100;
     }
-    NF_SpriteFrame(1, currentSpeaker + 10, PORTRAITS[currentSpeaker].eyes[isBlinking]);
+    NF_SpriteFrame(1, 10, PORTRAITS[currentSpeaker].eyes[isBlinking]);
 
     // Update mouth animation
     if (!endOfLine)
@@ -117,12 +117,12 @@ bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
             {
                 currentSpeakerAnimation = 0;
             }
-            NF_SpriteFrame(1, currentSpeaker + 11, PORTRAITS[currentSpeaker].mouthes[currentSpeakerAnimation]);
+            NF_SpriteFrame(1, 11, PORTRAITS[currentSpeaker].mouthes[currentSpeakerAnimation]);
         }
     }
     else
     {
-        NF_SpriteFrame(1, currentSpeaker + 11, PORTRAITS[currentSpeaker].mouthes[0]);
+        NF_SpriteFrame(1, 11, PORTRAITS[currentSpeaker].mouthes[0]);
     }
 
     // Handle input
@@ -192,8 +192,8 @@ void Dialogue::Unload()
     NF_UnloadTiledBg(PORTRAITS[currentSpeaker].bgName);
 
     // Remove sprites
-    NF_DeleteSprite(1, currentSpeaker + 10);
-    NF_DeleteSprite(1, currentSpeaker + 11);
+    NF_DeleteSprite(1, 10);
+    NF_DeleteSprite(1, 11);
     NF_ShowSprite(1, DIALOGUE_EMOTES_SPRITE, false);
     NF_DeleteSprite(1, DIALOGUE_EMOTES_SPRITE);
     NF_ClearTextLayer(1, 0);
@@ -212,7 +212,7 @@ int Dialogue::GetTutorialDialogue(int tutorialProgress, int batchProgress, Tile 
     switch (tutorialProgress)
     {
         case 0:
-            return SCRIPT_GALE_TUTORIAL_INTRO;
+            return /* SCRIPT_GALE_TUTORIAL_INTRO */ SCRIPT_GUS_TEST;
         case 1:
             return playerTile == MINIGAME_VALVE ? SCRIPT_GALE_TUTORIAL_VALVE : -1;
         case 2:

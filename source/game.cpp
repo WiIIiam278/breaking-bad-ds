@@ -140,45 +140,55 @@ void Game::TranslateCamera(float x, float y, float z)
     cameraTz += z;
 }
 
-void Game::Transition(bool fadeIn, int duration)
+void Game::Transition(bool fadeIn, int duration, TransitionScreen screen)
 {
-    if (duration <= 0)
+    for (int i = 0; i < 2; i++)
     {
-        setBrightness(3, fadeIn ? 0 : -16);
-        isTransitioning = false;
-        return;
-    }
+        if (!(screen == i || screen == TS_BOTH))
+        {
+            continue;
+        }
+        if (duration <= 0)
+        {
+            setBrightness(i + 1, fadeIn ? 0 : -16);
+            isTransitioning[i] = false;
+            continue;
+        }
 
-    isTransitioning = true;
-    isFadingIn = fadeIn;
-    transitionDuration = duration;
-    transitionStartFrame = frame;
+        isTransitioning[i] = true;
+        isFadingIn[i] = fadeIn;
+        transitionDuration[i] = duration;
+        transitionStartFrame[i] = frame;
+    }
 }
 
 void Game::UpdateTransition()
 {
-    if (!isTransitioning)
+    for (int i = 0; i < 2; i++)
     {
-        return;
-    }
+        if (!isTransitioning[i])
+        {
+            continue;
+        }
 
-    if (frame >= (transitionStartFrame + transitionDuration))
-    {
-        setBrightness(3, isFadingIn ? 0 : -16);
-        isTransitioning = false;
-        return;
-    }
+        if (frame >= (transitionStartFrame[i] + transitionDuration[i]))
+        {
+            setBrightness(i + 1, isFadingIn ? 0 : -16);
+            isTransitioning[i] = false;
+            return;
+        }
 
-    int brightness;
-    if (!isFadingIn)
-    {
-        brightness = (frame - transitionStartFrame) * 16 / transitionDuration;
+        int brightness;
+        if (!isFadingIn)
+        {
+            brightness = (frame - transitionStartFrame[i]) * 16 / transitionDuration[i];
+        }
+        else
+        {
+            brightness = 16 - (frame - transitionStartFrame[i]) * 16 / transitionDuration[i];
+        }
+        setBrightness(i + 1, -brightness);
     }
-    else
-    {
-        brightness = 16 - (frame - transitionStartFrame) * 16 / transitionDuration;
-    }
-    setBrightness(3, -brightness);
 }
 
 void Game::TogglePauseMenu()
@@ -188,6 +198,7 @@ void Game::TogglePauseMenu()
         return;
     }
     bool pausing = mode == MOVE;
+    Transition(!pausing, 0, TS_BOTTOM);
 
     sound.PlaySFX(SFX_MENU_SELECT);
     if (pausing)
@@ -207,6 +218,8 @@ void Game::TogglePauseMenu()
         player.canMove = true;
         mode = MOVE;
     }
+
+    Transition(pausing, 15, TS_BOTTOM);
 }
 
 // Show/hide bottom screen HUD
@@ -349,6 +362,7 @@ void Game::StartDialogue(ScriptId script)
     {
         return;
     }
+    Transition(false, 0, TS_BOTTOM);
     if (mode == MINIGAME)
     {
         currentMinigame->Unload();
@@ -357,6 +371,7 @@ void Game::StartDialogue(ScriptId script)
     ToggleHud(false);
     player.facing = DOWN;
     dialogue.Load(script, frame);
+    Transition(true, 30, TS_BOTTOM);
 }
 
 void Game::EndDialogue()
@@ -365,9 +380,11 @@ void Game::EndDialogue()
     {
         return;
     }
+    Transition(false, 0, TS_BOTTOM);
     dialogue.Unload();
     ToggleHud(true);
     mode = MOVE;
+    Transition(true, 30, TS_BOTTOM);
 }
 
 void Game::CheckTutorials()
@@ -385,7 +402,7 @@ void Game::CheckTutorials()
 
 void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
 {
-    Transition(false, 0);
+    Transition(false, 0, TS_BOTH);
 
     frame = 0;
     isQuitting = false;
@@ -402,9 +419,7 @@ void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
     // Prepare laboratory scene
     LoadLabScene();
 
-    // Move player to starting position
-
-    // Player 2 setup
+    // Player setup
     if (gameType == MULTIPLAYER_GAME)
     {
         bool isHost = isHostClient();
@@ -435,7 +450,7 @@ void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
 
     // Start tutorial
     CheckTutorials();
-    Transition(true, 60);
+    Transition(true, 60, TS_BOTH);
 }
 
 void Game::LoadLabScene()
@@ -447,7 +462,9 @@ void Game::LoadLabScene()
     {
         WaitLoop();
     }
-    if (player.Load(isMultiplayer && !isHostClient()) == -1)
+    
+    Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSIE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
+    if (player.Load(p1Char) == -1)
     {
         WaitLoop();
     }
@@ -455,7 +472,7 @@ void Game::LoadLabScene()
     {
         player2 = new Player();
         player2->isPlayer2 = true;
-        if (player2->Load(isHostClient()) == -1)
+        if (player2->Load(isHostClient() ? CHAR_JESSIE : CHAR_WALT) == -1)
         {
             WaitLoop();
         }
@@ -492,7 +509,7 @@ void Game::LoadLabScene()
 // Unload map and player
 void Game::UnLoadLabScene()
 {
-    Transition(false, 0);
+    Transition(false, 0, TS_BOTH);
     ToggleHud(false);
     map.Unload();
     player.Unload();
@@ -523,7 +540,7 @@ void Game::UnLoadLabScene()
 
 void Game::StartMenuScreen(bool debugMode)
 {
-    Transition(false, 0);
+    Transition(false, 0, TS_BOTH);
 
     debugFlag = debugMode;
     frame = 0;
@@ -549,7 +566,7 @@ void Game::StartMenuScreen(bool debugMode)
                  0, BASE_TITLE_CAMERA_POS[1], 0,
                  0, 1, 0);
 
-    Transition(true, 120);
+    Transition(true, 120, TS_BOTH);
 }
 
 void Game::LoadLogoScene()
@@ -564,7 +581,7 @@ void Game::LoadLogoScene()
 
 void Game::UnLoadLogoScene()
 {
-    Transition(false, 0);
+    Transition(false, 0, TS_BOTH);
     menu.Unload(&sound);
 }
 
@@ -634,9 +651,11 @@ void Game::StartMinigame(Tile tile)
         return;
     }
 
+    Transition(false, 0, TS_BOTTOM);
     mode = MINIGAME;
     ToggleHud(false);
     currentMinigame->Load();
+    Transition(true, 30, TS_BOTTOM);
 }
 
 void Game::DeleteMinigame()
@@ -645,9 +664,11 @@ void Game::DeleteMinigame()
     {
         return;
     }
+    Transition(false, 0, TS_BOTTOM);
     currentMinigame->Unload();
     currentMinigame = NULL;
     ToggleHud(true);
+    Transition(true, 30, TS_BOTTOM);
 }
 
 void Game::ShowMinigameResult(MinigameResult indicator, int frames)
@@ -673,7 +694,7 @@ void Game::StartGameOver()
         return;
     }
     player.walking = false;
-    Transition(false, 0);
+    Transition(false, 0, TS_BOTH);
 
     // Clear other elements
     if (mode == MINIGAME)
@@ -716,10 +737,10 @@ void Game::UpdateGameOver()
         break;
     case 0:
         sound.PlayBGM(BGM_BABY_BLUE, false);
-        Transition(true, 60);
+        Transition(true, 60, TS_BOTH);
         break;
     case 520:
-        Transition(false, 0);
+        Transition(false, 0, TS_BOTH);
         break;
     case 620:
         QuitToTitle();
@@ -765,7 +786,7 @@ void Game::Render()
     // Draw objects
     map.Draw();
     player.Draw(gameType == MULTIPLAYER_GAME ? (isHostClient() ? 1 : 2) : 0);
-    if (gameType == MULTIPLAYER_GAME && mode != GAME_OVER)
+    if (gameType == MULTIPLAYER_GAME && (mode != GAME_OVER))
     {
         player2->Draw(!isHostClient() ? 1 : 2);
     }
@@ -773,7 +794,7 @@ void Game::Render()
 
 void Game::Update()
 {
-    if (gameType == MULTIPLAYER_GAME && !isQuitting)
+    if (mode != MAIN_MENU && gameType == MULTIPLAYER_GAME && !isQuitting)
     {
         if (getMultiplayerStatus() == MP_CONNECTION_LOST)
         {
@@ -1009,6 +1030,7 @@ void Game::Update()
         UpdateGameOver();
     }
 
+    // Update sounds
     sound.Update(frame);
 
     // Refresh shadow OAM copy

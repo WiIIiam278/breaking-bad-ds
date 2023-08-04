@@ -25,7 +25,7 @@ private:
 
 public:
     bool isPlayer2 = false;
-    bool isJessie = false;
+    Character character = CHAR_WALT;
     bool canMove = true;
     Direction facing = DOWN;
     bool walking = false;
@@ -43,7 +43,7 @@ public:
 
     Player();
 
-    int Load(bool isJessie);
+    int Load(Character character);
     void Move(Map& map);
     void Update(volatile int frame);
     void Translate(float x, float y, float z);

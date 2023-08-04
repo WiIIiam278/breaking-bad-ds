@@ -44,10 +44,10 @@ private:
     int player2batchesComplete = 0;
 
     // Transition
-    bool isTransitioning = false;
-    bool isFadingIn = false;
-    int transitionDuration = 0;
-    int transitionStartFrame = 0;
+    bool isTransitioning[2] = { false, false };
+    bool isFadingIn[2] = { false, false };
+    int transitionDuration[2] = { 0, 0 };
+    int transitionStartFrame[2] = { 0, 0 };
     
     // Camera
     const float CAMERA_SPEED = 0.025;
@@ -119,7 +119,7 @@ public:
     void Prepare2DGraphics();
 
     // Transition Control
-    void Transition(bool fadeIn, int duration);
+    void Transition(bool fadeIn, int duration, TransitionScreen screen);
     void UpdateTransition();
 
     // Pause menu

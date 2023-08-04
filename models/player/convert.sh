@@ -7,6 +7,7 @@ python obj2dl.py --input ../../../projects/breaking-bad-ds/models/player/player.
 cd ../img2ds &&
 convert ../../../projects/breaking-bad-ds/models/player/walter.png -flip ../../../projects/breaking-bad-ds/models/player/walter.png &&
 convert ../../../projects/breaking-bad-ds/models/player/jessie.png -flip ../../../projects/breaking-bad-ds/models/player/jessie.png &&
+convert ../../../projects/breaking-bad-ds/models/player/yeppers.png -flip ../../../projects/breaking-bad-ds/models/player/yeppers.png &&
 python img2ds.py --input ../../../projects/breaking-bad-ds/models/player/walter.png \
                 --name walter \
                 --output ../../../projects/breaking-bad-ds/nitrofiles/model \
@@ -15,5 +16,10 @@ python img2ds.py --input ../../../projects/breaking-bad-ds/models/player/jessie.
                 --name jessie \
                 --output ../../../projects/breaking-bad-ds/nitrofiles/model \
                 --format A1RGB5 &&
+python img2ds.py --input ../../../projects/breaking-bad-ds/models/player/yeppers.png \
+                --name yeppers \
+                --output ../../../projects/breaking-bad-ds/nitrofiles/model \
+                --format A1RGB5 &&
 convert ../../../projects/breaking-bad-ds/models/player/walter.png -flip ../../../projects/breaking-bad-ds/models/player/walter.png &&
-convert ../../../projects/breaking-bad-ds/models/player/jessie.png -flip ../../../projects/breaking-bad-ds/models/player/jessie.png
+convert ../../../projects/breaking-bad-ds/models/player/jessie.png -flip ../../../projects/breaking-bad-ds/models/player/jessie.png &&
+convert ../../../projects/breaking-bad-ds/models/player/yeppers.png -flip ../../../projects/breaking-bad-ds/models/player/yeppers.png

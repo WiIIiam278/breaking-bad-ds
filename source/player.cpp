@@ -4,9 +4,9 @@ Player::Player()
 {
 }
 
-int Player::Load(bool isJessie)
+int Player::Load(Character character)
 {
-    this->isJessie = isJessie;
+    this->character = character;
     model = NE_ModelCreate(NE_Static);
     material = NE_MaterialCreate();
     lyingDown = false;
@@ -19,18 +19,24 @@ int Player::Load(bool isJessie)
         return -1;
     }
 
-    //todo make p2 jessie
+    // Load character model
     int modelLoaded = 0;
-    if (!isJessie)
+    switch (character)
     {
-        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128, 
-            NE_TEXGEN_TEXCOORD, "model/walter_tex.bin");
+    case CHAR_WALT:
+        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
+                                            NE_TEXGEN_TEXCOORD, "model/walter_tex.bin");
+        break;
+    case CHAR_JESSIE:
+        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
+                                            NE_TEXGEN_TEXCOORD, "model/jessie_tex.bin");
+        break;
+    case CHAR_YEPPERS:
+        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
+                                            NE_TEXGEN_TEXCOORD, "model/yeppers_tex.bin");
+        break;
     }
-    else
-    {
-        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128, 
-            NE_TEXGEN_TEXCOORD, "model/jessie_tex.bin");
-    }
+
     if (modelLoaded == 0)
     {
         consoleDemoInit();
@@ -43,11 +49,11 @@ int Player::Load(bool isJessie)
 
     // Set some propierties to the material
     NE_MaterialSetPropierties(material,
-                  RGB15(20, 20, 20), // Diffuse
-                  RGB15(11, 10, 9),    // Ambient
-                  RGB15(0, 0, 0),    // Specular
-                  RGB15(0, 0, 0),    // Emission
-                  false, false);     // Vertex color, use shininess table
+                              RGB15(20, 20, 20), // Diffuse
+                              RGB15(11, 10, 9),  // Ambient
+                              RGB15(0, 0, 0),    // Specular
+                              RGB15(0, 0, 0),    // Emission
+                              false, false);     // Vertex color, use shininess table
 
     // Set position, rotation and scale
     x = 0;
@@ -103,7 +109,8 @@ void Player::Update(volatile int frame)
     NE_ModelSetRot(model, lyingDown ? 90 : 0, rotation, 0);
 
     // Don't move walter if he's dead
-    if (lyingDown) {
+    if (lyingDown)
+    {
         lyingDownFrames++;
         return;
     }
@@ -231,7 +238,6 @@ void Player::DrawShadow(float radius, u32 color)
     }
 }
 
-
 void Player::DrawTriangle(float *vertices[], float offset[3], u32 color)
 {
     NE_PolyBegin(GL_TRIANGLE);
@@ -250,7 +256,7 @@ void Player::DrawTriangle(float *vertices[], float offset[3], u32 color)
 void Player::Draw(u32 outline)
 {
     NE_PolyFormat(lyingDown ? 26 : 16, 8, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
-    DrawShadow(lyingDown ? 0.85f + (float) std::min(0.85f, (float) (lyingDownFrames / 500.0f)) : 0.85f, lyingDown ? NE_Red : NE_Black);
+    DrawShadow(lyingDown ? 0.85f + (float)std::min(0.85f, (float)(lyingDownFrames / 500.0f)) : 0.85f, lyingDown ? NE_Red : NE_Black);
     NE_PolyFormat(31, (8 + (outline * 8)), NE_LIGHT_0, NE_CULL_NONE, (NE_OtherFormatEnum)(NE_TOON_HIGHLIGHT_SHADING | NE_FOG_ENABLE));
     NE_ModelDraw(model);
 }
