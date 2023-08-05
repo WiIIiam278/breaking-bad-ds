@@ -212,7 +212,7 @@ int Dialogue::GetTutorialDialogue(int tutorialProgress, int batchProgress, Tile 
     switch (tutorialProgress)
     {
         case 0:
-            return /* SCRIPT_GALE_TUTORIAL_INTRO */ SCRIPT_GUS_TEST;
+            return SCRIPT_GALE_TUTORIAL_INTRO;
         case 1:
             return playerTile == MINIGAME_VALVE ? SCRIPT_GALE_TUTORIAL_VALVE : -1;
         case 2:

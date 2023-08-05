@@ -10,6 +10,8 @@ Breaking Bad and related properties are owned and copyrighted by their respectiv
 - "Assorted test tube lot": https://www.pickpik.com/lab-research-chemistry-test-experiment-many-110674 (CC0 - Creative Commons Public Domain)
 - "Clock-half-past-3": https://freesvg.org/clock-half-past-3 (Public Domain)
 - "Red Firemark Fire Extinguisher": https://www.wallpaperflare.com/red-firemark-fire-extinguisher-alarm-batch-burning-clear-wallpaper-zoejz (CC0 &mdash; Creative Commons Public Domain)
+- "Flask Clipart": https://creazilla.com/nodes/3168585-flask-clipart (Public Domain)
+- "Test Tube Clipart": https://creazilla.com/nodes/7817193-test-tube-clipart (Public Domain)
 - Cover art, backgrounds, and character graphics: Courtesy of GardenOwl
 
 #### Code

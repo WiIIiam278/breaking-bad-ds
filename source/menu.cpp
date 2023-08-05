@@ -69,6 +69,11 @@ int Menu::Load()
 
     // Prepare sprites
     LoadSplashSprite();
+
+    NF_LoadSpriteGfx("sprite/main_menu", 2, 64, 32);
+    NF_LoadSpritePal("sprite/main_menu", 2);
+    NF_VramSpriteGfx(1, 2, 1, false);
+    NF_VramSpritePal(1, 2, 1);
     return 0;
 }
 
@@ -86,17 +91,20 @@ void Menu::LoadSplashSprite()
     NF_SpriteRotScale(1, START_SPRITE, 0, 283, 283);
 }
 
-void Menu::ShowButtons()
+void Menu::ShowLayout()
 {
+    const Layout *layout;
     if (buttonsVisible)
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < BUTTON_TEXT_COUNT; i++)
         {
-            NF_DeleteSprite(1, BUTTONS[i]);
+            NF_DeleteSprite(1, BUTTON_TEXT[i]);
         }
-        NF_UnloadSpriteGfx(2);
-        NF_UnloadSpritePal(2);
-        NF_FreeSpriteGfx(1, 1);
+        for (int i = 0; i < BUTTON_SPRITE_COUNT; i++)
+        {
+            NF_DeleteSprite(1, BUTTON_SPRITES[i]);
+        }
+        NF_DeleteSprite(1, TITLE_SPRITE);
     }
     switch (state)
     {
@@ -104,37 +112,52 @@ void Menu::ShowButtons()
         buttonsVisible = false;
         break;
     case MENU_MAIN:
-        highlightedItem = NONE;
-        NF_LoadSpriteGfx("sprite/buttons", 2, 64, 64);
-        NF_LoadSpritePal("sprite/buttons", 2);
-        NF_VramSpriteGfx(1, 2, 1, false);
-        NF_VramSpritePal(1, 2, 1);
-        for (int i = 0; i < 4; i++)
-        {
-            // Create, position & scale sprite
-            NF_CreateSprite(1, BUTTONS[i], 1, 1, MAIN_BUTTON_COORDS[i][0], MAIN_BUTTON_COORDS[i][1]);
-            NF_EnableSpriteRotScale(1, BUTTONS[i], BUTTONS[i], true);
-            NF_SpriteRotScale(1, BUTTONS[i], 0, 300, 300);
-            NF_SpriteFrame(1, BUTTONS[i], i * 2);
-        }
-        buttonsVisible = true;
-        break;
     case MENU_GAME_SELECT:
-        highlightedItem = NONE;
-        NF_LoadSpriteGfx("sprite/game_buttons", 2, 64, 64);
-        NF_LoadSpritePal("sprite/game_buttons", 2);
-        NF_VramSpriteGfx(1, 2, 1, false);
-        NF_VramSpritePal(1, 2, 1);
-        for (int i = 0; i < 4; i++)
+        layout = &LAYOUTS[state == MENU_MAIN ? 0 : 1];
+        menuCaret[0] = menuCaret[1] = 0;
+        highlightedItem = layout->caretMap[0][0];
+
+        for (int b = 0; b < 4; b++)
         {
-            // Create, position & scale sprite
-            NF_CreateSprite(1, BUTTONS[i], 1, 1, GAME_BUTTON_COORDS[i][0], GAME_BUTTON_COORDS[i][1]);
-            NF_EnableSpriteRotScale(1, BUTTONS[i], BUTTONS[i], true);
-            NF_SpriteRotScale(1, BUTTONS[i], 0, 300, 300);
-            NF_SpriteFrame(1, BUTTONS[i], i * 2);
+            int spriteOffset = b * 4;
+            Button button = layout->buttons[b];
+            for (int i = 0; i < 4; i++)
+            {
+                int xOffset = (i == 1 || i == 3) ? 64 : 0;
+                int yOffset = (i == 2 || i == 3) ? 32 : 0;
+                int spriteId = BUTTON_SPRITES[spriteOffset + i];
+                NF_CreateSprite(1, spriteId, 1, 1, layout->buttonCoords[b][0] + xOffset, layout->buttonCoords[b][1] + yOffset);
+                NF_HflipSprite(1, spriteId, i % 2 != 0);
+                NF_VflipSprite(1, spriteId, i > 1);
+                NF_SpriteFrame(1, spriteId, button.buttonSprite);
+            }
+            NF_CreateSprite(1, BUTTON_TEXT[b], 1, 1, layout->buttonCoords[b][0] + 32, layout->buttonCoords[b][1] + 16);
+            NF_SpriteFrame(1, BUTTON_TEXT[b], button.textSprite);
         }
+        NF_CreateSprite(1, TITLE_SPRITE, 1, 1, layout->titleCoords[0], layout->titleCoords[1]);
+        NF_SpriteFrame(1, TITLE_SPRITE, layout->titleSprite);
+
         buttonsVisible = true;
         break;
+    }
+}
+
+void Menu::UpdateLayout(volatile int frame)
+{
+    if (!(state == MENU_MAIN || state == MENU_GAME_SELECT))
+    {
+        return;
+    }
+    const Layout *layout = &LAYOUTS[state == MENU_MAIN ? 0 : 1];
+    for (int b = 0; b < 4; b++)
+    {
+        int spriteOffset = b * 4;
+        Button button = layout->buttons[b];
+        for (int i = 0; i < 4; i++)
+        {
+            int spriteId = BUTTON_SPRITES[spriteOffset + i];
+            NF_SpriteFrame(1, spriteId, button.buttonSprite + (highlightedItem == (b + (state == MENU_MAIN ? 1 : 5)) ? 4 : 0));
+        }
     }
 }
 
@@ -214,7 +237,7 @@ void Menu::SetState(MenuState newState, Sound *sound)
     }
     currentSequenceIndex = 0;
     state = newState;
-    ShowButtons();
+    ShowLayout();
     ShowBackground();
 }
 
@@ -308,12 +331,8 @@ void Menu::Update(volatile int frame, Sound *sound)
         break;
 
     case MENU_MAIN:
-        // Update button highlighting
-        for (int i = 0; i < 4; i++)
-        {
-            NF_SpriteFrame(1, BUTTONS[i], (i * 2) + (((i + 1) == highlightedItem) ? 1 : 0));
-        }
-
+    case MENU_GAME_SELECT:
+        UpdateLayout(frame);
         NF_ShowSprite(1, START_SPRITE, false);
         break;
 
@@ -342,16 +361,6 @@ void Menu::Update(volatile int frame, Sound *sound)
         NF_WriteText(1, 0, 1, 12, sound->GetBgmTrackProgressString());
 
         NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
-        break;
-
-    case MENU_GAME_SELECT:
-        // Show buttons
-        for (int i = 0; i < 4; i++)
-        {
-            NF_SpriteFrame(1, BUTTONS[i], (i * 2) + (((i + 5) == (highlightedItem)) ? 1 : 0));
-        }
-
-        NF_ShowSprite(1, START_SPRITE, false);
         break;
 
     case MENU_MP_HOST_ROOM:
@@ -402,46 +411,33 @@ MenuSelection Menu::HandleInput(Sound *sound)
             SetState(MENU_MAIN, sound);
         }
         return NONE;
+
     case MENU_MAIN:
+    case MENU_GAME_SELECT:
         if (keysDown() & KEY_TOUCH)
         {
+            const Layout *layout = &LAYOUTS[state == MENU_MAIN ? 0 : 1];
             touchRead(&touch);
 
-            if (IsTouchInBox(MAIN_BUTTON_COORDS[0], 64, touch))
+            for (int b = 0; b < 4; b++)
             {
-                if (CheckSelection(OPEN_GAME_MENU))
+                if (IsTouchInBox(layout->buttonCoords[b], layout->buttons[b].dimensions, touch))
                 {
-                    SetState(MENU_GAME_SELECT, sound);
-                    return OPEN_GAME_MENU;
+                    return HandleClick(layout->buttons[b].selection, sound);
                 }
-                return NONE;
             }
-            else if (IsTouchInBox(MAIN_BUTTON_COORDS[1], 64, touch))
-            {
-                return CheckSelection(START_TUTORIAL);
-            }
-            else if (IsTouchInBox(MAIN_BUTTON_COORDS[2], 32, touch))
-            {
-                if (CheckSelection(BACK_TO_TITLE))
-                {
-                    SetState(MENU_TITLE, sound);
-                    return BACK_TO_TITLE;
-                }
-                return NONE;
-            }
-            else if (IsTouchInBox(MAIN_BUTTON_COORDS[3], 32, touch))
-            {
-                if (CheckSelection(TOGGLE_RUMBLE))
-                {
-                    SetState(MENU_RUMBLE, sound);
-                    return TOGGLE_RUMBLE;
-                }
-                return NONE;
-            }
-            break;
+            highlightedItem = NONE;
+            return NONE;
         }
 
-        if (keysDown() & SOUND_TEST_SEQUENCE[currentSequenceIndex])
+        if (keysDown() & KEY_B)
+        {
+            const bool quitToTitle = state == MENU_MAIN;
+            SetState(quitToTitle ? MENU_TITLE : MENU_MAIN, sound);
+            return quitToTitle ? BACK_TO_TITLE : BACK_TO_MAIN_MENU;
+        }
+
+        if (state == MENU_MAIN && (keysDown() & SOUND_TEST_SEQUENCE[currentSequenceIndex]))
         {
             currentSequenceIndex++;
             if (currentSequenceIndex == 11)
@@ -454,169 +450,57 @@ MenuSelection Menu::HandleInput(Sound *sound)
                 return NONE;
             }
         }
-        if (keysDown() & KEY_UP && !(highlightedItem == OPEN_GAME_MENU || highlightedItem == START_TUTORIAL))
-        {
-            highlightedItem = (highlightedItem == TOGGLE_RUMBLE ? OPEN_GAME_MENU : START_TUTORIAL);
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
-        else if (keysDown() & KEY_DOWN && !(highlightedItem == TOGGLE_RUMBLE || highlightedItem == BACK_TO_TITLE))
-        {
-            highlightedItem = (highlightedItem == OPEN_GAME_MENU ? TOGGLE_RUMBLE : BACK_TO_TITLE);
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
-        else if (keysDown() & KEY_LEFT && !(highlightedItem == OPEN_GAME_MENU || highlightedItem == TOGGLE_RUMBLE))
-        {
-            highlightedItem = (highlightedItem == START_TUTORIAL ? OPEN_GAME_MENU : TOGGLE_RUMBLE);
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
-        else if (keysDown() & KEY_RIGHT && !(highlightedItem == BACK_TO_TITLE || highlightedItem == START_TUTORIAL))
-        {
-            highlightedItem = (highlightedItem == OPEN_GAME_MENU ? START_TUTORIAL : BACK_TO_TITLE);
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
-
-        if (keysDown() & KEY_B)
-        {
-            SetState(MENU_TITLE, sound);
-            return BACK_TO_TITLE;
-        }
 
         if (keysDown() & KEY_A || keysDown() & KEY_START)
         {
-            switch (highlightedItem)
-            {
-            default:
-                return CheckSelection(highlightedItem);
-            case OPEN_GAME_MENU:
-                if (CheckSelection(OPEN_GAME_MENU))
-                {
-                    SetState(MENU_GAME_SELECT, sound);
-                    return OPEN_GAME_MENU;
-                }
-            case BACK_TO_TITLE:
-                if (CheckSelection(BACK_TO_TITLE))
-                {
-                    SetState(MENU_TITLE, sound);
-                    return BACK_TO_TITLE;
-                }
-                return NONE;
-            case TOGGLE_RUMBLE:
-                if (CheckSelection(TOGGLE_RUMBLE))
-                {
-                    SetState(MENU_RUMBLE, sound);
-                    return TOGGLE_RUMBLE;
-                }
-                return NONE;
-            }
-        }
-        break;
-
-    case MENU_GAME_SELECT:
-        if (keysDown() & KEY_TOUCH)
-        {
-            touchRead(&touch);
-
-            if (IsTouchInBox(GAME_BUTTON_COORDS[0], 64, touch))
-            {
-                return CheckSelection(START_1P_GAME);
-            }
-            else if (IsTouchInBox(GAME_BUTTON_COORDS[1], 32, touch))
-            {
-                if (CheckSelection(OPEN_ROOM))
-                {
-                    SetState(MENU_MP_HOST_ROOM, sound);
-                    return OPEN_GAME_MENU;
-                }
-                return NONE;
-            }
-            else if (IsTouchInBox(GAME_BUTTON_COORDS[2], 32, touch))
-            {
-                if (CheckSelection(BACK_TO_MAIN_MENU))
-                {
-                    SetState(MENU_MAIN, sound);
-                    return BACK_TO_MAIN_MENU;
-                }
-                return NONE;
-            }
-            else if (IsTouchInBox(GAME_BUTTON_COORDS[3], 32, touch))
-            {
-                if (CheckSelection(SEARCH_FOR_ROOMS))
-                {
-                    SetState(MENU_MP_JOIN_ROOM, sound);
-                    return SEARCH_FOR_ROOMS;
-                }
-                return NONE;
-            }
-            break;
+            return HandleClick(highlightedItem, sound);
         }
 
-        if (keysDown() & KEY_UP)
+        if (keysDown() & KEY_UP || keysDown() & KEY_DOWN || keysDown() & KEY_LEFT || keysDown() & KEY_RIGHT)
         {
-            if (highlightedItem == SEARCH_FOR_ROOMS)
+            const Layout *layout = &LAYOUTS[state == MENU_MAIN ? 0 : 1];
+            int dCaret[2] = {0, 0};
+            if (keysDown() & KEY_UP)
             {
-                highlightedItem = OPEN_ROOM;
+                dCaret[0]--;
             }
-            else
+            else if (keysDown() & KEY_DOWN)
             {
-                highlightedItem = SEARCH_FOR_ROOMS;
+                dCaret[0]++;
             }
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
-        else if (keysDown() & KEY_DOWN)
-        {
-            if (highlightedItem == OPEN_ROOM)
+            else if (keysDown() & KEY_LEFT)
             {
-                highlightedItem = SEARCH_FOR_ROOMS;
+                dCaret[1]--;
             }
-            else
+            else if (keysDown() & KEY_RIGHT)
             {
-                highlightedItem = BACK_TO_MAIN_MENU;
+                dCaret[1]++;
             }
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
-        else if ((keysDown() & KEY_LEFT) && (highlightedItem == OPEN_ROOM || highlightedItem == SEARCH_FOR_ROOMS))
-        {
-            highlightedItem = START_1P_GAME;
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
-        else if ((keysDown() & KEY_RIGHT) && (highlightedItem == START_1P_GAME))
-        {
-            highlightedItem = OPEN_ROOM;
-            sound->PlaySFX(SFX_MENU_SELECT);
-        }
 
-        if (keysDown() & KEY_B)
-        {
-            SetState(MENU_MAIN, sound);
-            return NONE;
-        }
-
-        if (keysDown() & KEY_A || keysDown() & KEY_START)
-        {
-            switch (highlightedItem)
+            if (menuCaret[0] + dCaret[0] < 0)
             {
-            default:
-                return CheckSelection(highlightedItem);
-            case BACK_TO_MAIN_MENU:
-                if (CheckSelection(BACK_TO_MAIN_MENU))
-                {
-                    SetState(MENU_MAIN, sound);
-                }
-                return NONE;
-            case OPEN_ROOM:
-                if (CheckSelection(OPEN_ROOM))
-                {
-                    SetState(MENU_MP_HOST_ROOM, sound);
-                    return TOGGLE_RUMBLE;
-                }
-                return NONE;
-            case SEARCH_FOR_ROOMS:
-                if (CheckSelection(SEARCH_FOR_ROOMS))
-                {
-                    SetState(MENU_MP_JOIN_ROOM, sound);
-                    return TOGGLE_RUMBLE;
-                }
-                return NONE;
+                dCaret[0] = 2;
+            }
+            else if (menuCaret[0] + dCaret[0] > 2)
+            {
+                dCaret[0] = 0;
+            }
+            if (menuCaret[1] + dCaret[1] < 0)
+            {
+                dCaret[1] = 1;
+            }
+            else if (menuCaret[1] + dCaret[1] > 1)
+            {
+                dCaret[1] = 0;
+            }
+
+            MenuSelection selection = layout->caretMap[menuCaret[0] + dCaret[0]][menuCaret[1] + dCaret[1]];
+            if (selection != NONE)
+            {
+                menuCaret[0] += dCaret[0];
+                menuCaret[1] += dCaret[1];
+                highlightedItem = selection;
+                sound->PlaySFX(SFX_MENU_SELECT);
             }
         }
         break;
@@ -671,31 +555,70 @@ MenuSelection Menu::HandleInput(Sound *sound)
     return NONE;
 }
 
-bool Menu::IsTouchInBox(const float coords[2], int boxHeight, touchPosition touch)
+MenuSelection Menu::HandleClick(MenuSelection clicked, Sound *sound)
 {
-    // Adjust the touch coordinates to account for the sprite scaling
-    const float scale = 2.1f;
-    float scaledTouchX = touch.px / scale;
-    float scaledTouchY = touch.py / scale;
-
-    // Calculate half width and height of the box
-    float halfBoxWidth = 32.0f;
-    float halfBoxHeight = static_cast<float>(boxHeight) / 2.0f;
-
-    // Calculate the boundaries of the box
-    float leftBoundary = coords[0] - halfBoxWidth;
-    float rightBoundary = coords[0] + halfBoxWidth;
-    float topBoundary = coords[1] - halfBoxHeight;
-    float bottomBoundary = coords[1] + halfBoxHeight;
-
-    // Check if the adjusted touch coordinates are within the box boundaries
-    if (scaledTouchX >= leftBoundary && scaledTouchX <= rightBoundary &&
-        scaledTouchY >= topBoundary && scaledTouchY <= bottomBoundary)
+    switch (clicked)
     {
-        return true; // Touch is inside the box
+    case OPEN_GAME_MENU:
+        if (CheckSelection(clicked))
+        {
+            SetState(MENU_GAME_SELECT, sound);
+            return OPEN_GAME_MENU;
+        }
+        return NONE;
+    case TOGGLE_RUMBLE:
+        if (CheckSelection(clicked))
+        {
+            SetState(MENU_RUMBLE, sound);
+            return TOGGLE_RUMBLE;
+        }
+        return NONE;
+    case BACK_TO_TITLE:
+        if (CheckSelection(clicked))
+        {
+            SetState(MENU_TITLE, sound);
+            return BACK_TO_TITLE;
+        }
+        return NONE;
+    case BACK_TO_MAIN_MENU:
+        if (CheckSelection(clicked))
+        {
+            SetState(MENU_MAIN, sound);
+            return BACK_TO_MAIN_MENU;
+        }
+        return NONE;
+    case OPEN_ROOM:
+        if (CheckSelection(clicked))
+        {
+            SetState(MENU_MP_HOST_ROOM, sound);
+            return OPEN_ROOM;
+        }
+        return NONE;
+    case SEARCH_FOR_ROOMS:
+        if (CheckSelection(clicked))
+        {
+            SetState(MENU_MP_JOIN_ROOM, sound);
+            return SEARCH_FOR_ROOMS;
+        }
+        return NONE;
+    default:
+        if (CheckSelection(clicked))
+        {
+            return clicked;
+        }
+        return NONE;
     }
+    return NONE;
+}
 
-    return false; // Touch is outside the box
+bool Menu::IsTouchInBox(const int coords[2], const int boxDimensions[2], touchPosition touch)
+{
+    int xOffset = (128 - boxDimensions[0]) / 2;
+    int yOffset = (64 - boxDimensions[1]) / 2;
+    int boxPos[2] = {coords[0] + xOffset, coords[1] + yOffset};
+
+    return (touch.px >= boxPos[0] && touch.px <= boxPos[0] + boxDimensions[0] &&
+            touch.py >= boxPos[1] && touch.py <= boxPos[1] + boxDimensions[1]);
 }
 
 MenuSelection Menu::CheckSelection(MenuSelection tappedBox)
@@ -722,7 +645,7 @@ void Menu::Draw(volatile int frame)
 void Menu::Unload(Sound *sound)
 {
     SetState(MENU_LOADING, sound);
-    ShowButtons();
+    ShowLayout();
     ShowBackground();
 
     // Free the model and material
@@ -740,4 +663,7 @@ void Menu::Unload(Sound *sound)
     NF_UnloadSpriteGfx(1);
     NF_UnloadSpritePal(1);
     NF_FreeSpriteGfx(1, 0);
+    NF_UnloadSpriteGfx(2);
+    NF_UnloadSpritePal(2);
+    NF_FreeSpriteGfx(1, 1);
 }
