@@ -557,20 +557,20 @@ void Game::StartMenuScreen(bool debugMode)
     // Load logo
     LoadLogoScene();
 
-    // Position camera
-    cameraX = BASE_TITLE_CAMERA_POS[0];
-    cameraY = BASE_TITLE_CAMERA_POS[1];
-    cameraZ = BASE_TITLE_CAMERA_POS[2];
-    NE_CameraSet(camera,
-                 cameraX, cameraY + 1.5, cameraZ,
-                 0, BASE_TITLE_CAMERA_POS[1], 0,
-                 0, 1, 0);
-
     Transition(true, 120, TS_BOTH);
 }
 
 void Game::LoadLogoScene()
 {
+    // Position camera
+    cameraX = BASE_TITLE_CAMERA_POS[0];
+    cameraY = BASE_TITLE_CAMERA_POS[1];
+    cameraZ = BASE_TITLE_CAMERA_POS[2];
+    NE_CameraSet(camera,
+                 cameraX, cameraY + 1.5f, cameraZ,
+                 0, BASE_TITLE_CAMERA_POS[1], 0,
+                 0, 1, 0);
+
     // Load logo
     if (menu.Load() == -1)
     {

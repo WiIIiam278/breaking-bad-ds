@@ -33,8 +33,9 @@ struct Layout
 class Menu
 {
 private:
-    NE_Model *backdrop;
-    NE_Material *backdropMaterial;
+    NE_Model *skybox;
+    NE_Material *skyboxMaterial;
+    const float SKYPOS_POS[3] = {0, 8, 0};
 
     NE_Model *logo;
     NE_Material *logoMaterial;

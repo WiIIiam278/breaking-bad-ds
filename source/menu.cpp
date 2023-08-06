@@ -8,8 +8,8 @@ Menu::Menu()
 
 int Menu::Load()
 {
-    backdrop = NE_ModelCreate(NE_Static);
-    backdropMaterial = NE_MaterialCreate();
+    skybox = NE_ModelCreate(NE_Static);
+    skyboxMaterial = NE_MaterialCreate();
 
     logo = NE_ModelCreate(NE_Static);
     logoMaterial = NE_MaterialCreate();
@@ -18,13 +18,13 @@ int Menu::Load()
     textMaterial = NE_MaterialCreate();
 
     // Load assets from the filesystem
-    if (NE_ModelLoadStaticMeshFAT(backdrop, "model/backdrop.dl") == 0 || NE_ModelLoadStaticMeshFAT(logo, "model/logo.dl") == 0 || NE_ModelLoadStaticMeshFAT(text, "model/logo_text.dl") == 0)
+    if (NE_ModelLoadStaticMeshFAT(skybox, "model/logo_skybox.dl") == 0 || NE_ModelLoadStaticMeshFAT(logo, "model/logo.dl") == 0 || NE_ModelLoadStaticMeshFAT(text, "model/logo_text.dl") == 0)
     {
         consoleDemoInit();
         printf("Couldn't load logo mesh/text plane...");
         return -1;
     }
-    if (NE_MaterialTexLoadFAT(backdropMaterial, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/backdrop_tex.bin") == 0 || NE_MaterialTexLoadFAT(logoMaterial, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/logo_tex.bin") == 0 || NE_MaterialTexLoadFAT(textMaterial, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/logo_text_tex.bin") == 0)
+    if (NE_MaterialTexLoadFAT(skyboxMaterial, NE_A1RGB5, 256, 256, NE_TEXGEN_TEXCOORD, "model/logo_skybox_tex.bin") == 0 || NE_MaterialTexLoadFAT(logoMaterial, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/logo_tex.bin") == 0 || NE_MaterialTexLoadFAT(textMaterial, NE_A1RGB5, 128, 128, NE_TEXGEN_TEXCOORD, "model/logo_text_tex.bin") == 0)
     {
         consoleDemoInit();
         printf("Couldn't load logo/text textures...");
@@ -35,7 +35,7 @@ int Menu::Load()
     currentSequenceIndex = 0;
 
     // Assign material to the model
-    NE_ModelSetMaterial(backdrop, backdropMaterial);
+    NE_ModelSetMaterial(skybox, skyboxMaterial);
     NE_ModelSetMaterial(logo, logoMaterial);
     NE_MaterialSetPropierties(logoMaterial,
                               RGB15(24, 24, 24), // Diffuse
@@ -50,20 +50,27 @@ int Menu::Load()
                               RGB15(8, 8, 8),    // Specular
                               NE_White,          // Emission
                               false, false);     // Vertex color, use shininess table
+    NE_ModelSetMaterial(skybox, skyboxMaterial);
+    NE_MaterialSetPropierties(skyboxMaterial,
+                              RGB15(0, 0, 0), // Diffuse
+                              RGB15(12, 12, 12), // Ambient
+                              RGB15(8, 8, 8),    // Specular
+                              NE_White,          // Emission
+                              false, false);     // Vertex color, use shininess table
 
     // Set model rotation and scale
     int scale = 8250;
-    NE_ModelScaleI(backdrop, scale * 3, scale * 3, scale * 3);
+    NE_ModelScaleI(skybox, scale * 8, scale * 8, scale * 8);
     NE_ModelScaleI(logo, scale, scale, scale);
     NE_ModelScaleI(text, scale, scale, scale);
 
     // Position models
     x = TARGET_X - 10;
     textX = TARGET_X - 16;
-    NE_ModelSetCoordI(backdrop, 0, 0, 0);
+    NE_ModelSetCoordI(skybox, 0, 0, 0);
     NE_ModelSetCoordI(logo, 0, 0, 0);
     NE_ModelSetCoordI(text, 0, 0, 0);
-    NE_ModelTranslate(backdrop, x + 15, Y - 10, Z + 5);
+    NE_ModelTranslate(skybox, SKYPOS_POS[0], SKYPOS_POS[1], SKYPOS_POS[2]);
     NE_ModelTranslate(logo, x, Y, Z);
     NE_ModelTranslate(text, textX, Y + 0.1, Z + 4.55);
 
@@ -312,6 +319,7 @@ void Menu::Update(volatile int frame, Sound *sound)
         }
 
         NF_SpriteFrame(1, START_SPRITE, (frame > 345) ? 1 : 0);
+        NE_ModelRotate(skybox, (frame % 4 == 0 ? 1 : 0), 0, 0);
 
         if (frame >= 690)
         {
@@ -322,6 +330,7 @@ void Menu::Update(volatile int frame, Sound *sound)
 
     case MENU_TITLE:
         NF_SpriteFrame(1, START_SPRITE, 2);
+        NE_ModelRotate(skybox, 0, (frame % 6 == 0 ? 1 : 0), 0);
 
         if (frame % 30 == 0)
         {
@@ -334,6 +343,7 @@ void Menu::Update(volatile int frame, Sound *sound)
     case MENU_GAME_SELECT:
         UpdateLayout(frame);
         NF_ShowSprite(1, START_SPRITE, false);
+        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
         break;
 
     case MENU_RUMBLE:
@@ -635,7 +645,7 @@ void Menu::Draw(volatile int frame)
 {
     if (state != MENU_LOADING)
     {
-        NE_ModelDraw(backdrop);
+        NE_ModelDraw(skybox);
         NE_PolyFormat(31, 8, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
         NE_ModelDraw(logo);
         NE_ModelDraw(text);
@@ -651,11 +661,11 @@ void Menu::Unload(Sound *sound)
     // Free the model and material
     NE_ModelDelete(logo);
     NE_ModelDelete(text);
-    NE_ModelDelete(backdrop);
+    NE_ModelDelete(skybox);
 
     NE_MaterialDelete(logoMaterial);
     NE_MaterialDelete(textMaterial);
-    NE_MaterialDelete(backdropMaterial);
+    NE_MaterialDelete(skyboxMaterial);
 
     // Delete sprite
     ShowMultiplayerStatus(false);
