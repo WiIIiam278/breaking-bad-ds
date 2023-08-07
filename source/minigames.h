@@ -122,6 +122,30 @@ public:
 class PipetteMinigame : public Minigame
 {
 private:
+    const int SPRITE_HEIGHT = 32;
+
+    const u32 PIPETTE_SPRITES = 15;
+    const char PIPETTE_BACKGROUND_NAME[32] = "bg/pipette_minigame";
+    const char PIPETTE_SPRITES_NAME[32] = "sprite/pipette";
+    bool showingTubes = false;
+    
+    int lastStylusPos[2] = { -1, -1 };
+
+    const int PIPETTE_SEGMENTS = 3;
+    const int PIPETTE_SPRITE_IDS[3] = { 15, 16, 17 };
+    int pipetteLoc[2] = { 5, 5 };
+
+    const int TUBE_COUNT = 3;
+    const int TUBE_SPRITE_OFFSET = 20;
+    const int TUBE_SEGMENTS = 4;
+    const int TUBE_BASE_POS[2] = { 25, 32 };
+    const int TUBE_SPACING = 70;
+
+    int tubeProgress[3] = { 0, 0, 0 };
+    const int TUBE_THRESHOLD = 8;
+    int tubeBubbleAnimationFrames[3] = { 0, 0, 0 };
+
+    void UpdateTubes(volatile int frame);
 
 public:
     PipetteMinigame();

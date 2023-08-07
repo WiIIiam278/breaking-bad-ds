@@ -549,8 +549,8 @@ void Game::StartMenuScreen(bool debugMode)
     // Quick-start debug game if the flag is set
     if (debugFlag)
     {
-        StartGame(TUTORIAL_GAME, 999, 1);
-        // currentBatchProgress = 2;
+        StartGame(SINGLEPLAYER_GAME, 999, 1);
+        currentBatchProgress = 3;
         return;
     }
 

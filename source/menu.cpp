@@ -299,6 +299,7 @@ void Menu::ShowMultiplayerStatus(bool showSprite)
 void Menu::Update(volatile int frame, Sound *sound)
 {
     NF_ClearTextLayer(1, 0);
+
     switch (state)
     {
     case MENU_LOADING:
@@ -330,7 +331,7 @@ void Menu::Update(volatile int frame, Sound *sound)
 
     case MENU_TITLE:
         NF_SpriteFrame(1, START_SPRITE, 2);
-        NE_ModelRotate(skybox, 0, (frame % 6 == 0 ? 1 : 0), 0);
+        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
 
         if (frame % 30 == 0)
         {
@@ -348,6 +349,7 @@ void Menu::Update(volatile int frame, Sound *sound)
 
     case MENU_RUMBLE:
         NF_ShowSprite(1, START_SPRITE, false);
+        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
 
         NF_WriteText(1, 0, 1, 6, "A DS Rumble Pak is required.");
         NF_WriteText(1, 0, 1, 7, "to enable this feature. If a");
@@ -363,6 +365,7 @@ void Menu::Update(volatile int frame, Sound *sound)
 
     case MENU_SOUND_TEST:
         NF_ShowSprite(1, START_SPRITE, false);
+        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
 
         NF_WriteText(1, 0, 1, 5, "Breaking Bad DS - SOUND TEST");
         NF_WriteText(1, 0, 1, 6, "LEFT/RIGHT to change track.");
@@ -375,6 +378,8 @@ void Menu::Update(volatile int frame, Sound *sound)
 
     case MENU_MP_HOST_ROOM:
     case MENU_MP_JOIN_ROOM:
+        NF_ShowSprite(1, START_SPRITE, false);
+        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
         UpdateMultiplayer();
         break;
     }
