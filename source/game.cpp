@@ -550,7 +550,7 @@ void Game::StartMenuScreen(bool debugMode)
     if (debugFlag)
     {
         StartGame(SINGLEPLAYER_GAME, 999, 1);
-        currentBatchProgress = 3;
+        currentBatchProgress = 4;
         return;
     }
 
@@ -681,7 +681,7 @@ void Game::ShowMinigameResult(MinigameResult indicator, int frames)
     NF_EnableSpriteRotScale(1, QUALITY_INDICATOR_SPRITE, QUALITY_INDICATOR_SPRITE, true);
     NF_SpriteRotScale(1, QUALITY_INDICATOR_SPRITE, 0, 300, 300);
 
-    if (indicator == GOOD)
+    if (indicator == RESULT_GOOD)
     {
         sound.PlaySFX(SFX_SUCCESS_BELL);
     }
@@ -1005,11 +1005,11 @@ void Game::Update()
             MinigameResult result = currentMinigame->GetResult(inMinigameFor);
             ShowMinigameResult(result, 90);
             currentBatchProgress++;
-            if (result == BAD)
+            if (result == RESULT_BAD)
             {
                 batchPurity -= (16 + (frame % 5));
             }
-            else if (result == OKAY)
+            else if (result == RESULT_OKAY)
             {
                 batchPurity -= (6 + (frame % 3));
             }

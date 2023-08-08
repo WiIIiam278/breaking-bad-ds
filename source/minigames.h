@@ -133,7 +133,18 @@ private:
 
     const int PIPETTE_SEGMENTS = 3;
     const int PIPETTE_SPRITE_IDS[3] = { 15, 16, 17 };
-    int pipetteLoc[2] = { 5, 5 };
+    int pipettePos[2] = { 5, 5 };
+
+    const u32 DROPLET_SPRITE = 14;
+    bool showDroplet = false;
+    bool dropletDropping = false;
+    bool dropletSplashing = false;
+    int dropletFrames = 0;
+    int dropletPos[2] = { 0, 0 };
+    int dropletYVel = 0;
+    const int DROPLET_TARGET_Y_CONTACT = 107;
+    const int DROPLET_MISS_Y_CONTACT = 157;
+    int dropletsMissed = 0;
 
     const int TUBE_COUNT = 3;
     const int TUBE_SPRITE_OFFSET = 20;
@@ -160,6 +171,18 @@ public:
 class PourMinigame : public Minigame
 {
 private:
+    const int SPRITE_HEIGHT = 32;
+
+    const u32 POUR_SPRITES = 15;
+    const char POUR_BACKGROUND_NAME[32] = "bg/pour_minigame";
+    const char POUR_SPRITES_NAME[32] = "sprite/pour";
+    
+    const int TRAY_SPRITE_COUNT = 3;
+    const int TRAY_SPRITES[3] = { 16, 17, 18 };
+    const int FLUID_SPRITES[3] = { 19, 20, 21 };
+    bool showingTray = false;
+
+    void UpdateTray();
 
 public:
     PourMinigame();

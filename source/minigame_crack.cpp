@@ -27,5 +27,5 @@ bool CrackMinigame::IsComplete()
 
 MinigameResult CrackMinigame::GetResult(int framesTaken)
 {
-    return GOOD;
+    return RESULT_GOOD;
 }

@@ -8,8 +8,10 @@ void PipetteMinigame::Load()
 {
     LoadBackground(PIPETTE_BACKGROUND_NAME);
     showingTubes = false;
-    pipetteLoc[0] = pipetteLoc[1] = 5;
+    pipettePos[0] = pipettePos[1] = 5;
     lastStylusPos[0] = lastStylusPos[1] = -1;
+    dropletsMissed = 0;
+    showDroplet = true;
 
     NF_LoadSpriteGfx(PIPETTE_SPRITES_NAME, PIPETTE_SPRITES, 64, SPRITE_HEIGHT);
     NF_LoadSpritePal(PIPETTE_SPRITES_NAME, PIPETTE_SPRITES);
@@ -18,9 +20,12 @@ void PipetteMinigame::Load()
 
     for (int i = 0; i < PIPETTE_SEGMENTS; i++)
     {
-        NF_CreateSprite(1, PIPETTE_SPRITE_IDS[i], 0, 0, pipetteLoc[0], pipetteLoc[1] + (SPRITE_HEIGHT * i));
+        NF_CreateSprite(1, PIPETTE_SPRITE_IDS[i], 0, 0, pipettePos[0], pipettePos[1] + (SPRITE_HEIGHT * i));
         NF_SpriteFrame(1, PIPETTE_SPRITE_IDS[i], 7 + i);
     }
+
+    NF_CreateSprite(1, DROPLET_SPRITE, 0, 0, pipettePos[0], pipettePos[1] + (SPRITE_HEIGHT * 2) + 4);
+    NF_SpriteFrame(1, DROPLET_SPRITE, 10);
 
     UpdateTubes(0);
 }
@@ -45,6 +50,7 @@ void PipetteMinigame::Unload()
     {
         NF_DeleteSprite(1, PIPETTE_SPRITE_IDS[i]);
     }
+    NF_DeleteSprite(1, DROPLET_SPRITE);
 
     NF_UnloadSpriteGfx(PIPETTE_SPRITES);
     NF_UnloadSpritePal(PIPETTE_SPRITES);
@@ -53,6 +59,8 @@ void PipetteMinigame::Unload()
 
 void PipetteMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
 {
+    UpdateTubes(frame);
+
     if (IsComplete())
     {
         return;
@@ -69,8 +77,8 @@ void PipetteMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
         }
         else
         {
-            pipetteLoc[0] += touch.px - lastStylusPos[0];
-            pipetteLoc[1] += touch.py - lastStylusPos[1];
+            pipettePos[0] += touch.px - lastStylusPos[0];
+            pipettePos[1] += touch.py - lastStylusPos[1];
             lastStylusPos[0] = touch.px;
             lastStylusPos[1] = touch.py;
         }
@@ -81,12 +89,79 @@ void PipetteMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
         lastStylusPos[1] = -1;
     }
 
+    pipettePos[0] = std::max(0, std::min(SCREEN_WIDTH - 64, pipettePos[0]));
+    pipettePos[1] = std::max(-20, std::min(SCREEN_HEIGHT - 80 - (SPRITE_HEIGHT * PIPETTE_SEGMENTS), pipettePos[1]));
+
     for (int i = 0; i < PIPETTE_SEGMENTS; i++)
     {
-        NF_MoveSprite(1, PIPETTE_SPRITE_IDS[i], pipetteLoc[0], pipetteLoc[1] + (SPRITE_HEIGHT * i));
+        NF_MoveSprite(1, PIPETTE_SPRITE_IDS[i], pipettePos[0], pipettePos[1] + (SPRITE_HEIGHT * i));
     }
 
-    UpdateTubes(frame);
+    if (!dropletDropping)
+    {
+        dropletPos[0] = pipettePos[0];
+        dropletPos[1] = pipettePos[1] + (SPRITE_HEIGHT * 2) + 4;
+        dropletSplashing = false;
+        showDroplet = true;
+        dropletYVel = 0;
+        dropletFrames = 0;
+    }
+
+    if (keysUp() & KEY_TOUCH)
+    {
+        dropletDropping = true;
+    }
+
+    if (dropletDropping)
+    {
+        dropletPos[1] += dropletYVel;
+        dropletYVel = std::min(10, dropletYVel + (frame % 4 == 0 ? 1 : 0));
+
+        bool isDropletInTube = false;
+        int dropTube = -1;
+        const int TUBE_WIDTH = 48;
+        for (int t = 0; t < TUBE_COUNT; t++)
+        {
+            const int tubeBuffer = ((64 - TUBE_WIDTH) / 2) + 5;
+            const int tubeStart = TUBE_BASE_POS[0] + (TUBE_SPACING * t) - tubeBuffer;
+            const int tubeEnd = tubeStart + TUBE_WIDTH - tubeBuffer;
+            if (dropletPos[0] >= tubeStart && dropletPos[0] <= tubeEnd)
+            {
+                isDropletInTube = tubeProgress[t] < TUBE_THRESHOLD || dropletSplashing;
+                dropTube = t;
+                break;
+            }
+        }
+
+        if (dropletPos[1] > (isDropletInTube ? DROPLET_TARGET_Y_CONTACT : DROPLET_MISS_Y_CONTACT))
+        {
+            dropletSplashing = true;
+            dropletYVel = 0;
+            dropletPos[1] = isDropletInTube ? DROPLET_TARGET_Y_CONTACT : DROPLET_MISS_Y_CONTACT;
+            dropletFrames++;
+
+            if (dropletFrames > 8)
+            {
+                dropletDropping = false;
+                showDroplet = false;
+                dropletPos[0] = pipettePos[0];
+                dropletPos[1] = pipettePos[1] + (SPRITE_HEIGHT * 2);
+
+                if (isDropletInTube)
+                {
+                    tubeProgress[dropTube] = TUBE_THRESHOLD;
+                }
+                else
+                {
+                    dropletsMissed++;
+                }
+            }
+        }
+    }
+
+    NF_ShowSprite(1, DROPLET_SPRITE, showDroplet);
+    NF_MoveSprite(1, DROPLET_SPRITE, dropletPos[0], dropletPos[1]);
+    NF_SpriteFrame(1, DROPLET_SPRITE, dropletSplashing ? 11 : 10);
 }
 
 void PipetteMinigame::UpdateTubes(volatile int frame)
@@ -147,5 +222,14 @@ bool PipetteMinigame::IsComplete()
 
 MinigameResult PipetteMinigame::GetResult(int framesTaken)
 {
-    return GOOD;
+    if (dropletsMissed > 2)
+    {
+        return RESULT_BAD;
+    }
+    else if (dropletsMissed > 0)
+    {
+        return RESULT_OKAY;
+    }
+    return (framesTaken < 650) ? RESULT_GOOD : (framesTaken < 1000) ? RESULT_OKAY
+                                                                    : RESULT_BAD;
 }

@@ -78,9 +78,9 @@ enum MenuState
 
 enum MinigameResult
 {
-    GOOD,
-    OKAY,
-    BAD
+    RESULT_GOOD,
+    RESULT_OKAY,
+    RESULT_BAD
 };
 
 enum TransitionScreen

@@ -112,6 +112,6 @@ bool PestleMinigame::IsComplete()
 
 MinigameResult PestleMinigame::GetResult(int framesTaken)
 {
-    return (framesTaken < 680) ? GOOD : (framesTaken < 1150) ? OKAY
-                                                             : BAD;
+    return (framesTaken < 680) ? RESULT_GOOD : (framesTaken < 1150) ? RESULT_OKAY
+                                                             : RESULT_BAD;
 }

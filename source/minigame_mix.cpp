@@ -167,6 +167,6 @@ bool MixMinigame::IsComplete()
 
 MinigameResult MixMinigame::GetResult(int framesTaken)
 {
-    return (framesTaken < 725) ? GOOD : (framesTaken < 1225) ? OKAY
-                                                             : BAD;
+    return (framesTaken < 725) ? RESULT_GOOD : (framesTaken < 1225) ? RESULT_OKAY
+                                                             : RESULT_BAD;
 }

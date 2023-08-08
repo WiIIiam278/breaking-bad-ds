@@ -77,6 +77,6 @@ bool ValveMinigame::IsComplete()
 
 MinigameResult ValveMinigame::GetResult(int framesTaken)
 {
-    return (framesTaken < 480) ? GOOD : (framesTaken < 900) ? OKAY
-                                                            : BAD;
+    return (framesTaken < 480) ? RESULT_GOOD : (framesTaken < 900) ? RESULT_OKAY
+                                                            : RESULT_BAD;
 }
