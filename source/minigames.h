@@ -176,6 +176,18 @@ private:
     const u32 POUR_SPRITES = 15;
     const char POUR_BACKGROUND_NAME[32] = "bg/pour_minigame";
     const char POUR_SPRITES_NAME[32] = "sprite/pour";
+
+    const u32 PUMP_VALVE_SPRITE = 22;
+    const int PUMP_VALVE_POS[2] = { 10, 10 };
+
+    const u32 DRAIN_VALVE_SPRITE = 23;
+    const int DRAIN_VALVE_POS[2] = { 10, 10 };
+
+    const u32 POURING_FLUID_SPRITES[3] = { 24, 25, 26 };
+    const u32 PIPE_SPRITE = 27;
+
+    const int currentFlowRate = 0;
+    const int currentDrainRate = 0;
     
     const int TRAY_SPRITE_COUNT = 3;
     const int TRAY_SPRITES[3] = { 16, 17, 18 };
