@@ -177,24 +177,38 @@ private:
     const char POUR_BACKGROUND_NAME[32] = "bg/pour_minigame";
     const char POUR_SPRITES_NAME[32] = "sprite/pour";
 
-    const u32 PUMP_VALVE_SPRITE = 22;
-    const int PUMP_VALVE_POS[2] = { 10, 10 };
+    const u32 PUMP_SWITCH_SPRITE = 22;
+    const int PUMP_SWITCH_POS[2] = { 195, 11 };
 
-    const u32 DRAIN_VALVE_SPRITE = 23;
-    const int DRAIN_VALVE_POS[2] = { 10, 10 };
+    const u32 DRAIN_SWITCH_SPRITE = 23;
+    const int DRAIN_SWITCH_POS[2] = { -7, 60 };
 
-    const u32 POURING_FLUID_SPRITES[3] = { 24, 25, 26 };
-    const u32 PIPE_SPRITE = 27;
+    const int POURING_FLUID_COUNT = 6;
+    const u32 POURING_FLUID_SPRITES[6] = { 24, 25, 26, 27, 28, 29 };
+    const u32 PIPE_SPRITE = 30;
+    const int PIPE_SPRITE_POS[2] = { 50, 0 };
 
-    const int currentFlowRate = 0;
-    const int currentDrainRate = 0;
+    const float MAX_PUMP_RATE = 2.3f;
+    const float MAX_DRAIN_RATE = 2.3f;
+    float currentPumpRate = 0.0f;
+    float targetPumpRate = 0.0f;
+    float currentDrainRate = 0.0f;
+    float targetDrainRate = 0.0f;
+
+    const float MAX_LEVEL = 9.0f;
+    const float TARGET_LEVEL = 6.5f;
+    float currentLevel = 0.0f;
     
     const int TRAY_SPRITE_COUNT = 3;
     const int TRAY_SPRITES[3] = { 16, 17, 18 };
     const int FLUID_SPRITES[3] = { 19, 20, 21 };
     bool showingTray = false;
+    bool showingSwitches = false;
+
+    int selectedSwitch = -1;
 
     void UpdateTray();
+    void UpdateSwitches(volatile int frame, Sound *sound);
 
 public:
     PourMinigame();
@@ -209,6 +223,16 @@ public:
 class CrackMinigame : public Minigame
 {
 private:
+    const int SPRITE_DIMS[2] = { 64, 32 };
+
+    const u32 CRACK_SPRITE_BASE_ID = 15;
+    const char CRACK_BACKGROUND_NAME[32] = "bg/crack_minigame";
+    const char CRACK_SPRITES_NAME[32] = "sprite/crack";
+    const int SPRITE_COUNTS[2] = { SCREEN_WIDTH / SPRITE_DIMS[0], 128 / SPRITE_DIMS[1] };
+    const int CRACK_SPRITE_POS[2] = { 0, 8 };
+    bool showingSprites = false;
+
+    void UpdateSprites(volatile int frame);
 
 public:
     CrackMinigame();

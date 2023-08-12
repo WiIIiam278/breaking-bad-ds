@@ -446,7 +446,7 @@ void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
                  -11.5, 1, 8.5,
                  0, 1, 0);
 
-    sound.PlayBGM(BGM_THE_COUSINS, true);
+    sound.PlayBGM(gameType != TUTORIAL_GAME ? BGM_THE_COUSINS : BGM_CLEAR_WATERS, true);
 
     // Start tutorial
     CheckTutorials();
@@ -550,7 +550,7 @@ void Game::StartMenuScreen(bool debugMode)
     if (debugFlag)
     {
         StartGame(SINGLEPLAYER_GAME, 999, 1);
-        currentBatchProgress = 4;
+        currentBatchProgress = 5;
         return;
     }
 

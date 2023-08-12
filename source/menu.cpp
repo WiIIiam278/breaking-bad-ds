@@ -445,13 +445,6 @@ MenuSelection Menu::HandleInput(Sound *sound)
             return NONE;
         }
 
-        if (keysDown() & KEY_B)
-        {
-            const bool quitToTitle = state == MENU_MAIN;
-            SetState(quitToTitle ? MENU_TITLE : MENU_MAIN, sound);
-            return quitToTitle ? BACK_TO_TITLE : BACK_TO_MAIN_MENU;
-        }
-
         if (state == MENU_MAIN && (keysDown() & SOUND_TEST_SEQUENCE[currentSequenceIndex]))
         {
             currentSequenceIndex++;
@@ -464,6 +457,13 @@ MenuSelection Menu::HandleInput(Sound *sound)
             {
                 return NONE;
             }
+        }
+
+        if (keysDown() & KEY_B)
+        {
+            const bool quitToTitle = state == MENU_MAIN;
+            SetState(quitToTitle ? MENU_TITLE : MENU_MAIN, sound);
+            return quitToTitle ? BACK_TO_TITLE : BACK_TO_MAIN_MENU;
         }
 
         if (keysDown() & KEY_A || keysDown() & KEY_START)

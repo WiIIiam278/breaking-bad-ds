@@ -11,7 +11,8 @@ enum TrackId
     BGM_TITLE_INTRO,
     BGM_TITLE_LOOP,
     BGM_BABY_BLUE,
-    BGM_THE_COUSINS
+    BGM_THE_COUSINS,
+    BGM_CLEAR_WATERS
 };
 
 struct BGM
@@ -25,7 +26,7 @@ struct BGM
     const int loopAfterFile;
 };
 
-const int BGM_COUNT = 4;
+const int BGM_COUNT = 5;
 const BGM BGMS[BGM_COUNT] =
     {
         {"Main Theme (Intro)",
@@ -55,14 +56,24 @@ const BGM BGMS[BGM_COUNT] =
          /* 8 */ 4,
          {"bgm/the_cousins_hook_1",
           "bgm/the_cousins_hook_2",
-        //   "bgm/the_cousins_hook_3",
-        //   "bgm/the_cousins_hook_4",
-        //   "bgm/the_cousins_hook_5",
-        //   "bgm/the_cousins_hook_6",
+          //   "bgm/the_cousins_hook_3",
+          //   "bgm/the_cousins_hook_4",
+          //   "bgm/the_cousins_hook_5",
+          //   "bgm/the_cousins_hook_6",
           "bgm/the_cousins_loop_1",
           "bgm/the_cousins_loop_2"},
          {585, 585, /* 585, 585, 585, 585, */ 585, 585},
-         /* 3 */ 1}};
+         /* 3 */ 1},
+        {
+            "Clear Waters (Tutorial Theme)",
+            BGM_CLEAR_WATERS,
+            100,
+            2,
+            {"bgm/clear_waters_1",
+             "bgm/clear_waters_2"},
+            {645, 620},
+            1
+        }};
 
 enum EffectId
 {
@@ -96,8 +107,7 @@ const SFX SFXS[SFX_COUNT] =
         {SFX_PESTLE, "sfx/pestle"},
         {SFX_CRANK, "sfx/crank"},
         {SFX_CLICK, "sfx/click"},
-        {SFX_VACCUM, "sfx/vaccum"}
-    };
+        {SFX_VACCUM, "sfx/vaccum"}};
 
 class Sound
 {
