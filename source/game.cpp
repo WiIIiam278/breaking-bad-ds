@@ -102,15 +102,26 @@ void Game::UpdateCamera()
     case PAUSED:
         cameraTx = player.x;
         cameraTy = 7.5;
-        cameraTz = -2.5 + (player.z / 6);
+        cameraTz = -2.5 - 2.5 + (player.z / 6);
         break;
     case GAME_OVER:
         if (gameOverFrame < -10)
+        {
             return;
-        cameraTx = player.x - 0.5f;
-        cameraTy = 5 + (((float)gameOverFrame / 500.0f) * 13.0f);
-        cameraTz = player.z + 1.5f;
-        NE_CameraRotate(camera, 0, frame % 2 == 0 ? 1 : 0, 0);
+        }
+        if (!wonGame)
+        {
+            cameraTx = player.x - 0.5f;
+            cameraTy = 5 + (((float)gameOverFrame / 500.0f) * 13.0f);
+            cameraTz = player.z + 1.5f;
+            NE_CameraRotate(camera, 0, frame % 2 == 0 ? 1 : 0, 0);
+        }
+        else
+        {
+            cameraTx = player.x;
+            cameraTy = 13 - (((float)gameOverFrame / 500.0f) * 5.75f);
+            cameraTz = player.z - 4.5f;
+        }
         break;
     default:
         cameraTx = player.x;
@@ -331,9 +342,17 @@ void Game::UpdateHud()
             }
             NF_SpriteFrame(1, HUD_PURITY_SPRITES[i], (int)(batchPurity / pow(10, 2 - i)) % 10);
         }
+
         for (int i = 0; i < 4; i++)
         {
-            NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int)((i < 2 ? batchesComplete : (isMultiplayer ? player2batchesComplete : batchQuota)) / pow(10, 3 - i)) % 10);
+            if (i < 2)
+            {
+                NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int)((!isMultiplayer ? batchesComplete : (isHostClient() ? batchesComplete : player2BatchesComplete)) / pow(10, 1 - i)) % 10);
+            }
+            else
+            {
+                NF_SpriteFrame(1, HUD_QUOTA_SPRITES[i], (int)((!isMultiplayer ? batchQuota : (isHostClient() ? player2BatchesComplete : batchesComplete)) / pow(10, 3 - i)) % 10);
+            }
         }
     }
 }
@@ -349,11 +368,19 @@ void Game::QuitToTitle()
     {
         disableMultiplayer();
     }
+    if (showingIndicatorFor > 0)
+    {
+        NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
+        showingIndicatorFor = 0;
+    }
+    sound.StopBGM();
     UnLoadLabScene();
     NE_SpecialEffectSet(NE_NONE);
     StartMenuScreen(false);
-    sound.StopBGM();
-    sound.PlaySFX(SFX_MENU_SELECT);
+    if (!wonGame)
+    {
+        sound.PlaySFX(SFX_MENU_SELECT);
+    }
 }
 
 void Game::StartDialogue(ScriptId script)
@@ -405,6 +432,7 @@ void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
     Transition(false, 0, TS_BOTH);
 
     frame = 0;
+    wonGame = false;
     isQuitting = false;
     tutorialProgress = 0;
     mode = MOVE;
@@ -443,7 +471,7 @@ void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
     cameraZ = BASE_MOVE_CAMERA_POS[2];
     NE_CameraSet(camera,
                  cameraX, cameraY, cameraZ,
-                 -11.5, 1, 8.5,
+                 -11.5, 2, 8.5,
                  0, 1, 0);
 
     sound.PlayBGM(gameType != TUTORIAL_GAME ? BGM_THE_COUSINS : BGM_CLEAR_WATERS, true);
@@ -462,7 +490,7 @@ void Game::LoadLabScene()
     {
         WaitLoop();
     }
-    
+
     Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSIE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
     if (player.Load(p1Char) == -1)
     {
@@ -545,16 +573,6 @@ void Game::StartMenuScreen(bool debugMode)
     debugFlag = debugMode;
     frame = 0;
     mode = MAIN_MENU;
-
-    // Quick-start debug game if the flag is set
-    if (debugFlag)
-    {
-        StartGame(SINGLEPLAYER_GAME, 999, 1);
-        currentBatchProgress = 5;
-        return;
-    }
-
-    // Load logo
     LoadLogoScene();
 
     Transition(true, 120, TS_BOTH);
@@ -597,11 +615,11 @@ void Game::UpdateMenuScreen()
         break;
     case START_TUTORIAL:
         UnLoadLogoScene();
-        StartGame(TUTORIAL_GAME, -1, 1);
+        StartGame(TUTORIAL_GAME, -1, 5);
         break;
     case START_1P_GAME:
         UnLoadLogoScene();
-        StartGame(SINGLEPLAYER_GAME, 340, 10);
+        StartGame(SINGLEPLAYER_GAME, 340, 12);
         break;
     case START_MP_GAME:
         UnLoadLogoScene();
@@ -658,12 +676,20 @@ void Game::StartMinigame(Tile tile)
     Transition(true, 30, TS_BOTTOM);
 }
 
-void Game::DeleteMinigame()
+void Game::DeleteMinigame(bool doTransition)
 {
     if (currentMinigame == NULL)
     {
         return;
     }
+
+    if (!doTransition)
+    {
+        currentMinigame->Unload();
+        currentMinigame = NULL;
+        return;
+    }
+
     Transition(false, 0, TS_BOTTOM);
     currentMinigame->Unload();
     currentMinigame = NULL;
@@ -687,19 +713,28 @@ void Game::ShowMinigameResult(MinigameResult indicator, int frames)
     }
 }
 
-void Game::StartGameOver()
+void Game::StartGameOver(bool hasWon)
 {
     if (!(mode == MOVE || mode == MINIGAME))
     {
         return;
     }
+    wonGame = hasWon;
     player.walking = false;
+
     Transition(false, 0, TS_BOTH);
+
+    // Clear indicator
+    if (showingIndicatorFor > 0)
+    {
+        NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
+        showingIndicatorFor = 0;
+    }
 
     // Clear other elements
     if (mode == MINIGAME)
     {
-        DeleteMinigame();
+        DeleteMinigame(false);
     }
     else
     {
@@ -711,8 +746,17 @@ void Game::StartGameOver()
     NE_SpecialEffectSet(NE_NONE);
     mode = GAME_OVER;
     gameOverFrame = -170;
-    player.SetLyingDown(true);
-    NE_CameraRotate(camera, 90, 0, 0);
+
+    // Prepare baby blue stuff
+    if (!hasWon)
+    {
+        player.SetLyingDown(true);
+        NE_CameraRotate(camera, 90, 0, 0);
+    }
+    else
+    {
+        player.facing = DOWN;
+    }
 }
 
 void Game::UpdateGameOver()
@@ -722,7 +766,10 @@ void Game::UpdateGameOver()
     switch (gameOverFrame)
     {
     case -150:
-        sound.PlaySFX(SFX_GOODBYE_WALTER);
+        if (!wonGame)
+        {
+            sound.PlaySFX(SFX_GOODBYE_WALTER);
+        }
         break;
     case -55:
     case -56:
@@ -730,20 +777,49 @@ void Game::UpdateGameOver()
     case -58:
     case -59:
     case -60:
-        setRumble(gameOverFrame % 2 == 0);
+        if (!wonGame)
+        {
+            setRumble(gameOverFrame % 2 == 0);
+        }
         break;
     case -10:
         sound.StopSFX();
         break;
     case 0:
-        sound.PlayBGM(BGM_BABY_BLUE, false);
+        if (!wonGame)
+        {
+            sound.PlayBGM(BGM_BABY_BLUE, false);
+        }
+        else
+        {
+            sound.PlayBGM(BGM_RODRIGO_Y_GABRIELA, false);
+        }
         Transition(true, 60, TS_BOTH);
         break;
     case 520:
-        Transition(false, 0, TS_BOTH);
+        if (!wonGame)
+        {
+            Transition(false, 0, TS_BOTH);
+        }
+        break;
+    case 575:
+        if (wonGame)
+        {
+            Transition(false, 0, TS_BOTH);
+            sound.StopBGM();
+        }
         break;
     case 620:
-        QuitToTitle();
+        if (!wonGame)
+        {
+            QuitToTitle();
+        }
+        break;
+    case 660:
+        if (wonGame)
+        {
+            QuitToTitle();
+        }
         break;
     }
 }
@@ -823,7 +899,7 @@ void Game::Update()
                 player2->tileX = opponent->playerTileX;
                 player2->tileZ = opponent->playerTileZ;
                 player2->rotation = opponent->playerFacing;
-                player2batchesComplete = opponent->batchesComplete;
+                player2BatchesComplete = opponent->batchesComplete;
                 player2BatchProgress = opponent->currentBatchStep;
                 if (!isHostClient())
                 {
@@ -844,18 +920,9 @@ void Game::Update()
     // Debug - print debug info
     if (debugFlag)
     {
-        if (mode != MAIN_MENU && mode != MINIGAME && mode != DIALOGUE)
-        {
-            player.PrintCoords(map);
-        }
-
-        char modeText[100];
-        sprintf(modeText, "Mode: %d", mode);
-        NF_WriteText(1, 0, 1, 4, modeText);
-
         char memUsage[100];
         sprintf(memUsage, "Mem: %d (%d)", getMemUsed(), getMemFree());
-        NF_WriteText(1, 0, 1, 5, memUsage);
+        NF_WriteText(1, 0, 1, 1, memUsage);
     }
 
     // Update transition
@@ -956,9 +1023,33 @@ void Game::Update()
 
                 if (timeLimit == 0)
                 {
-                    StartGameOver();
+                    if (gameType == SINGLEPLAYER_GAME)
+                    {
+                        StartGameOver(false);
+                    }
+                    else if (gameType == MULTIPLAYER_GAME)
+                    {
+                        const bool isDraw = batchesComplete == player2BatchesComplete && currentBatchProgress == player2BatchProgress;
+                        const bool localWin = (batchesComplete == player2BatchesComplete ? currentBatchProgress > player2BatchProgress : batchesComplete > player2BatchesComplete);
+                        StartGameOver(!isDraw && localWin);
+                    }
                     return;
                 }
+            }
+        }
+
+        // Update batch progress
+        if (currentBatchProgress >= 6)
+        {
+            sound.PlaySFX(SFX_ACCEPTABLE);
+            batchesComplete += (BASE_BATCH_YIELD * ((float) batchPurity / 100.0f));
+            currentBatchProgress = 0;
+            batchPurity = 100;
+
+            if (batchesComplete >= batchQuota)
+            {
+                StartGameOver(true);
+                return;
             }
         }
 
@@ -980,7 +1071,7 @@ void Game::Update()
             if (mode == MINIGAME)
             {
                 mode = MOVE;
-                DeleteMinigame();
+                DeleteMinigame(true);
             }
             break;
         }

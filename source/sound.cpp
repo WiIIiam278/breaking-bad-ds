@@ -96,10 +96,15 @@ void Sound::PlayBGM(TrackId bgm, bool loop)
     singleFile = (looping && GetTrackFileCount(BGMS[currentBgm].track) == 1);
     currentBgmFile = 0;
     currentBgmFrame = 0;
+    bgmPlaying = true;
 }
 
 void Sound::Update(volatile int frame)
 {
+    if (!bgmPlaying)
+    {
+        return;
+    }
     if (currentBgmFrame >= BGMS[currentBgm].trackFrames[currentBgmFile])
     {
         if (!singleFile)
@@ -159,8 +164,12 @@ char* Sound::GetBgmTrackProgressString()
 
 void Sound::StopBGM()
 {
-    soundKill(currentBgmSoundId);
-    looping = false;
+    if (bgmPlaying)
+    {
+        soundKill(currentBgmSoundId);
+        looping = false;
+        bgmPlaying = false;
+    }
 }
 
 void Sound::PlaySFX(EffectId sfx)

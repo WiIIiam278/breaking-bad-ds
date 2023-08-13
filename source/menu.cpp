@@ -237,7 +237,7 @@ void Menu::SetState(MenuState newState, Sound *sound)
         StartMultiplayer(false);
     }
 
-    if (state != MENU_LOGO)
+    if (state != MENU_LOGO && newState != MENU_LOGO)
     {
         sound->PlaySFX(SFX_MENU_DRUM);
         setRumble(state % 2 == 0);

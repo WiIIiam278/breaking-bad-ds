@@ -194,6 +194,6 @@ bool PourMinigame::IsComplete()
 
 MinigameResult PourMinigame::GetResult(int framesTaken)
 {
-    return (framesTaken < 1450) ? RESULT_GOOD : (framesTaken < 2350) ? RESULT_OKAY
+    return (framesTaken < 1100) ? RESULT_GOOD : (framesTaken < 1850) ? RESULT_OKAY
                                                                      : RESULT_BAD;
 }

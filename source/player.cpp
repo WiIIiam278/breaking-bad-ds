@@ -162,21 +162,6 @@ Tile Player::GetTile(Map &map)
     return map.GetTileAt(tileX, tileZ);
 }
 
-void Player::PrintCoords(Map &map)
-{
-    char coords[100];
-    sprintf(coords, "x: %.1f, y: %.1f, z: %.1f", x, y, z);
-    NF_WriteText(1, 0, 1, 1, coords);
-
-    char tileCoords[100];
-    sprintf(tileCoords, "tileX: %i (%i), tileZ: %i (%i)", tileX, targetX, tileZ, targetZ);
-    NF_WriteText(1, 0, 1, 2, tileCoords);
-
-    char tileType[100];
-    sprintf(tileType, "tileType: %i", GetTile(map));
-    NF_WriteText(1, 0, 1, 3, tileType);
-}
-
 void Player::SetLyingDown(bool lyingDown)
 {
     this->lyingDown = lyingDown;

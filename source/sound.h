@@ -12,7 +12,8 @@ enum TrackId
     BGM_TITLE_LOOP,
     BGM_BABY_BLUE,
     BGM_THE_COUSINS,
-    BGM_CLEAR_WATERS
+    BGM_CLEAR_WATERS,
+    BGM_RODRIGO_Y_GABRIELA,
 };
 
 struct BGM
@@ -26,31 +27,31 @@ struct BGM
     const int loopAfterFile;
 };
 
-const int BGM_COUNT = 5;
+const int BGM_COUNT = 6;
 const BGM BGMS[BGM_COUNT] =
     {
-        {"Main Theme (Intro)",
+        {"Brekaing Bad (Main Titles)",
          BGM_TITLE_INTRO,
          127,
          1,
          {"bgm/title_hook"},
          {690},
          0},
-        {"Main Theme (Loop)",
+        {"Breaking Bad (Main Menu)",
          BGM_TITLE_LOOP,
          127,
          1,
          {"bgm/title_loop"},
          {640},
          0},
-        {"Baby Blue (Game Over Theme)",
+        {"Baby Blue (Game Over)",
          BGM_BABY_BLUE,
          127,
          1,
          {"bgm/baby_blue"},
          {640},
          0},
-        {"The Cousins (Lab Theme)",
+        {"The Cousins (In The Lab)",
          BGM_THE_COUSINS,
          77,
          /* 8 */ 4,
@@ -65,7 +66,7 @@ const BGM BGMS[BGM_COUNT] =
          {585, 585, /* 585, 585, 585, 585, */ 585, 585},
          /* 3 */ 1},
         {
-            "Clear Waters (Tutorial Theme)",
+            "Clear Waters (Tutorial)",
             BGM_CLEAR_WATERS,
             100,
             2,
@@ -73,6 +74,15 @@ const BGM BGMS[BGM_COUNT] =
              "bgm/clear_waters_2"},
             {645, 620},
             1
+        },
+        {
+            "Rodrigo y Gabriela (Clear!)",
+            BGM_RODRIGO_Y_GABRIELA,
+            127,
+            1,
+            {"bgm/rodrigo_y_gabriela"},
+            {640},
+            0
         }};
 
 enum EffectId
@@ -86,7 +96,8 @@ enum EffectId
     SFX_PESTLE,
     SFX_CRANK,
     SFX_CLICK,
-    SFX_VACCUM
+    SFX_VACCUM,
+    SFX_ACCEPTABLE
 };
 
 struct SFX
@@ -95,7 +106,7 @@ struct SFX
     const char fileName[64];
 };
 
-const int SFX_COUNT = 10;
+const int SFX_COUNT = 11;
 const SFX SFXS[SFX_COUNT] =
     {
         {SFX_MENU_DRUM, "sfx/menu_drum"},
@@ -107,7 +118,8 @@ const SFX SFXS[SFX_COUNT] =
         {SFX_PESTLE, "sfx/pestle"},
         {SFX_CRANK, "sfx/crank"},
         {SFX_CLICK, "sfx/click"},
-        {SFX_VACCUM, "sfx/vaccum"}};
+        {SFX_VACCUM, "sfx/vaccum"},
+        {SFX_ACCEPTABLE, "sfx/acceptable"}};
 
 class Sound
 {
@@ -118,6 +130,7 @@ private:
     const int SAMPLE_RATE = 22050;
 
     TrackId currentBgm;
+    bool bgmPlaying = false;
     int currentBgmFile;
     volatile int currentBgmFrame;
     bool singleFile = false;

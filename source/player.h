@@ -48,7 +48,6 @@ public:
     void Update(volatile int frame);
     void Translate(float x, float y, float z);
     Tile GetTile(Map& map);
-    void PrintCoords(Map& map);
     void HandleInput(uint32 keys);
     void SetLyingDown(bool lyingDown);
     void DrawShadow(float radius, u32 color);

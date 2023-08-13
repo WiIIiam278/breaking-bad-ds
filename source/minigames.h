@@ -230,9 +230,13 @@ private:
     const char CRACK_SPRITES_NAME[32] = "sprite/crack";
     const int SPRITE_COUNTS[2] = { SCREEN_WIDTH / SPRITE_DIMS[0], 128 / SPRITE_DIMS[1] };
     const int CRACK_SPRITE_POS[2] = { 0, 8 };
+    
     bool showingSprites = false;
+    u32 spriteDamageTable[16][16];
+    int spritePositions[16][16][2];
 
-    void UpdateSprites(volatile int frame);
+    void UpdateSprites(volatile int frame, Sound *sound);
+    bool ProcessSprite(volatile int frame, int spriteId, int grid[2], Sound *sound);
 
 public:
     CrackMinigame();

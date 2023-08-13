@@ -1,5 +1,7 @@
 #include "multiplayer.h"
 
+// note: Loading multiplayer takes about 147608 bytes of ram
+
 // ** Wifi variables **:
 int wifiChannel = 10;
 

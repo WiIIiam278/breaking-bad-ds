@@ -41,7 +41,7 @@ private:
     // Multiplayer
     Player *player2 = NULL;
     int player2BatchProgress = 0;
-    int player2batchesComplete = 0;
+    int player2BatchesComplete = 0;
 
     // Transition
     bool isTransitioning[2] = { false, false };
@@ -76,6 +76,8 @@ private:
     int gameOverFrame = 0;
     int batchPurity = 100;
     volatile int idleFrames = 0;
+    const float BASE_BATCH_YIELD = 4.5f;
+    bool wonGame = false;
     
     // HUD
     const int HUD_MAP_ICONS = 6;
@@ -154,11 +156,11 @@ public:
 
     // Minigame stuff
     void StartMinigame(Tile tile);
-    void DeleteMinigame();
+    void DeleteMinigame(bool doTransition);
     void ShowMinigameResult(MinigameResult indicator, int frames);
 
     // Game Over
-    void StartGameOver();
+    void StartGameOver(bool hasWon);
     void UpdateGameOver();
 
     // Main tick logic

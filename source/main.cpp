@@ -10,6 +10,8 @@ void RenderGame()
 
 int main(void)
 {
+    srand(time(NULL));
+
     // Prepare graphics
     game.Prepare3DGraphics();
     game.Prepare2DGraphics();
