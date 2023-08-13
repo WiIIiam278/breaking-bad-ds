@@ -46,26 +46,41 @@ struct Portrait
 
 enum ScriptId
 {
-    SCRIPT_GUS_TEST,
+    SCRIPT_GUS_IDLE,
     SCRIPT_GALE_TUTORIAL_IDLE,
     SCRIPT_GALE_TUTORIAL_INTRO,
     SCRIPT_GALE_TUTORIAL_VALVE,
     SCRIPT_GALE_TUTORIAL_VALVE_COMPLETE,
+    SCRIPT_GALE_TUTORIAL_PESTLE,
+    SCRIPT_GALE_TUTORIAL_PESTLE_COMPLETE,
+    SCRIPT_GALE_TUTORIAL_MIX,
+    SCRIPT_GALE_TUTORIAL_MIX_COMPLETE,
+    SCRIPT_GALE_TUTORIAL_PIPETTE,
+    SCRIPT_GALE_TUTORIAL_PIPETTE_COMPLETE,
+    SCRIPT_GALE_TUTORIAL_POUR,
+    SCRIPT_GALE_TUTORIAL_POUR_COMPLETE,
+    SCRIPT_GALE_TUTORIAL_CRACK,
+    SCRIPT_GALE_TUTORIAL_CRACK_COMPLETE,
+    SCRIPT_GUS_TUTORIAL_MULTIPLAYER
 };
 
 const Script SCRIPTS[64] = {
     {GUS,
-     5,
+     6,
      {"Walter.",
-      "We have a deal, Walter.",
+      "We have a deal.",
       "You're going to cook for me.",
-      "And you will do so with...      ...efficiency.",
-      "300 pounds a week. That is your goal."},
-     {EMOTE_NONE,
+      "You will do so efficiently.",
+      "Three hundred pounds a week.",
+      "That is your goal."
+      "I suggest you get a move on."},
+     {EMOTE_ANGRY,
       EMOTE_NONE,
       EMOTE_NONE,
       EMOTE_NONE,
-      EMOTE_NONE}},
+      EMOTE_NONE,
+      EMOTE_NONE,
+      EMOTE_EXCLAMATION}},
     {GALE,
      5,
      {
@@ -130,6 +145,177 @@ const Script SCRIPTS[64] = {
       EMOTE_NONE,
       EMOTE_NONE,
       EMOTE_NONE}},
+      {
+        GALE,
+        3,
+        { 
+         "Oh, what fun! It's time to   use the pestle and mortar!",
+         "Drag the pestle in an up-    and-around motion.",
+         "That'll grind the solutes    to a fine powder.",
+        },
+        {
+          EMOTE_EXCLAMATION,
+          EMOTE_NONE,
+          EMOTE_NONE
+        }
+      },{
+        GALE,
+        3,
+        {
+         "As expected of Mister White!",
+         "The solutes are ground to    perfection.",
+         "Now we can use the mixing    plant to make the solution."
+        },
+        {
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_EXCLAMATION
+        }
+      },{
+        GALE,
+        7,
+        {"Say hello to Sally the mixer.Isn't she a beauty?!",
+         "She'll do the work for us--  all we need to do is use...",
+         "...the cranks to position    the flexi-pipe.",
+         "The crank on your right will adjust it vertically...",
+         "And the crank on your left   will adjust it horizontally.",
+         "Line up the pipe's head with the tank's coupling hole...",
+         "...and it'll click into      place and start mixing!"
+        },
+        { EMOTE_EXCLAMATION,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_EXCLAMATION }
+      },{
+        GALE,
+        4,
+        {"Thank you, Sally!",
+         "(...)",
+         "...Let's move on to the next task.",
+         "To the test tubes!"},
+        { EMOTE_EXCLAMATION,
+          EMOTE_QUESTION,
+          EMOTE_NONE,
+          EMOTE_NONE
+        }
+      },{
+        GALE,
+        7,
+        {"Now we've mixed up the       solutes, we'll need to...",
+         "add a dash of reagent to     start the reaction.",
+         "Drag the pipette over each   test tube, then...",
+         "...when it's in position,    release the stylus!",
+         "The pipette will let out     a droplet!",
+         "Make sure it's aligned with  the test tube, and the...",
+         "...reagent will do the rest!"},
+        { EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_EXCLAMATION }
+      },{
+        GALE,
+        4,
+        {"Excellent! Just look at thosetubes go.",
+         "Ooh, we're nearly done!",
+         "Isn't this exciting?",
+         "Next up, pouring our product into proving trays!"},
+        { EMOTE_EXCLAMATION,
+          EMOTE_NONE,
+          EMOTE_EXCLAMATION,
+          EMOTE_NONE
+        }
+      },{
+        GALE,
+        6,
+        {"It's pouring time!",
+         "The methamphetamine solution needs pouring into trays.",
+         "Tap the switch labeled \"Pump\"to start the flow.",
+         "You need to fill it preciselyto the line-no more or less.",
+         "Use the drain switch to lowerthe level if you need to!",
+         "Tap elsewhere on the screen  to deactivate both switches."
+        },
+        { EMOTE_EXCLAMATION,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE
+        }
+      },{
+        GALE,
+        2,
+        {"Excellent work! We're nearly there.",
+         "The last step is fracturing  the proven methamphetamine.",
+        },
+        { EMOTE_NONE,
+        EMOTE_EXCLAMATION }
+      },{
+        GALE,
+        7,
+        {"It's finally time for my     favorite step!",
+         "Cracking the methamphetamine into crystals.",
+         "You'll need to smash each    part of the tray.",
+         "Once broken, slide each      crystal to below the",
+         "tray to be ready for         bagging.",
+         "After this step, the batch's yield will be calculated.",
+         "This will be automatically   deducted from the quota.",
+        },
+        { EMOTE_EXCLAMATION,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE
+        }
+      },{
+        GALE,
+        6,
+        {"You did it! Excellent work!",
+         "I hope that gave you a good  refresher on the game!",
+         "To finish your quota in time,you'll need be both...",
+         "...quick and accurate at eachtask!",
+         "I'll leave the next batch in your capable hands!",
+         "Good luck, Mister White!"
+        },
+        { EMOTE_EXCLAMATION,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_EXCLAMATION
+        }
+      },
+      {
+        GUS,
+        8,
+        {
+         "Good evening.",
+         "I trust Gale's refresher was ...Useful?",
+         "Allow me to remind you of an old addage:",
+         "Twice the pride, double the  fall.",
+         "That is of course to remind  you that with",
+         "another Nintendo DS system,  you can compete",
+         "with Jessie in Multiplayer   VS. Mode.",
+         "A pleasure doing business    with you as always."
+        },
+        {
+          EMOTE_NONE,
+          EMOTE_QUESTION,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE,
+          EMOTE_NONE
+        }
+      }
 };
 
 const Portrait PORTRAITS[64] = {

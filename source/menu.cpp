@@ -681,4 +681,5 @@ void Menu::Unload(Sound *sound)
     NF_UnloadSpriteGfx(2);
     NF_UnloadSpritePal(2);
     NF_FreeSpriteGfx(1, 1);
+    NF_VramSpriteGfxDefrag(1);
 }

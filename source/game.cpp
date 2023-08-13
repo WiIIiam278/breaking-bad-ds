@@ -564,6 +564,7 @@ void Game::UnLoadLabScene()
     NF_FreeSpriteGfx(1, HUD_NUMBERS + 1);
     NF_UnloadSpriteGfx(HUD_NUMBERS);
     NF_UnloadSpritePal(HUD_NUMBERS);
+    NF_VramSpriteGfxDefrag(1);
 }
 
 void Game::StartMenuScreen(bool debugMode)
@@ -619,11 +620,11 @@ void Game::UpdateMenuScreen()
         break;
     case START_1P_GAME:
         UnLoadLogoScene();
-        StartGame(SINGLEPLAYER_GAME, 340, 12);
+        StartGame(SINGLEPLAYER_GAME, 240, 12);
         break;
     case START_MP_GAME:
         UnLoadLogoScene();
-        StartGame(MULTIPLAYER_GAME, 300, 99);
+        StartGame(MULTIPLAYER_GAME, 180, 99);
         break;
     }
 }

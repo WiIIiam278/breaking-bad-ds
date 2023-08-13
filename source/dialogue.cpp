@@ -217,6 +217,28 @@ int Dialogue::GetTutorialDialogue(int tutorialProgress, int batchProgress, Tile 
             return playerTile == MINIGAME_VALVE ? SCRIPT_GALE_TUTORIAL_VALVE : -1;
         case 2:
             return batchProgress == 1 ? SCRIPT_GALE_TUTORIAL_VALVE_COMPLETE : -1;
+        case 3:
+            return playerTile == MINIGAME_PESTLE ? SCRIPT_GALE_TUTORIAL_PESTLE : -1;
+        case 4:
+            return batchProgress == 2 ? SCRIPT_GALE_TUTORIAL_PESTLE_COMPLETE : -1;
+        case 5:
+            return playerTile == MINIGAME_MIX ? SCRIPT_GALE_TUTORIAL_MIX : -1;
+        case 6:
+            return batchProgress == 3 ? SCRIPT_GALE_TUTORIAL_MIX_COMPLETE : -1;
+        case 7:
+            return playerTile == MINIGAME_PIPETTE ? SCRIPT_GALE_TUTORIAL_PIPETTE : -1;
+        case 8:
+            return batchProgress == 4 ? SCRIPT_GALE_TUTORIAL_PIPETTE_COMPLETE : -1;
+        case 9:
+            return playerTile == MINIGAME_POUR ? SCRIPT_GALE_TUTORIAL_POUR : -1;
+        case 10:
+            return batchProgress == 5 ? SCRIPT_GALE_TUTORIAL_POUR_COMPLETE : -1;
+        case 11:
+            return playerTile == MINIGAME_CRACK ? SCRIPT_GALE_TUTORIAL_CRACK : -1;
+        case 12:
+            return batchProgress == 0 ? SCRIPT_GALE_TUTORIAL_CRACK_COMPLETE : -1;
+        case 13:
+            return batchProgress == 1 ? SCRIPT_GUS_TUTORIAL_MULTIPLAYER : -1;
     }
     return -1;
 }
