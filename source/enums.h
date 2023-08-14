@@ -56,6 +56,10 @@ enum MenuSelection
     SKIP_LOGO,
     START_MP_GAME,
     BACK_TO_GAME_MENU,
+    OPEN_EXTRAS_MENU,
+    OPEN_SOUND_TEST_MENU,
+    OPEN_MINERALS_MENU,
+    BACK_TO_EXTRAS_MENU
 };
 
 enum MenuState
@@ -66,14 +70,18 @@ enum MenuState
     
     // Main menu group
     MENU_MAIN,
-    MENU_RUMBLE,
     MENU_LOADING,
-    MENU_SOUND_TEST,
 
     // Game selection group
     MENU_GAME_SELECT,
     MENU_MP_HOST_ROOM,
-    MENU_MP_JOIN_ROOM
+    MENU_MP_JOIN_ROOM,
+
+    // Extras group
+    MENU_EXTRAS,
+    MENU_RUMBLE,
+    MENU_SOUND_TEST,
+    MENU_MINERALS,
 };
 
 enum MinigameResult

@@ -88,6 +88,14 @@ void Game::Prepare3DGraphics()
     camera = NE_CameraCreate();
 }
 
+void Game::LoadSaveFile(const char* fileName)
+{
+
+    saveFileName = fileName;
+    LoadGame(&saveFile, fileName);
+    SaveGame(&saveFile, fileName);
+}
+
 void Game::UpdateCamera()
 {
     // Update the camera position based on mode

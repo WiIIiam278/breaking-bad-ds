@@ -228,8 +228,8 @@ private:
     const u32 CRACK_SPRITE_BASE_ID = 15;
     const char CRACK_BACKGROUND_NAME[32] = "bg/crack_minigame";
     const char CRACK_SPRITES_NAME[32] = "sprite/crack";
-    const int SPRITE_COUNTS[2] = { SCREEN_WIDTH / SPRITE_DIMS[0], 128 / SPRITE_DIMS[1] };
-    const int CRACK_SPRITE_POS[2] = { 0, 8 };
+    const int SPRITE_COUNTS[2] = { SCREEN_WIDTH / SPRITE_DIMS[0], 96 / SPRITE_DIMS[1] };
+    const int CRACK_SPRITE_POS[2] = { 0, 40 };
     
     bool showingSprites = false;
     u32 spriteDamageTable[16][16];

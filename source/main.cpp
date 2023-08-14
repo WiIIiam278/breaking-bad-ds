@@ -3,14 +3,31 @@
 const bool DEBUG_MODE = true;
 Game game;
 
+const char *GetSaveFileName(const int argc, const char **argv)
+{
+    char saveName[256] = {'\0'};
+    if (argc > 0 && strlen(argv[0]) > 4)
+    {
+        snprintf(saveName, 255, "fat:/%.*s.sav", strlen(argv[0]) - 4, argv[0]);
+    }
+    else
+    {
+        sprintf(saveName, "fat:/breaking-bad-x.sav");
+    }
+    return saveName;
+}
+
 void RenderGame()
 {
     game.Render();
 }
 
-int main(void)
+int main(const int argc, const char **argv)
 {
     srand(time(NULL));
+
+    // Load save data (todo -- disabled for now)
+    // game.LoadSaveFile(GetSaveFileName(argc, argv));
 
     // Prepare graphics
     game.Prepare3DGraphics();

@@ -12,23 +12,7 @@
 #include "enums.h"
 #include "sound.h"
 #include "multiplayer.h"
-
-struct Button
-{
-    const int buttonSprite;
-    const int dimensions[2];
-    const int textSprite;
-    const MenuSelection selection;
-};
-
-struct Layout
-{
-    const Button buttons[4];
-    const int buttonCoords[4][2];
-    const int titleSprite;
-    const int titleCoords[2];
-    const MenuSelection caretMap[3][2];
-};
+#include "layouts.h"
 
 class Menu
 {
@@ -64,59 +48,25 @@ private:
     const int START_SPRITE = 2;
     bool showStartSprite = true;
 
-    const int BUTTON_SPRITE_COUNT = 16;
-    const int BUTTON_SPRITES[16] = {7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
-    const int BUTTON_TEXT_COUNT = 4;
-    const int BUTTON_TEXT[4] = {3, 4, 5, 6};
-    const int TITLE_SPRITE = 1;
-    const Layout LAYOUTS[2] =
-        {
-            {{
-                 {3, {90, 58}, 11, OPEN_GAME_MENU},
-                 {0, {90, 36}, 12, START_TUTORIAL},
-                 {1, {90, 26}, 10, BACK_TO_TITLE},
-                 {2, {90, 26}, 13, TOGGLE_RUMBLE},
-             },
-             {
-                 {17, 55},
-                 {112, 39},
-                 {65, 112},
-                 {112, 75},
-             },
-             9,
-             {98, 15},
-             {
-                 {OPEN_GAME_MENU, START_TUTORIAL},
-                 {OPEN_GAME_MENU, TOGGLE_RUMBLE},
-                 {BACK_TO_TITLE, BACK_TO_TITLE},
-             }},
-            {{
-                 {3, {90, 58}, 8, START_1P_GAME},
-                 {2, {90, 26}, 14, OPEN_ROOM},
-                 {1, {90, 26}, 10, BACK_TO_MAIN_MENU},
-                 {2, {90, 26}, 15, SEARCH_FOR_ROOMS},
-             },
-             {
-                 {17, 63},
-                 {112, 31},
-                 {112, 97},
-                 {112, 62},
-             },
-             11,
-             {98, 15},
-             {
-                 {START_1P_GAME, OPEN_ROOM},
-                 {START_1P_GAME, SEARCH_FOR_ROOMS},
-                 {START_1P_GAME, BACK_TO_MAIN_MENU},
-             }}};
-    bool buttonsVisible = false;
+    const char MENU_SPLASH_SPRITE_NAME[32] = "sprite/start";
+    const char MENU_BUTTONS_SPRITE_NAME[32] = "sprite/menu_buttons";
+    const char MENU_TEXT_SPRITE_NAME[32] = "sprite/menu_text";
+    const int MENU_SPRITE_SIZE[2] = {64, 32};
 
-    const KEYPAD_BITS SOUND_TEST_SEQUENCE[11] = {KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN,
-                                                 KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT,
-                                                 KEY_B, KEY_A, KEY_START};
-    int currentSequenceIndex = 0;
+    const int BUTTON_GFX_ID = 2;
+    const int BUTTON_SPRITE_COUNT = 16;
+    const int BUTTON_SPRITES_BASE = 7;
+    
+    const int TEXT_GFX_ID = 3;
+    const int TEXT_SPRITES[4] = {3, 4, 5, 6};
+    
+    const int TITLE_SPRITE = 1;
+    Layout *currentLayout = nullptr;
+
+    // Sound test
     int currentSoundTestTrack = 1;
 
+    // Multiplayer status
     const int MP_STATUS_SPRITE = 11;
     int mpCurrentStatus = -1;
     bool mpCreatingRoom;
@@ -126,7 +76,8 @@ public:
     Menu();
 
     int Load();
-    void LoadSplashSprite();
+    void LoadInterfaceSprites();
+    void UnloadInterfaceSprites();
     void ShowLayout();
     void UpdateLayout(volatile int frame);
     void ShowBackground();
@@ -138,6 +89,7 @@ public:
     void UpdateMultiplayer();
     void ShowMultiplayerStatus(bool showSprite);
     MenuSelection HandleInput(Sound *sound);
+    MenuSelection HandleLayoutInput(Sound *sound, touchPosition touch);
     MenuSelection HandleClick(MenuSelection clicked, Sound *sound);
     bool IsTouchInBox(const int coords[2], const int boxDimensions[2], touchPosition touch);
     MenuSelection CheckSelection(MenuSelection tappedBox);

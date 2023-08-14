@@ -7,6 +7,7 @@
 
 #include <filesystem.h>
 #include <nds.h>
+#include <fat.h>
 #include <NEMain.h>
 #include <nf_lib.h>
 
@@ -19,6 +20,7 @@
 #include "debug.h"
 #include "sound.h"
 #include "multiplayer.h"
+#include "save.h"
 
 using namespace std;
 
@@ -29,6 +31,10 @@ private:
     bool debugFlag = true;
     Mode mode = MOVE;
     bool isQuitting = false;
+
+    // Save file
+    const char* saveFileName;
+    SaveFile saveFile;
 
     // Main game settings
     GameType gameType;
@@ -119,6 +125,7 @@ public:
     void WaitLoop();
     void Prepare3DGraphics();
     void Prepare2DGraphics();
+    void LoadSaveFile(const char* fileName);
 
     // Transition Control
     void Transition(bool fadeIn, int duration, TransitionScreen screen);

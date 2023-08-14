@@ -164,7 +164,8 @@ const Script SCRIPTS[64] = {
         {
          "As expected of Mister White!",
          "The solutes are ground to    perfection.",
-         "Now we can use the mixing    plant to make the solution."
+         "Now we can use the mixing    plant!",
+         "This will mix our solution   into the methylamine base."
         },
         {
           EMOTE_NONE,
