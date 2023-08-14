@@ -42,7 +42,7 @@ jobs:
         cd ./nitro-engine;
         make;
         cd ../;
-        cp ./nitro-engine /opt/devkitpro/nitro-engine;
+        cp -r ./nitro-engine /opt/devkitpro/nitro-engine;
     - name: 'Checkout NightFoxLib'
       uses: actions/checkout@v3
       with:
@@ -53,7 +53,7 @@ jobs:
         cd ./nds_nflib;
         make;
         cd ../;
-        cp ./nds_nflib /opt/devkitpro/nflib;
+        cp -r ./nds_nflib /opt/devkitpro/nflib;
     - name: 'Execute build'
       run: |
         cd ./breaking-bad-ds/
