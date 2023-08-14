@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: ["*"]
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    branches: ["*"]
+    paths-ignore:
+      - 'README.md'
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: 'RetroVNDjinn/libfilesystem'
+    - name: 'Patch libfilesystem'
+      run: |
+        cd /libfilesystem;
+        make;
+        cp ./lib/libfilesystem.a /opt/devkitpro/libnds/lib/libfilesystem.a;
+        cd /;
+    - uses: actions/checkout@v3
+      with:
+        repository: 'AntonioND/nitro-engine'
+    - name: 'Build Nitro-Engine'
+      run: |
+        ln -sT /nitro-engine /opt/devkitpro/nitro-engine; \
+        cd /nitro-engine; \
+        make; \
+        cd /;
+    - uses: actions/checkout@v3
+      with:
+        repository: 'knightfox75/nds_nflib'
+    - name: 'Build NightFoxLib'
+      run: |
+        ln -sT /nds_nflib /opt/devkitpro/nflib; \
+        cd /nds_nflib; \
+        make; \
+        cd /;
+    - name: 'Execute build'
+      run: |
+        make;
+    - name: 'Upload ROM artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        path: 'breaking-bad-ds.nds'
+        name: 'Breaking Bad DS ROM'
