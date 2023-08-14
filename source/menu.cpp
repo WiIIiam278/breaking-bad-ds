@@ -648,7 +648,6 @@ MenuSelection Menu::HandleClick(MenuSelection clicked, Sound *sound)
                 mpCurrentStatus = -1;
                 mpCreatingRoom = false;
                 disableMultiplayer();
-                sound->PlaySFX(SFX_MENU_DRUM);
                 return BACK_TO_GAME_MENU;
             }
             SetState(MENU_GAME_SELECT, sound);
