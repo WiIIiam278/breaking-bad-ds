@@ -3,6 +3,14 @@
     <br/>
     Breaking Bad DS
 </h1>
+<p align="center">
+<a href="https://github.com/WiIIiam278/breaking-bad-ds/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/WiIIiam278/breaking-bad-ds/ci.yml?branch=master&logo=github"/>
+</a>
+<a href="https://discord.gg/tVYhJfyDWG">
+    <img src="https://img.shields.io/discord/818135932103557162.svg?label=&logo=discord&logoColor=fff&color=7389D8&labelColor=6A7EC2" />
+</a> 
+</p>
 
 *Breaking Bad*, as a Nintendo DS game, complete with 3D graphics and models. Master the art of the cook on your Nintendo DS system and prepare the perfect batch&mdash;lest you meet the wrong end of Gus. Hone your cook in both Singleplayer and Local Multiplayer VS.
 
