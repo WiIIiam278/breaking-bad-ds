@@ -13,6 +13,8 @@
 #include "sound.h"
 #include "multiplayer.h"
 #include "layouts.h"
+#include "minerals.h"
+#include "save.h"
 
 class Menu
 {
@@ -47,7 +49,7 @@ private:
     const int START_SPRITE = 2;
     bool showStartSprite = true;
 
-    const char MENU_SPLASH_SPRITE_NAME[32] = "sprite/start";
+    const char MENU_MISC_SPRITE_NAME[32] = "sprite/menu_misc";
     const char MENU_BUTTONS_SPRITE_NAME[32] = "sprite/menu_buttons";
     const char MENU_TEXT_SPRITE_NAME[32] = "sprite/menu_text";
     const int MENU_SPRITE_SIZE[2] = {64, 32};
@@ -66,7 +68,16 @@ private:
     int currentSoundTestTrack = 1;
 
     // Minerals
+    const int MINERAL_GRID_BASE_POS[2] = {5, 41};
+    const int MINERAL_GAP = 8;
+    const int MINERALS_PER_ROW = MINERAL_COUNT / 3;
+    const int MINERAL_SPRITE_BASE = 32;
+    const int MINERAL_CURSOR_SPRITE = 31;
+    const int HANK_EYES_POS[2] = {173, 52};
+    const int HANK_EYES_SPRITE = 30;
+    bool showingMinerals = false;
     int currentlySelectedMineral = -1;
+    int hankLastBlink = 0;
 
     // Multiplayer status
     const int MP_STATUS_SPRITE = 11;
@@ -83,19 +94,21 @@ public:
     void ShowLayout();
     void UpdateLayout(volatile int frame);
     void ShowBackground();
-    void Update(volatile int frame, Sound *sound);
+    void Update(volatile int frame, Sound *sound, SaveFile *saveFile);
     void Draw(volatile int frame);
-    void SetState(MenuState newState, Sound *sound);
+    void SetState(MenuState newState, Sound *sound, SaveFile *saveFile);
     void PositionLogo();
     void StartMultiplayer(bool mpCreatingRoom);
     void UpdateMultiplayer();
     void ShowMultiplayerStatus(bool showSprite);
-    MenuSelection HandleInput(Sound *sound);
-    MenuSelection HandleLayoutInput(Sound *sound, touchPosition touch);
-    MenuSelection HandleClick(MenuSelection clicked, Sound *sound);
+    void ShowMinerals(bool showSprites, SaveFile *saveFile);
+    void UpdateMinerals(volatile int frame, Sound *sound, SaveFile *saveFile);
+    MenuSelection HandleInput(Sound *sound, SaveFile *saveFile);
+    MenuSelection HandleLayoutInput(Sound *sound, SaveFile *saveFile, touchPosition touch);
+    MenuSelection HandleClick(MenuSelection clicked, Sound *sound, SaveFile *saveFile);
     bool IsTouchInBox(const int coords[2], const int boxDimensions[2], touchPosition touch);
     MenuSelection CheckSelection(MenuSelection tappedBox);
-    void Unload(Sound *sound);
+    void Unload(Sound *sound, SaveFile *saveFile);
 };
 
 extern "C"

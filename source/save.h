@@ -21,4 +21,4 @@ struct SaveFile
 
 void SaveGame(SaveFile *saveFile, const char* fileName);
 void LoadGame(SaveFile *saveFile, const char* fileName);
-SaveFile *CreateSave();
+SaveFile *CreateNewSaveFile();

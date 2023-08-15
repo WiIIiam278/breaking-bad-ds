@@ -27,7 +27,7 @@ int Player::Load(Character character)
         modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
                                             NE_TEXGEN_TEXCOORD, "model/walter_tex.bin");
         break;
-    case CHAR_JESSIE:
+    case CHAR_JESSE:
         modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
                                             NE_TEXGEN_TEXCOORD, "model/jessie_tex.bin");
         break;
@@ -112,6 +112,15 @@ void Player::Update(volatile int frame)
     if (lyingDown)
     {
         lyingDownFrames++;
+        return;
+    }
+
+    // Don't move if in dialogue
+    if (inDialogue)
+    {
+        targetX = tileX;
+        targetZ = tileZ;
+        walking = false;
         return;
     }
 

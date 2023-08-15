@@ -17,11 +17,18 @@ void LoadGame(SaveFile *saveFile, const char* fileName)
     FILE *file = fopen(fileName, "rb");
     if (file == nullptr)
     {
+        SaveGame(saveFile, fileName);
         return;
     }
 
     fread(saveFile, sizeof(SaveFile), 1, file);
     fclose(file);
+    
+    if (saveFile->version != SAVE_FILE_VERSION)
+    {
+        saveFile = CreateNewSaveFile();
+        SaveGame(saveFile, fileName);
+    }
 }
 
 SaveFile *CreateNewSaveFile()

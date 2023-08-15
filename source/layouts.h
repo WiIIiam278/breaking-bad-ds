@@ -205,7 +205,7 @@ static Layout LAYOUTS[12] = {
          {1, {90, 26}, 5, BACK_TO_EXTRAS_MENU},
      },
      {
-         {4, SCREEN_HEIGHT - 54},
+         {17, SCREEN_HEIGHT - 52},
      },
      -1,
      {162, SCREEN_HEIGHT - 38},

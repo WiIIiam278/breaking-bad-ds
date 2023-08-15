@@ -101,6 +101,6 @@ enum TransitionScreen
 enum Character
 {
     CHAR_WALT = 0,
-    CHAR_JESSIE = 1,
+    CHAR_JESSE = 1,
     CHAR_YEPPERS = 2
 };

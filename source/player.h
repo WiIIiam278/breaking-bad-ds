@@ -30,6 +30,7 @@ public:
     Direction facing = DOWN;
     bool walking = false;
     bool lyingDown = false;
+    bool inDialogue = false;
 
     int tileX;
     int tileZ;

@@ -34,7 +34,7 @@ private:
 
     // Save file
     const char* saveFileName;
-    SaveFile saveFile;
+    SaveFile *saveFile;
 
     // Main game settings
     GameType gameType;
@@ -84,6 +84,7 @@ private:
     volatile int idleFrames = 0;
     const float BASE_BATCH_YIELD = 4.5f;
     bool wonGame = false;
+    bool perfectClear = true;
     
     // HUD
     const int HUD_MAP_ICONS = 6;
@@ -130,6 +131,9 @@ public:
     // Transition Control
     void Transition(bool fadeIn, int duration, TransitionScreen screen);
     void UpdateTransition();
+
+    // Minerals
+    void AwardMineral(MineralType mineralType);
 
     // Pause menu
     void TogglePauseMenu();

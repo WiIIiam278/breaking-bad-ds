@@ -4,21 +4,87 @@ struct Mineral
 {
     const char name[32];
     const char description[256];
-    const int spriteFrame;
+    const bool isSecret;
 };
 
 const int MINERAL_COUNT = 12;
 
 enum MineralType
 {
-    MIENRAL_CORUNDUM,
+    MIENRAL_ANALCIME,
+    MINERAL_TOPAZ,
+    MINERAL_YTTRIUM,
+    MINERAL_FLUORITE,
+    MINERAL_AMBER,
+    MINERAL_AQUAMARINE,
+    MINERAL_RUBY,
+    MINERAL_ALGODONITE,
+    MINERAL_DIAMOND,
+    MINERAL_CERIUM,
+    MINERAL_QUARTZ,
+    MINERAL_EMERALD
 };
 
 const Mineral MINERALS[MINERAL_COUNT] =
 {
     {
-        "Corundum",
-        "Completed the tutorial.",
-        1
-    }
+        "Analcime",
+        "Complete the tutorial",
+        false
+    },
+    {
+        "Topaz",
+        "Cook a batch at 100\% purity",
+        false
+    },
+    {
+        "Yttrium",
+        "Play as Jesse, yo",
+        false
+    },
+    {
+        "Fluorite",
+        "Cook a batch at <40\% purity",
+        false
+    },
+    {
+        "Amber",
+        "Slack off during the tutorial",
+        false
+    },
+    {
+        "Aquamarine",
+        "Win a game of Multiplayer Vs.",
+        false
+    },
+    {
+        "Ruby",
+        "Play as Kusuri, yep yep",
+        true
+    },
+    {
+        "Algodonite",
+        "Hide from Gus' gaze for >30s",
+        false
+    },
+    {
+        "Diamond",
+        "Complete a perfect quota clear",
+        false
+    },
+    {
+        "Cerium",
+        "Choose Skyler over Gus",
+        true
+    },
+    {
+        "Quartz",
+        "Experience a Game Over",
+        false
+    },
+    {
+        "Emerald",
+        "Complete Story Mode",
+        false
+    },
 };

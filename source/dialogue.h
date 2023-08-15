@@ -303,7 +303,7 @@ const Script SCRIPTS[64] = {
          "Twice the pride, double the  fall.",
          "That is of course to remind  you that with",
          "another Nintendo DS system,  you can compete",
-         "with Jessie in Multiplayer   VS. Mode.",
+         "with Jesse in Multiplayer   VS. Mode.",
          "A pleasure doing business    with you as always."
         },
         {

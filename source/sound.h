@@ -97,7 +97,8 @@ enum EffectId
     SFX_CRANK,
     SFX_CLICK,
     SFX_VACCUM,
-    SFX_ACCEPTABLE
+    SFX_ACCEPTABLE,
+    SFX_MINERALS
 };
 
 struct SFX
@@ -106,7 +107,7 @@ struct SFX
     const char fileName[64];
 };
 
-const int SFX_COUNT = 11;
+const int SFX_COUNT = 12;
 const SFX SFXS[SFX_COUNT] =
     {
         {SFX_MENU_DRUM, "sfx/menu_drum"},
@@ -119,7 +120,9 @@ const SFX SFXS[SFX_COUNT] =
         {SFX_CRANK, "sfx/crank"},
         {SFX_CLICK, "sfx/click"},
         {SFX_VACCUM, "sfx/vaccum"},
-        {SFX_ACCEPTABLE, "sfx/acceptable"}};
+        {SFX_ACCEPTABLE, "sfx/acceptable"},
+        {SFX_MINERALS, "sfx/minerals"}
+    };
 
 class Sound
 {

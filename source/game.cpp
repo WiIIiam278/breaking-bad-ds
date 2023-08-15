@@ -3,6 +3,7 @@
 Game::Game()
 {
     // Initialize nitroFS before doing anything else
+    fatInitDefault();
     consoleDemoInit();
     consoleClear();
     printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");
@@ -90,10 +91,9 @@ void Game::Prepare3DGraphics()
 
 void Game::LoadSaveFile(const char* fileName)
 {
-
+    saveFile = CreateNewSaveFile();
     saveFileName = fileName;
-    LoadGame(&saveFile, fileName);
-    SaveGame(&saveFile, fileName);
+    LoadGame(saveFile, fileName);
 }
 
 void Game::UpdateCamera()
@@ -207,6 +207,15 @@ void Game::UpdateTransition()
             brightness = 16 - (frame - transitionStartFrame[i]) * 16 / transitionDuration[i];
         }
         setBrightness(i + 1, -brightness);
+    }
+}
+
+void Game::AwardMineral(MineralType mineralType)
+{
+    if (!saveFile->minerals[mineralType])
+    {
+        saveFile->minerals[mineralType] = true;
+        sound.PlaySFX(SFX_MINERALS);
     }
 }
 
@@ -384,6 +393,7 @@ void Game::QuitToTitle()
     sound.StopBGM();
     UnLoadLabScene();
     NE_SpecialEffectSet(NE_NONE);
+    SaveGame(saveFile, saveFileName);
     StartMenuScreen(false);
     if (!wonGame)
     {
@@ -405,6 +415,7 @@ void Game::StartDialogue(ScriptId script)
     mode = DIALOGUE;
     ToggleHud(false);
     player.facing = DOWN;
+    player.inDialogue = true;
     dialogue.Load(script, frame);
     Transition(true, 30, TS_BOTTOM);
 }
@@ -420,6 +431,7 @@ void Game::EndDialogue()
     ToggleHud(true);
     mode = MOVE;
     Transition(true, 30, TS_BOTTOM);
+    player.inDialogue = false;
 }
 
 void Game::CheckTutorials()
@@ -499,7 +511,7 @@ void Game::LoadLabScene()
         WaitLoop();
     }
 
-    Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSIE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
+    Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
     if (player.Load(p1Char) == -1)
     {
         WaitLoop();
@@ -508,10 +520,20 @@ void Game::LoadLabScene()
     {
         player2 = new Player();
         player2->isPlayer2 = true;
-        if (player2->Load(isHostClient() ? CHAR_JESSIE : CHAR_WALT) == -1)
+        if (player2->Load(isHostClient() ? CHAR_JESSE : CHAR_WALT) == -1)
         {
             WaitLoop();
         }
+    }
+    
+    switch (p1Char)
+    {
+        case CHAR_JESSE:
+            AwardMineral(MINERAL_YTTRIUM);
+            break;
+        case CHAR_YEPPERS:
+            AwardMineral(MINERAL_RUBY);
+            break;
     }
 
     // Set fog color
@@ -603,20 +625,20 @@ void Game::LoadLogoScene()
     {
         WaitLoop();
     }
-    menu.SetState(MENU_LOGO, &sound);
+    menu.SetState(MENU_LOGO, &sound, saveFile);
 }
 
 void Game::UnLoadLogoScene()
 {
     Transition(false, 0, TS_BOTH);
-    menu.Unload(&sound);
+    menu.Unload(&sound, saveFile);
 }
 
 void Game::UpdateMenuScreen()
 {
-    menu.Update(frame, &sound);
+    menu.Update(frame, &sound, saveFile);
 
-    switch (menu.HandleInput(&sound))
+    switch (menu.HandleInput(&sound, saveFile))
     {
     case SKIP_LOGO:
         frame = 689;
@@ -765,6 +787,12 @@ void Game::StartGameOver(bool hasWon)
     else
     {
         player.facing = DOWN;
+    }
+
+    // Achievements
+    if (gameType == TUTORIAL_GAME)
+    {
+        AwardMineral(MIENRAL_ANALCIME);
     }
 }
 
@@ -966,13 +994,19 @@ void Game::Update()
         {
             idleFrames++;
 
-            if (idleFrames == 4000)
+            if (idleFrames == 1800)
             {
                 player.facing = DOWN;
+                
+                if (gameType == SINGLEPLAYER_GAME && player.GetTile(map) == MINIGAME_CRACK)
+                {
+                    AwardMineral(MINERAL_ALGODONITE);
+                }
             }
-            if (gameType == TUTORIAL_GAME && idleFrames > 6000)
+            if (gameType == TUTORIAL_GAME && idleFrames > 3600)
             {
                 idleFrames = 0;
+                AwardMineral(MINERAL_AMBER);
                 StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
             }
         }
@@ -1035,11 +1069,17 @@ void Game::Update()
                     if (gameType == SINGLEPLAYER_GAME)
                     {
                         StartGameOver(false);
+                        AwardMineral(MINERAL_QUARTZ);
                     }
                     else if (gameType == MULTIPLAYER_GAME)
                     {
                         const bool isDraw = batchesComplete == player2BatchesComplete && currentBatchProgress == player2BatchProgress;
                         const bool localWin = (batchesComplete == player2BatchesComplete ? currentBatchProgress > player2BatchProgress : batchesComplete > player2BatchesComplete);
+                        if (localWin)
+                        {
+                            AwardMineral(MINERAL_AQUAMARINE);
+                        }
+                        
                         StartGameOver(!isDraw && localWin);
                     }
                     return;
@@ -1053,10 +1093,24 @@ void Game::Update()
             sound.PlaySFX(SFX_ACCEPTABLE);
             batchesComplete += (BASE_BATCH_YIELD * ((float) batchPurity / 100.0f));
             currentBatchProgress = 0;
+            perfectClear &= batchPurity == 100;
+
+            if (batchPurity < 40)
+            {
+                AwardMineral(MINERAL_FLUORITE);
+            }
+            else if (batchPurity == 100)
+            {
+                AwardMineral(MINERAL_TOPAZ);
+            }
             batchPurity = 100;
 
-            if (batchesComplete >= batchQuota)
+            if (gameType != MULTIPLAYER_GAME && batchesComplete >= batchQuota)
             {
+                if (perfectClear)
+                {
+                    AwardMineral(MINERAL_DIAMOND);
+                }
                 StartGameOver(true);
                 return;
             }
