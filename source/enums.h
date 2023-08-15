@@ -80,7 +80,7 @@ enum MenuState
     // Extras group
     MENU_EXTRAS,
     MENU_RUMBLE,
-    MENU_SOUND_TEST,
+    MENU_MUSIC_PLAYER,
     MENU_MINERALS,
 };
 

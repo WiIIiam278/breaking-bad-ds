@@ -32,8 +32,7 @@ private:
     int menuCaret[2] = {0, 0};
 
     const int MENU_BG_ID = 1;
-    const char TITLE_BG_NAME[32] = "bg/title";
-    const char MP_BG_NAME[32] = "bg/multiplayer";
+    char *currentBgName;
     int currentBackground = 0; // 0 = none, 1 = bg/title, 2 = bg/multiplayer
 
     const float TARGET_X = 1;
@@ -65,6 +64,9 @@ private:
 
     // Sound test
     int currentSoundTestTrack = 1;
+
+    // Minerals
+    int currentlySelectedMineral = -1;
 
     // Multiplayer status
     const int MP_STATUS_SPRITE = 11;

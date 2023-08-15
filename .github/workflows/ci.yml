@@ -61,5 +61,9 @@ jobs:
     - name: 'Upload ROM'
       uses: actions/upload-artifact@v3
       with:
-        path: './breaking-bad-ds/*.nds'
-        name: 'Breaking Bad DS ROM'
+        path: |
+           ./breaking-bad-ds/*.nds
+           ./breaking-bad-ds/*.md
+           ./breaking-bad-ds/LICENSE
+           ./breaking-bad-ds/cover-artwork.png
+        name: 'Breaking Bad DS'

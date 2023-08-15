@@ -12,10 +12,10 @@ Breaking Bad and related properties are owned and copyrighted by their respectiv
 - "Red Firemark Fire Extinguisher": https://www.wallpaperflare.com/red-firemark-fire-extinguisher-alarm-batch-burning-clear-wallpaper-zoejz (CC0 &mdash; Creative Commons Public Domain)
 - "Flask Clipart": https://creazilla.com/nodes/3168585-flask-clipart (Public Domain)
 - "Test Tube Clipart": https://creazilla.com/nodes/7817193-test-tube-clipart (Public Domain)
-- Cover art, backgrounds, and character graphics: Courtesy of GardenOwl
+- Cover art and character graphics: Courtesy of GardenOwl
 
 #### Code
-- WinterMute's RAM check routine from the devKitPro forums (https://devkitpro.org/viewtopic.php?t=3057)
+- Debug: WinterMute's RAM check routine from the devKitPro forums (https://devkitpro.org/viewtopic.php?t=3057)
 - 3D graphics: Nitro-Engine by AntonioND (https://github.com/AntonioND/nitro-engine/)
 - 2D graphics: NightFoxLib by NightFox (https://github.com/knightfox75/nds_nflib/)
 - devKitARM and libnds by the devKitPro team (https://github.com/devkitPro/libnds)

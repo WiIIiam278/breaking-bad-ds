@@ -2,6 +2,7 @@
 
 Sound::Sound()
 {
+    progressString = new char[6];
 }
 
 void Sound::LoadSound()
@@ -157,7 +158,6 @@ char* Sound::GetBgmTrackProgressString()
     int totalMinutes = totalSeconds / 60;
     seconds = seconds % 60;
     totalSeconds = totalSeconds % 60;
-    char* progressString = new char[6];
     sprintf(progressString, "%02d:%02d/%02d:%02d", minutes, seconds, totalMinutes, totalSeconds);
     return progressString;
 }

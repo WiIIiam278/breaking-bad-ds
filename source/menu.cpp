@@ -119,15 +119,22 @@ void Menu::ShowLayout()
 {
     if (currentLayout != nullptr)
     {
-        for (int i = 0; i < currentLayout->buttonCount; i++)
+        if (currentLayout->buttonCount > 0)
         {
-            NF_DeleteSprite(1, TEXT_SPRITES[i]);
-            for (int j = 0; j < 4; j++)
+            for (int i = 0; i < currentLayout->buttonCount; i++)
             {
-                NF_DeleteSprite(1, BUTTON_SPRITES_BASE + (i * 4) + j);
+                NF_DeleteSprite(1, TEXT_SPRITES[i]);
+                for (int j = 0; j < 4; j++)
+                {
+                    NF_DeleteSprite(1, BUTTON_SPRITES_BASE + (i * 4) + j);
+                }
             }
         }
-        NF_DeleteSprite(1, TITLE_SPRITE);
+
+        if (currentLayout->titleSprite != -1)
+        {
+            NF_DeleteSprite(1, TITLE_SPRITE);
+        }
     }
 
     Layout *layout = GetLayoutForState(state);
@@ -143,25 +150,32 @@ void Menu::ShowLayout()
         highlightedItem = layout->caretMap[0][0];
     }
 
-    for (int b = 0; b < layout->buttonCount; b++)
+    if (layout->buttonCount > 0)
     {
-        int spriteOffset = b * 4;
-        Button button = layout->buttons[b];
-        for (int i = 0; i < 4; i++)
+        for (int b = 0; b < layout->buttonCount; b++)
         {
-            int xOffset = (i == 1 || i == 3) ? 64 : 0;
-            int yOffset = (i == 2 || i == 3) ? 32 : 0;
-            int spriteId = BUTTON_SPRITES_BASE + (spriteOffset + i);
-            NF_CreateSprite(1, spriteId, BUTTON_GFX_ID, BUTTON_GFX_ID, layout->buttonCoords[b][0] + xOffset, layout->buttonCoords[b][1] + yOffset);
-            NF_HflipSprite(1, spriteId, i % 2 != 0);
-            NF_VflipSprite(1, spriteId, i > 1);
-            NF_SpriteFrame(1, spriteId, button.buttonSprite);
+            int spriteOffset = b * 4;
+            Button button = layout->buttons[b];
+            for (int i = 0; i < 4; i++)
+            {
+                int xOffset = (i == 1 || i == 3) ? 64 : 0;
+                int yOffset = (i == 2 || i == 3) ? 32 : 0;
+                int spriteId = BUTTON_SPRITES_BASE + (spriteOffset + i);
+                NF_CreateSprite(1, spriteId, BUTTON_GFX_ID, BUTTON_GFX_ID, layout->buttonCoords[b][0] + xOffset, layout->buttonCoords[b][1] + yOffset);
+                NF_HflipSprite(1, spriteId, i % 2 != 0);
+                NF_VflipSprite(1, spriteId, i > 1);
+                NF_SpriteFrame(1, spriteId, button.buttonSprite);
+            }
+            NF_CreateSprite(1, TEXT_SPRITES[b], TEXT_GFX_ID, TEXT_GFX_ID, layout->buttonCoords[b][0] + 32, layout->buttonCoords[b][1] + 16);
+            NF_SpriteFrame(1, TEXT_SPRITES[b], button.textSprite);
         }
-        NF_CreateSprite(1, TEXT_SPRITES[b], TEXT_GFX_ID, TEXT_GFX_ID, layout->buttonCoords[b][0] + 32, layout->buttonCoords[b][1] + 16);
-        NF_SpriteFrame(1, TEXT_SPRITES[b], button.textSprite);
     }
-    NF_CreateSprite(1, TITLE_SPRITE, TEXT_GFX_ID, TEXT_GFX_ID, layout->titleCoords[0], layout->titleCoords[1]);
-    NF_SpriteFrame(1, TITLE_SPRITE, layout->titleSprite);
+    
+    if (layout->titleSprite != -1)
+    {
+        NF_CreateSprite(1, TITLE_SPRITE, TEXT_GFX_ID, TEXT_GFX_ID, layout->titleCoords[0], layout->titleCoords[1]);
+        NF_SpriteFrame(1, TITLE_SPRITE, layout->titleSprite);
+    }
 
     currentLayout = layout;
 }
@@ -193,31 +207,30 @@ void Menu::ShowBackground()
         if (currentBackground != 0)
         {
             NF_DeleteTiledBg(1, MENU_BG_ID);
-            NF_UnloadTiledBg(currentBackground == 1 ? TITLE_BG_NAME : MP_BG_NAME);
+            NF_UnloadTiledBg(currentBgName);
         }
         currentBackground = 0;
     }
-    else if ((state == MENU_MP_HOST_ROOM || state == MENU_MP_JOIN_ROOM) && currentBackground != 2)
+    else
     {
-        if (currentBackground == 1)
+        Layout *layout = GetLayoutForState(state);
+        if (layout == nullptr)
         {
-            NF_DeleteTiledBg(1, MENU_BG_ID);
-            NF_UnloadTiledBg(TITLE_BG_NAME);
+            return;
         }
-        NF_LoadTiledBg(MP_BG_NAME, MP_BG_NAME, 256, 256);
-        NF_CreateTiledBg(1, MENU_BG_ID, MP_BG_NAME);
-        currentBackground = 2;
-    }
-    else if (currentBackground != 1)
-    {
-        if (currentBackground == 2)
+
+        if (currentBackground != layout->backgroundId)
         {
-            NF_DeleteTiledBg(1, MENU_BG_ID);
-            NF_UnloadTiledBg(MP_BG_NAME);
+            if (currentBackground != 0)
+            {
+                NF_DeleteTiledBg(1, MENU_BG_ID);
+                NF_UnloadTiledBg(currentBgName);
+            }
+            currentBackground = layout->backgroundId;
+            currentBgName = layout->backgroundName;
+            NF_LoadTiledBg(currentBgName, currentBgName, 256, 256);
+            NF_CreateTiledBg(1, MENU_BG_ID, currentBgName);
         }
-        NF_LoadTiledBg(TITLE_BG_NAME, TITLE_BG_NAME, 256, 256);
-        NF_CreateTiledBg(1, MENU_BG_ID, TITLE_BG_NAME);
-        currentBackground = 1;
     }
 }
 
@@ -236,7 +249,7 @@ void Menu::SetState(MenuState newState, Sound *sound)
         sound->PlayBGM(BGM_TITLE_INTRO, false);
     }
 
-    if (state == MENU_SOUND_TEST && newState == MENU_MAIN)
+    if (state == MENU_MUSIC_PLAYER && newState == MENU_MAIN)
     {
         sound->PlayBGM(BGM_TITLE_LOOP, true);
         currentSoundTestTrack = 1;
@@ -332,7 +345,6 @@ void Menu::Update(volatile int frame, Sound *sound)
     switch (state)
     {
     case MENU_LOADING:
-        // Hide buttons and backgrounds
         NF_ShowSprite(1, START_SPRITE, false);
         break;
 
@@ -359,43 +371,39 @@ void Menu::Update(volatile int frame, Sound *sound)
         break;
 
     case MENU_TITLE:
-        NF_SpriteFrame(1, START_SPRITE, 2);
-        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
-
         if (frame % 30 == 0)
         {
             showStartSprite = !showStartSprite;
-            NF_ShowSprite(1, START_SPRITE, showStartSprite);
         }
         break;
 
     case MENU_RUMBLE:
-        NF_ShowSprite(1, START_SPRITE, false);
-        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
+        NF_WriteText(1, 0, 2, 7, "A DS Rumble Pak is required.");
+        NF_WriteText(1, 0, 2, 8, "to enable this feature. If a");
+        NF_WriteText(1, 0, 2, 9, "Rumble Pak is inserted into");
+        NF_WriteText(1, 0, 2, 10, "SLOT-2, you should now feel.");
+        NF_WriteText(1, 0, 2, 11, "the rumble effect.");
 
-        NF_WriteText(1, 0, 1, 6, "A DS Rumble Pak is required.");
-        NF_WriteText(1, 0, 1, 7, "to enable this feature. If a");
-        NF_WriteText(1, 0, 1, 8, "Rumble Pak is inserted into");
-        NF_WriteText(1, 0, 1, 9, "SLOT-2, you should now feel.");
-        NF_WriteText(1, 0, 1, 10, "the rumble effect.");
-        NF_WriteText(1, 0, 1, 12, "Remove the Rumble Pak from");
-        NF_WriteText(1, 0, 1, 13, "SLOT-2 to disable rumble.");
+        NF_WriteText(1, 0, 2, 14, "Remove the Rumble Pak from");
+        NF_WriteText(1, 0, 2, 15, "SLOT-2 to disable rumble.");
         setRumble(frame % 2 == 0);
-
-        NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
+        break;
+    
+    case MENU_MINERALS:
+        if (currentlySelectedMineral == -1)
+        {
+            NF_WriteText(1, 0, 1, 1, "Hey Walt-If ya happen upon any");
+            NF_WriteText(1, 0, 1, 3, "minerals, I'll appraise 'em!");
+        }
         break;
 
-    case MENU_SOUND_TEST:
-        NF_ShowSprite(1, START_SPRITE, false);
-        NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
-
-        NF_WriteText(1, 0, 1, 5, "Breaking Bad DS - SOUND TEST");
-        NF_WriteText(1, 0, 1, 6, "LEFT/RIGHT to change track.");
-        NF_WriteText(1, 0, 1, 10, "Currently playing:");
-        NF_WriteText(1, 0, 1, 11, BGMS[currentSoundTestTrack].name);
-        NF_WriteText(1, 0, 1, 12, sound->GetBgmTrackProgressString());
-
-        NF_WriteText(1, 0, 1, 15, "Touch the screen to continue.");
+    case MENU_MUSIC_PLAYER:
+        NF_WriteText(1, 0, 2, 9, "Currently playing:");
+        char trackNoAndTitle[50];
+        sprintf(trackNoAndTitle, "%d. %s", currentSoundTestTrack, BGMS[currentSoundTestTrack].name);
+        NF_WriteText(1, 0, 2, 10, trackNoAndTitle);
+        NF_WriteText(1, 0, 2, 11, sound->GetBgmTrackProgressString());
+        NF_WriteText(1, 0, 2, 13, "LEFT/RIGHT to change track.");
         break;
 
     case MENU_MP_HOST_ROOM:
@@ -407,7 +415,8 @@ void Menu::Update(volatile int frame, Sound *sound)
     if (GetLayoutForState(state) != nullptr)
     {
         UpdateLayout(frame);
-        NF_ShowSprite(1, START_SPRITE, false);
+        NF_ShowSprite(1, START_SPRITE, state == MENU_TITLE && showStartSprite);
+        NF_SpriteFrame(1, START_SPRITE, 2);
         NE_ModelRotate(skybox, 0, (frame % 8 == 0 ? 1 : 0), 0);
     }
 }
@@ -423,13 +432,15 @@ MenuSelection Menu::HandleInput(Sound *sound)
             return SKIP_LOGO;
         }
         return NONE;
+    
     case MENU_TITLE:
         if (keysDown() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
         {
             SetState(MENU_MAIN, sound);
         }
         return NONE;
-    case MENU_SOUND_TEST:
+
+    case MENU_MUSIC_PLAYER:
         if (keysDown() & KEY_RIGHT || keysDown() & KEY_LEFT)
         {
             if (keysDown() & KEY_RIGHT)
@@ -446,13 +457,7 @@ MenuSelection Menu::HandleInput(Sound *sound)
             sound->PlayBGM(static_cast<TrackId>(currentSoundTestTrack), true);
             setRumble(currentSoundTestTrack % 2 == 0);
         }
-
-    case MENU_RUMBLE:
-        if (keysDown() & KEY_TOUCH || keysDown() & KEY_B)
-        {
-            SetState(MENU_MAIN, sound);
-        }
-        return NONE;
+        return HandleLayoutInput(sound, touch);
 
     case MENU_MP_HOST_ROOM:
         if (mpCurrentStatus == MP_HOST_READY)
@@ -623,7 +628,7 @@ MenuSelection Menu::HandleClick(MenuSelection clicked, Sound *sound)
     case OPEN_SOUND_TEST_MENU:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_SOUND_TEST, sound);
+            SetState(MENU_MUSIC_PLAYER, sound);
             return OPEN_SOUND_TEST_MENU;
         }
         return NONE;
@@ -652,6 +657,13 @@ MenuSelection Menu::HandleClick(MenuSelection clicked, Sound *sound)
             }
             SetState(MENU_GAME_SELECT, sound);
             return BACK_TO_GAME_MENU;
+        }
+        return NONE;
+    case BACK_TO_EXTRAS_MENU:
+        if (CheckSelection(clicked))
+        {
+            SetState(MENU_EXTRAS, sound);
+            return BACK_TO_EXTRAS_MENU;
         }
         return NONE;
     default:

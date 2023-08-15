@@ -30,14 +30,14 @@ struct BGM
 const int BGM_COUNT = 6;
 const BGM BGMS[BGM_COUNT] =
     {
-        {"Brekaing Bad (Main Titles)",
+        {"Brekaing Bad (Title)",
          BGM_TITLE_INTRO,
          127,
          1,
          {"bgm/title_hook"},
          {690},
          0},
-        {"Breaking Bad (Main Menu)",
+        {"Breaking Bad (Menu)",
          BGM_TITLE_LOOP,
          127,
          1,
@@ -51,7 +51,7 @@ const BGM BGMS[BGM_COUNT] =
          {"bgm/baby_blue"},
          {640},
          0},
-        {"The Cousins (In The Lab)",
+        {"The Cousins (Superlab)",
          BGM_THE_COUSINS,
          77,
          /* 8 */ 4,
@@ -76,9 +76,9 @@ const BGM BGMS[BGM_COUNT] =
             1
         },
         {
-            "Rodrigo y Gabriela (Clear!)",
+            "Rodrigo y Gabriela (Clear)",
             BGM_RODRIGO_Y_GABRIELA,
-            127,
+            100,
             1,
             {"bgm/rodrigo_y_gabriela"},
             {640},
@@ -135,6 +135,8 @@ private:
     volatile int currentBgmFrame;
     bool singleFile = false;
     bool looping = false;
+
+    char* progressString;
 
     u32 currentBgmSoundId = 0;
     u32 currentSfxSoundId = 0;
