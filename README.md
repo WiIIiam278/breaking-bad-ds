@@ -12,7 +12,7 @@
 </a> 
 </p>
 
-*Breaking Bad*, as a Nintendo DS game, complete with 3D graphics and models. Master the art of the cook on your Nintendo DS system and prepare the perfect batch&mdash;lest you meet the wrong end of Gus. Hone your cook in both Singleplayer and Local Multiplayer VS.
+*Breaking Bad*, as a Nintendo DS game, complete with 3D graphics and models. Master the art of the cook on your Nintendo DS system and prepare the perfect batch&mdash;lest you meet the wrong end of Gus. Hone your cook in both Singleplayer and Local Multiplayer Vs.
 
 ## Playing
 For the absolute best experience, pop the ROM on a flashcart and enjoy!
@@ -26,8 +26,14 @@ To run this on melonDS, you'll need to go into the Emulator Config -> DLDI -> En
 Sorry, this *won't work on a DSi/3DS with TwiLight Menu++* (for now). This also *won't work on the Wii U Virtual Console emulator*. I'm sorry to ruin your dreams. If you run this on a cool setup, take a picture and [email me](mailto:will27528+brbads@gmail.com).
 
 ## Instructions
+### Tutorial (1P)
+The Tutorial will teach you how to play! Gale will provide instructions on how to complete each Minigame. To access the Tutorial, select it from the Main Menu.
+
+### Story Mode (1P)
+(wip)
+
 ### Local Multiplayer (2P)
-Breaking Bad for Nintendo DS also supports up to two Nintendo DS systems playing together in a Multiplayer VS. Battle to see who can complete their batches the quickest. You can emulate this through multiple instances on MelonDS currently, or run on hardware with two systems and two flashcarts. To set this up:
+Breaking Bad for Nintendo DS also supports up to two Nintendo DS systems playing together in a Multiplayer Vs. Battle to see who can complete their batches the quickest. You can emulate this through multiple instances on MelonDS currently, or run on hardware with two systems and two flashcarts. To set this up:
 
 * On the first system, launch the game. Touch to start, then tap "Start Game → Host."
 * If you're using MelonDS: On the menu bar, select "System → Multiplayer → Launch new instance" and open the ROM.
@@ -36,6 +42,14 @@ Breaking Bad for Nintendo DS also supports up to two Nintendo DS systems playing
 * On the Host console, press the A Button to start the game.
 
 The Host system will play as Walter, while the guest will play as Jesse. The magic that makes it work is thanks to the incredible [Fewnity](https://github.com/Fewnity/Nintendo-DS-Nifi-Template/)'s amazing NiFi scaffold!
+
+### Hank's Minerals
+By completing certain challenges, you'll find minerals! Hank will appraise minerals you find in the "Hank's Minerals" submenu, located in the Extras Menu. There are twelve minerals to find, and you can view how to get them by tapping on each `[?]` icon in the menu.
+
+Once you've obtained a mineral, it will be displayed in the menu and selecting it will tell you what it is. Minerals marked with "??????" are a secret, so no hints there!
+
+### Music Player
+You can listen to the game music through the Music Player submenu, located in the Extras menu. Use the left and right buttons on the + Control Pad to change the track.
 
 ### DS Rumble Pak support
 This game supports the [Nintendo DS Rumble Pak](https://en.wikipedia.org/wiki/Rumble_Pak#Nintendo_DS)! DeSMuME (but not Melon, sadly) supports emulating this &mdash; or you can insert a physical SLOT-2 DS Rumble Pak accessory on an original DS/DS Lite. If you're shopping for this accessory, you can often find it cheaper bundled with certain games, such as "actionloop" in Europe.
