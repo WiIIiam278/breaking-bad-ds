@@ -21,6 +21,8 @@
 #include "sound.h"
 #include "multiplayer.h"
 #include "save.h"
+#include "levels.h"
+#include "transitions.h"
 
 using namespace std;
 
@@ -48,12 +50,6 @@ private:
     Player *player2 = NULL;
     int player2BatchProgress = 0;
     int player2BatchesComplete = 0;
-
-    // Transition
-    bool isTransitioning[2] = { false, false };
-    bool isFadingIn[2] = { false, false };
-    int transitionDuration[2] = { 0, 0 };
-    int transitionStartFrame[2] = { 0, 0 };
     
     // Camera
     const float CAMERA_SPEED = 0.025;
@@ -83,7 +79,7 @@ private:
     int batchPurity = 100;
     volatile int idleFrames = 0;
     const float BASE_BATCH_YIELD = 4.5f;
-    bool wonGame = false;
+    bool levelClear = false;
     bool perfectClear = true;
     
     // HUD
@@ -105,6 +101,7 @@ private:
     const float HUD_PURITY_COORDS[2] = {178, 144};
     const float HUD_QUOTA_COORDS[2] = {176, 163};
     bool hudVisible = false;
+    bool showingDayNumber = false;
     
     // Minigames
     const int QUALITY_INDICATOR_SPRITE = 5;
@@ -128,10 +125,6 @@ public:
     void Prepare2DGraphics();
     void LoadSaveFile(const char* fileName);
 
-    // Transition Control
-    void Transition(bool fadeIn, int duration, TransitionScreen screen);
-    void UpdateTransition();
-
     // Minerals
     void AwardMineral(MineralType mineralType);
 
@@ -141,6 +134,11 @@ public:
     // HUD
     void ToggleHud(bool show);
     void UpdateHud();
+
+    // Story mode
+    void StartDay(uint16 day);
+    void StartNextDay();
+    void UpdateDayTransition();
 
     // Quit to title
     void QuitToTitle();
@@ -155,8 +153,9 @@ public:
     void TranslateCamera(float x, float y, float z);
 
     // Start game
-    void StartGame(GameType gameType, int timeLimit, int batchQuota);
+    void StartGame(GameType gameType);
     void LoadLabScene();
+    void StartLevel(const Level *level);
     void UnLoadLabScene();
 
     // Start title screen

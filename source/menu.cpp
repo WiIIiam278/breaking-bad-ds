@@ -234,8 +234,15 @@ void Menu::ShowBackground()
     }
 }
 
-void Menu::SetState(MenuState newState, Sound *sound, SaveFile *saveFile)
+void Menu::SetState(MenuState newState, volatile int frame, Sound *sound, SaveFile *saveFile)
 {
+    Layout *newLayout = GetLayoutForState(newState);
+    bool transitionNeeded = false;
+    if ((newLayout != nullptr) && (transitionNeeded = (newLayout->backgroundId != currentBackground)))
+    {
+        Transition(false, 0, TS_BOTTOM, frame);
+    }
+
     if (newState == MENU_LOADING)
     {
         sound->StopBGM();
@@ -285,6 +292,11 @@ void Menu::SetState(MenuState newState, Sound *sound, SaveFile *saveFile)
     state = newState;
     ShowLayout();
     ShowBackground();
+
+    if (transitionNeeded)
+    {
+        Transition(true, 15, TS_BOTTOM, frame);
+    }
 }
 
 void Menu::PositionLogo()
@@ -470,7 +482,7 @@ void Menu::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
 
         if (frame >= 690)
         {
-            SetState(MENU_TITLE, sound, saveFile);
+            SetState(MENU_TITLE, frame, sound, saveFile);
             return;
         }
         break;
@@ -548,7 +560,7 @@ void Menu::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
     }
 }
 
-MenuSelection Menu::HandleInput(Sound *sound, SaveFile *saveFile)
+MenuSelection Menu::HandleInput(volatile int frame, Sound *sound, SaveFile *saveFile)
 {
     touchPosition touch;
     switch (state)
@@ -563,7 +575,7 @@ MenuSelection Menu::HandleInput(Sound *sound, SaveFile *saveFile)
     case MENU_TITLE:
         if (keysDown() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
         {
-            SetState(MENU_MAIN, sound, saveFile);
+            SetState(MENU_MAIN, frame, sound, saveFile);
         }
         return NONE;
 
@@ -584,7 +596,7 @@ MenuSelection Menu::HandleInput(Sound *sound, SaveFile *saveFile)
             sound->PlayBGM(static_cast<TrackId>(currentSoundTestTrack), true);
             setRumble(currentSoundTestTrack % 2 == 0);
         }
-        return HandleLayoutInput(sound, saveFile, touch);
+        return HandleLayoutInput(frame, sound, saveFile, touch);
 
     case MENU_MP_HOST_ROOM:
         if (mpCurrentStatus == MP_HOST_READY)
@@ -606,10 +618,10 @@ MenuSelection Menu::HandleInput(Sound *sound, SaveFile *saveFile)
         break;
     }
 
-    return HandleLayoutInput(sound, saveFile, touch);
+    return HandleLayoutInput(frame, sound, saveFile, touch);
 }
 
-MenuSelection Menu::HandleLayoutInput(Sound *sound, SaveFile *saveFile, touchPosition touch)
+MenuSelection Menu::HandleLayoutInput(volatile int frame, Sound *sound, SaveFile *saveFile, touchPosition touch)
 {
     const Layout *layout = GetLayoutForState(state);
     if (layout == nullptr)
@@ -625,7 +637,7 @@ MenuSelection Menu::HandleLayoutInput(Sound *sound, SaveFile *saveFile, touchPos
         {
             if (IsTouchInBox(layout->buttonCoords[b], layout->buttons[b].dimensions, touch))
             {
-                return HandleClick(layout->buttons[b].selection, sound, saveFile);
+                return HandleClick(layout->buttons[b].selection, frame, sound, saveFile);
             }
         }
         highlightedItem = NONE;
@@ -635,13 +647,13 @@ MenuSelection Menu::HandleLayoutInput(Sound *sound, SaveFile *saveFile, touchPos
     if (keysDown() & KEY_B)
     {
         const bool quitToTitle = state == MENU_MAIN;
-        SetState(quitToTitle ? MENU_TITLE : MENU_MAIN, sound, saveFile);
+        SetState(quitToTitle ? MENU_TITLE : MENU_MAIN, frame, sound, saveFile);
         return quitToTitle ? BACK_TO_TITLE : BACK_TO_MAIN_MENU;
     }
 
     if (keysDown() & KEY_A || keysDown() & KEY_START)
     {
-        return HandleClick(highlightedItem, sound, saveFile);
+        return HandleClick(highlightedItem, frame, sound, saveFile);
     }
 
     if (!layout->allowCaretNavigation)
@@ -699,70 +711,70 @@ MenuSelection Menu::HandleLayoutInput(Sound *sound, SaveFile *saveFile, touchPos
     return NONE;
 }
 
-MenuSelection Menu::HandleClick(MenuSelection clicked, Sound *sound, SaveFile *saveFile)
+MenuSelection Menu::HandleClick(MenuSelection clicked, volatile int frame, Sound *sound, SaveFile *saveFile)
 {
     switch (clicked)
     {
     case OPEN_GAME_MENU:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_GAME_SELECT, sound, saveFile);
+            SetState(MENU_GAME_SELECT, frame, sound, saveFile);
             return OPEN_GAME_MENU;
         }
         return NONE;
     case TOGGLE_RUMBLE:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_RUMBLE, sound, saveFile);
+            SetState(MENU_RUMBLE, frame, sound, saveFile);
             return TOGGLE_RUMBLE;
         }
         return NONE;
     case BACK_TO_TITLE:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_TITLE, sound, saveFile);
+            SetState(MENU_TITLE, frame, sound, saveFile);
             return BACK_TO_TITLE;
         }
         return NONE;
     case BACK_TO_MAIN_MENU:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_MAIN, sound, saveFile);
+            SetState(MENU_MAIN, frame, sound, saveFile);
             return BACK_TO_MAIN_MENU;
         }
         return NONE;
     case OPEN_ROOM:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_MP_HOST_ROOM, sound, saveFile);
+            SetState(MENU_MP_HOST_ROOM, frame, sound, saveFile);
             return OPEN_ROOM;
         }
         return NONE;
     case SEARCH_FOR_ROOMS:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_MP_JOIN_ROOM, sound, saveFile);
+            SetState(MENU_MP_JOIN_ROOM, frame, sound, saveFile);
             return SEARCH_FOR_ROOMS;
         }
         return NONE;
     case OPEN_EXTRAS_MENU:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_EXTRAS, sound, saveFile);
+            SetState(MENU_EXTRAS, frame, sound, saveFile);
             return OPEN_EXTRAS_MENU;
         }
         return NONE;
     case OPEN_SOUND_TEST_MENU:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_MUSIC_PLAYER, sound, saveFile);
+            SetState(MENU_MUSIC_PLAYER, frame, sound, saveFile);
             return OPEN_SOUND_TEST_MENU;
         }
         return NONE;
     case OPEN_MINERALS_MENU:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_MINERALS, sound, saveFile);
+            SetState(MENU_MINERALS, frame, sound, saveFile);
             return OPEN_MINERALS_MENU;
         }
         return NONE;
@@ -776,20 +788,20 @@ MenuSelection Menu::HandleClick(MenuSelection clicked, Sound *sound, SaveFile *s
                     setRumble(rand() % 2 == 0);
                     return NONE;
                 }
-                SetState(MENU_GAME_SELECT, sound, saveFile);
+                SetState(MENU_GAME_SELECT, frame, sound, saveFile);
                 mpCurrentStatus = -1;
                 mpCreatingRoom = false;
                 disableMultiplayer();
                 return BACK_TO_GAME_MENU;
             }
-            SetState(MENU_GAME_SELECT, sound, saveFile);
+            SetState(MENU_GAME_SELECT, frame, sound, saveFile);
             return BACK_TO_GAME_MENU;
         }
         return NONE;
     case BACK_TO_EXTRAS_MENU:
         if (CheckSelection(clicked))
         {
-            SetState(MENU_EXTRAS, sound, saveFile);
+            SetState(MENU_EXTRAS, frame, sound, saveFile);
             return BACK_TO_EXTRAS_MENU;
         }
         return NONE;
@@ -834,9 +846,9 @@ void Menu::Draw(volatile int frame)
     }
 }
 
-void Menu::Unload(Sound *sound, SaveFile *saveFile)
+void Menu::Unload(volatile int frame, Sound *sound, SaveFile *saveFile)
 {
-    SetState(MENU_LOADING, sound, saveFile);
+    SetState(MENU_LOADING, frame, sound, saveFile);
     ShowLayout();
     ShowBackground();
     ShowMultiplayerStatus(false);

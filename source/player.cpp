@@ -54,7 +54,11 @@ int Player::Load(Character character)
                               RGB15(0, 0, 0),    // Specular
                               RGB15(0, 0, 0),    // Emission
                               false, false);     // Vertex color, use shininess table
+    return 0;
+}
 
+void Player::ResetPosition()
+{
     // Set position, rotation and scale
     x = 0;
     y = 0.4;
@@ -64,7 +68,6 @@ int Player::Load(Character character)
     NE_ModelSetRot(model, 0, rotation, 0);
     NE_ModelScaleI(model, scale, scale, scale);
     NE_ModelSetCoordI(model, x, y, z);
-    return 0;
 }
 
 void Player::Move(Map &map)

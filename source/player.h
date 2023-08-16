@@ -45,6 +45,7 @@ public:
     Player();
 
     int Load(Character character);
+    void ResetPosition();
     void Move(Map& map);
     void Update(volatile int frame);
     void Translate(float x, float y, float z);

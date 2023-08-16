@@ -7,7 +7,8 @@ enum Mode
     MOVE,
     MINIGAME,
     GAME_OVER,
-    PAUSED
+    PAUSED,
+    STORY_TRANSITION
 };
 
 enum Direction
@@ -20,9 +21,9 @@ enum Direction
 
 enum GameType
 {
-    TUTORIAL_GAME,
-    SINGLEPLAYER_GAME,
-    MULTIPLAYER_GAME
+    GAME_TUTORIAL,
+    GAME_STORY_MODE,
+    GAME_MULTIPLAYER_VS
 };
 
 enum Tile
@@ -49,7 +50,7 @@ enum MenuSelection
     START_TUTORIAL,
     BACK_TO_TITLE,
     TOGGLE_RUMBLE,
-    START_1P_GAME,
+    START_STORY_MODE,
     OPEN_ROOM,
     BACK_TO_MAIN_MENU,
     SEARCH_FOR_ROOMS,
@@ -89,13 +90,6 @@ enum MinigameResult
     RESULT_GOOD,
     RESULT_OKAY,
     RESULT_BAD
-};
-
-enum TransitionScreen
-{
-    TS_TOP = 0,
-    TS_BOTTOM = 1,
-    TS_BOTH = 2
 };
 
 enum Character

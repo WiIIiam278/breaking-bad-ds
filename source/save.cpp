@@ -34,7 +34,21 @@ void LoadGame(SaveFile *saveFile, const char* fileName)
 SaveFile *CreateNewSaveFile()
 {
     SaveFile *saveFile = new SaveFile();
+
+    // Header
     saveFile->version = SAVE_FILE_VERSION;
+    for (int i = 0; i < 4; i++)
+    {
+        saveFile->fileHeader[i] = SAVE_FILE_HEADER[i];
+    }
+    
+    // Story mode
+    saveFile->storyModeDay = 0;
+    saveFile->storyModeMoney = 0;
+    saveFile->storyModePlayerSpeed = 0;
+    saveFile->storyModeTimeBonus = 0;
+    
+    // Minerals
     for (int i = 0; i < MINERAL_COUNT; i++)
     {
         saveFile->minerals[i] = false;

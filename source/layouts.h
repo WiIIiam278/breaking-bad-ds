@@ -70,7 +70,7 @@ static Layout LAYOUTS[12] = {
 
     {4,
      {
-         {3, {90, 58}, 0, START_1P_GAME},
+         {3, {90, 58}, 0, START_STORY_MODE},
          {2, {90, 26}, 9, OPEN_ROOM},
          {1, {90, 26}, 5, BACK_TO_MAIN_MENU},
          {2, {90, 26}, 10, SEARCH_FOR_ROOMS},
@@ -85,9 +85,9 @@ static Layout LAYOUTS[12] = {
      {98, 15},
      true,
      {
-         {START_1P_GAME, OPEN_ROOM},
-         {START_1P_GAME, SEARCH_FOR_ROOMS},
-         {START_1P_GAME, BACK_TO_MAIN_MENU},
+         {START_STORY_MODE, OPEN_ROOM},
+         {START_STORY_MODE, SEARCH_FOR_ROOMS},
+         {START_STORY_MODE, BACK_TO_MAIN_MENU},
      },
      MENU_MAIN,
      1,

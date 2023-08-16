@@ -15,6 +15,7 @@
 #include "layouts.h"
 #include "minerals.h"
 #include "save.h"
+#include "transitions.h"
 
 class Menu
 {
@@ -96,19 +97,19 @@ public:
     void ShowBackground();
     void Update(volatile int frame, Sound *sound, SaveFile *saveFile);
     void Draw(volatile int frame);
-    void SetState(MenuState newState, Sound *sound, SaveFile *saveFile);
+    void SetState(MenuState newState, volatile int frame, Sound *sound, SaveFile *saveFile);
     void PositionLogo();
     void StartMultiplayer(bool mpCreatingRoom);
     void UpdateMultiplayer();
     void ShowMultiplayerStatus(bool showSprite);
     void ShowMinerals(bool showSprites, SaveFile *saveFile);
     void UpdateMinerals(volatile int frame, Sound *sound, SaveFile *saveFile);
-    MenuSelection HandleInput(Sound *sound, SaveFile *saveFile);
-    MenuSelection HandleLayoutInput(Sound *sound, SaveFile *saveFile, touchPosition touch);
-    MenuSelection HandleClick(MenuSelection clicked, Sound *sound, SaveFile *saveFile);
+    MenuSelection HandleInput(volatile int frame, Sound *sound, SaveFile *saveFile);
+    MenuSelection HandleLayoutInput(volatile int frame, Sound *sound, SaveFile *saveFile, touchPosition touch);
+    MenuSelection HandleClick(MenuSelection clicked, volatile int frame, Sound *sound, SaveFile *saveFile);
     bool IsTouchInBox(const int coords[2], const int boxDimensions[2], touchPosition touch);
     MenuSelection CheckSelection(MenuSelection tappedBox);
-    void Unload(Sound *sound, SaveFile *saveFile);
+    void Unload(volatile int frame, Sound *sound, SaveFile *saveFile);
 };
 
 extern "C"

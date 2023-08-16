@@ -100,7 +100,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
         if (rotatingCrank != -1)
         {
             int scrubSpeed = abs((stylusPos[0] - lastStylusPos[0]) + (stylusPos[1] - lastStylusPos[1]));
-            if ((lastStylusPos[0] != -1 && lastStylusPos[1] != -1) && scrubSpeed > 5)
+            if ((lastStylusPos[0] != -1 && lastStylusPos[1] != -1) && scrubSpeed > 3)
             {
                 crankRot[rotatingCrank] += crankRot[rotatingCrank] < 511 ? (crankRot[rotatingCrank] < 255 ? 2 * (scrubSpeed / 6) : (scrubSpeed / 4)) : 0;
             }

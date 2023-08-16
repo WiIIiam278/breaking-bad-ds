@@ -11,11 +11,19 @@
 
 #include "minerals.h"
 
-const int SAVE_FILE_VERSION = 1;
+const char SAVE_FILE_HEADER[4] = {'M', 'E', 'T', 'H'};
+const uint16 SAVE_FILE_VERSION = 1;
 
 struct SaveFile
 {
-    int version;
+    char fileHeader[4];
+    uint16 version;
+
+    uint16 storyModeDay;
+    int storyModeMoney;
+    int storyModePlayerSpeed;
+    int storyModeTimeBonus;
+
     bool minerals[MINERAL_COUNT];
 };
 

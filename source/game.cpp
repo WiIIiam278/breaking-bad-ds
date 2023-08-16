@@ -2,11 +2,12 @@
 
 Game::Game()
 {
-    // Initialize nitroFS before doing anything else
     fatInitDefault();
     consoleDemoInit();
     consoleClear();
     printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");
+    
+    // Initialize nitroFS
     if (!nitroFSInit(NULL))
     {
         printf("\x1B[31mFailed to start nitroFS\n");
@@ -117,7 +118,7 @@ void Game::UpdateCamera()
         {
             return;
         }
-        if (!wonGame)
+        if (!levelClear)
         {
             cameraTx = player.x - 0.5f;
             cameraTy = 5 + (((float)gameOverFrame / 500.0f) * 13.0f);
@@ -159,57 +160,6 @@ void Game::TranslateCamera(float x, float y, float z)
     cameraTz += z;
 }
 
-void Game::Transition(bool fadeIn, int duration, TransitionScreen screen)
-{
-    for (int i = 0; i < 2; i++)
-    {
-        if (!(screen == i || screen == TS_BOTH))
-        {
-            continue;
-        }
-        if (duration <= 0)
-        {
-            setBrightness(i + 1, fadeIn ? 0 : -16);
-            isTransitioning[i] = false;
-            continue;
-        }
-
-        isTransitioning[i] = true;
-        isFadingIn[i] = fadeIn;
-        transitionDuration[i] = duration;
-        transitionStartFrame[i] = frame;
-    }
-}
-
-void Game::UpdateTransition()
-{
-    for (int i = 0; i < 2; i++)
-    {
-        if (!isTransitioning[i])
-        {
-            continue;
-        }
-
-        if (frame >= (transitionStartFrame[i] + transitionDuration[i]))
-        {
-            setBrightness(i + 1, isFadingIn ? 0 : -16);
-            isTransitioning[i] = false;
-            return;
-        }
-
-        int brightness;
-        if (!isFadingIn)
-        {
-            brightness = (frame - transitionStartFrame[i]) * 16 / transitionDuration[i];
-        }
-        else
-        {
-            brightness = 16 - (frame - transitionStartFrame[i]) * 16 / transitionDuration[i];
-        }
-        setBrightness(i + 1, -brightness);
-    }
-}
-
 void Game::AwardMineral(MineralType mineralType)
 {
     if (!saveFile->minerals[mineralType])
@@ -226,7 +176,7 @@ void Game::TogglePauseMenu()
         return;
     }
     bool pausing = mode == MOVE;
-    Transition(!pausing, 0, TS_BOTTOM);
+    Transition(false, 0, TS_BOTTOM, frame);
 
     sound.PlaySFX(SFX_MENU_SELECT);
     if (pausing)
@@ -247,13 +197,13 @@ void Game::TogglePauseMenu()
         mode = MOVE;
     }
 
-    Transition(pausing, 15, TS_BOTTOM);
+    Transition(true, 15, TS_BOTTOM, frame);
 }
 
 // Show/hide bottom screen HUD
 void Game::ToggleHud(bool show)
 {
-    bool isMultiplayer = gameType == MULTIPLAYER_GAME;
+    bool isMultiplayer = gameType == GAME_MULTIPLAYER_VS;
     if (show && !hudVisible)
     {
         NF_LoadTiledBg(isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME, isMultiplayer ? MP_HUD_BG_NAME : SP_HUD_BG_NAME, 256, 256);
@@ -325,7 +275,7 @@ void Game::ToggleHud(bool show)
 
 void Game::UpdateHud()
 {
-    bool isMultiplayer = gameType == MULTIPLAYER_GAME;
+    bool isMultiplayer = gameType == GAME_MULTIPLAYER_VS;
     if (mode == MOVE)
     {
         NF_MoveSprite(1, HUD_MAP_PLAYER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (player.x * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (player.z * 4.4));
@@ -374,6 +324,74 @@ void Game::UpdateHud()
     }
 }
 
+void Game::StartDay(uint16 day)
+{
+    if (gameType != GAME_STORY_MODE)
+    {
+        return;
+    }
+    saveFile->storyModeDay = day;
+    mode = STORY_TRANSITION;
+    ToggleHud(false);
+    Transition(false, 0, TS_TOP, frame);
+    frame = 0;
+    showingDayNumber = true;
+}
+
+void Game::StartNextDay()
+{
+    StartDay(saveFile->storyModeDay + 1);
+    SaveGame(saveFile, saveFileName);
+}
+
+void Game::UpdateDayTransition()
+{
+    if (!(gameType == GAME_STORY_MODE && mode == STORY_TRANSITION))
+    {
+        showingDayNumber = false;
+        return;
+    }
+
+    const Level *level = &LEVEL_STORY_MODE[saveFile->storyModeDay];
+    if (frame <= 1)
+    {
+        Transition(true, 60, TS_BOTTOM, frame);
+    }
+
+    if (showingDayNumber)
+    {
+        // Day no
+        char dayText[12];
+        sprintf(dayText, "Day %i", saveFile->storyModeDay + 1);
+        NF_WriteText(1, 0, 13, 9, dayText);
+
+        // Level details
+        char levelText[32];
+        sprintf(levelText, "Time: %02i:%02i", level->time / 60, level->time % 60);
+        NF_WriteText(1, 0, 10, 11, levelText);
+
+        sprintf(levelText, "Quota: %i", level->quota);
+        NF_WriteText(1, 0, 11, 12, levelText);
+
+        sprintf(levelText, "Money: $%i", saveFile->storyModeMoney);
+        NF_WriteText(1, 0, 11 - ((int) (saveFile->storyModeMoney / 10)), 13, levelText);
+    }
+    
+    if (frame == 240)
+    {
+        Transition(false, 0, TS_BOTH, frame);
+        showingDayNumber = false;
+        NF_ClearTextLayer(1, 0);
+        StartLevel(level);
+    }
+
+    if (frame > 270)
+    {
+        Transition(true, 60, TS_BOTH, frame);
+        mode = MOVE;
+    }
+}
+
 void Game::QuitToTitle()
 {
     if (isQuitting)
@@ -381,7 +399,7 @@ void Game::QuitToTitle()
         return;
     }
     isQuitting = true;
-    if (gameType == MULTIPLAYER_GAME)
+    if (gameType == GAME_MULTIPLAYER_VS)
     {
         disableMultiplayer();
     }
@@ -395,7 +413,7 @@ void Game::QuitToTitle()
     NE_SpecialEffectSet(NE_NONE);
     SaveGame(saveFile, saveFileName);
     StartMenuScreen(false);
-    if (!wonGame)
+    if (!levelClear)
     {
         sound.PlaySFX(SFX_MENU_SELECT);
     }
@@ -407,7 +425,7 @@ void Game::StartDialogue(ScriptId script)
     {
         return;
     }
-    Transition(false, 0, TS_BOTTOM);
+    Transition(false, 0, TS_BOTTOM, frame);
     if (mode == MINIGAME)
     {
         currentMinigame->Unload();
@@ -417,7 +435,7 @@ void Game::StartDialogue(ScriptId script)
     player.facing = DOWN;
     player.inDialogue = true;
     dialogue.Load(script, frame);
-    Transition(true, 30, TS_BOTTOM);
+    Transition(true, 30, TS_BOTTOM, frame);
 }
 
 void Game::EndDialogue()
@@ -426,17 +444,17 @@ void Game::EndDialogue()
     {
         return;
     }
-    Transition(false, 0, TS_BOTTOM);
+    Transition(false, 0, TS_BOTTOM, frame);
     dialogue.Unload();
     ToggleHud(true);
     mode = MOVE;
-    Transition(true, 30, TS_BOTTOM);
+    Transition(true, 30, TS_BOTTOM, frame);
     player.inDialogue = false;
 }
 
 void Game::CheckTutorials()
 {
-    if (gameType == TUTORIAL_GAME)
+    if (gameType == GAME_TUTORIAL)
     {
         int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress, currentBatchProgress, player.GetTile(map));
         if (dialogueId != -1)
@@ -447,63 +465,32 @@ void Game::CheckTutorials()
     }
 }
 
-void Game::StartGame(GameType gameType, int timeLimit, int batchQuota)
+void Game::StartGame(GameType gameType)
 {
-    Transition(false, 0, TS_BOTH);
-
-    frame = 0;
-    wonGame = false;
-    isQuitting = false;
-    tutorialProgress = 0;
-    mode = MOVE;
-    currentBatchProgress = 0;
-    batchPurity = 100;
-    batchesComplete = 0;
-
+    Transition(false, 0, TS_BOTH, frame);
+    this->isQuitting = false;
     this->gameType = gameType;
-    this->timeLimit = timeLimit;
-    this->batchQuota = batchQuota;
+    this->frame = 0;
+    this->mode = MOVE;
 
-    // Prepare laboratory scene
+    // Load lab
     LoadLabScene();
 
-    // Player setup
-    if (gameType == MULTIPLAYER_GAME)
+    // Start game
+    if (gameType == GAME_STORY_MODE)
     {
-        bool isHost = isHostClient();
-        player.Translate(isHost ? -11.5 : -9.0, 0, 4.5);
-        player.targetX = player.tileX = isHost ? 4 : 3;
-
-        player2->Translate(!isHost ? -11.5 : -9.0, 0, 4.5);
-        player2->targetX = player2->tileX = !isHost ? 4 : 3;
-        player2->targetZ = player2->tileZ = 1;
+        StartDay(saveFile->storyModeDay);
     }
     else
     {
-        player.Translate(-11.5, 0, 4.5);
-        player.targetX = player.tileX = 4;
+        StartLevel(gameType == GAME_TUTORIAL ? &LEVEL_TUTORIAL : &LEVEL_MULTIPLAYER_VS);
+        Transition(true, 60, TS_BOTH, frame);
     }
-    player.targetZ = player.tileZ = 1;
-
-    // Setup camera
-    cameraX = BASE_MOVE_CAMERA_POS[0];
-    cameraY = BASE_MOVE_CAMERA_POS[1];
-    cameraZ = BASE_MOVE_CAMERA_POS[2];
-    NE_CameraSet(camera,
-                 cameraX, cameraY, cameraZ,
-                 -11.5, 2, 8.5,
-                 0, 1, 0);
-
-    sound.PlayBGM(gameType != TUTORIAL_GAME ? BGM_THE_COUSINS : BGM_CLEAR_WATERS, true);
-
-    // Start tutorial
-    CheckTutorials();
-    Transition(true, 60, TS_BOTH);
 }
 
 void Game::LoadLabScene()
 {
-    bool isMultiplayer = gameType == MULTIPLAYER_GAME;
+    bool isMultiplayer = gameType == GAME_MULTIPLAYER_VS;
 
     // Load map and player
     if (map.Load() == -1)
@@ -559,21 +546,75 @@ void Game::LoadLabScene()
     NF_LoadSpritePal("sprite/segment_numbers", HUD_NUMBERS);
     NF_VramSpriteGfx(1, HUD_NUMBERS, HUD_NUMBERS + 1, false);
     NF_VramSpritePal(1, HUD_NUMBERS, HUD_NUMBERS + 1);
+}
 
-    // Load HUD
+void Game::StartLevel(const Level *level)
+{
+    // Set level params
+    this->timeLimit = level->time;
+    this->batchQuota = level->quota;
+
+    // Reset game state
+    levelClear = false;
+    tutorialProgress = 0;
+    currentBatchProgress = 0;
+    batchPurity = 100;
+    batchesComplete = 0;
+
+    // Player setup
+    player.ResetPosition();
+    if (gameType == GAME_MULTIPLAYER_VS)
+    {
+        bool isHost = isHostClient();
+        player.Translate(isHost ? -11.5 : -9.0, 0, 4.5);
+        player.targetX = player.tileX = isHost ? 4 : 3;
+
+        player2->ResetPosition();
+        player2->Translate(!isHost ? -11.5 : -9.0, 0, 4.5);
+        player2->targetX = player2->tileX = !isHost ? 4 : 3;
+        player2->targetZ = player2->tileZ = 1;
+    }
+    else
+    {
+        player.Translate(-11.5, 0, 4.5);
+        player.targetX = player.tileX = 4;
+    }
+    player.targetZ = player.tileZ = 1;
+
+    // Setup camera
+    cameraX = BASE_MOVE_CAMERA_POS[0];
+    cameraY = BASE_MOVE_CAMERA_POS[1];
+    cameraZ = BASE_MOVE_CAMERA_POS[2];
+    NE_CameraSet(camera,
+                 cameraX, cameraY, cameraZ,
+                 -11.5, 2, 8.5,
+                 0, 1, 0);
+    
+    // Enable HUD
     ToggleHud(true);
+
+    // Start tutorial if needed
+    if (gameType == GAME_TUTORIAL)
+    {
+        sound.PlayBGM(BGM_CLEAR_WATERS, true);
+        CheckTutorials();
+    }
+    else
+    {
+        sound.PlayBGM(BGM_THE_COUSINS, true);
+    }
 }
 
 // Unload map and player
 void Game::UnLoadLabScene()
 {
-    Transition(false, 0, TS_BOTH);
+    Transition(false, 0, TS_BOTH, frame);
     ToggleHud(false);
     map.Unload();
     player.Unload();
 
     // Unload multiplayer
-    if (mode == MULTIPLAYER_GAME)
+    if (mode == GAME_MULTIPLAYER_VS)
     {
         player2->Unload();
     }
@@ -599,14 +640,14 @@ void Game::UnLoadLabScene()
 
 void Game::StartMenuScreen(bool debugMode)
 {
-    Transition(false, 0, TS_BOTH);
+    Transition(false, 0, TS_BOTH, frame);
 
     debugFlag = debugMode;
     frame = 0;
     mode = MAIN_MENU;
     LoadLogoScene();
 
-    Transition(true, 120, TS_BOTH);
+    Transition(true, 120, TS_BOTH, frame);
 }
 
 void Game::LoadLogoScene()
@@ -625,20 +666,20 @@ void Game::LoadLogoScene()
     {
         WaitLoop();
     }
-    menu.SetState(MENU_LOGO, &sound, saveFile);
+    menu.SetState(MENU_LOGO, frame, &sound, saveFile);
 }
 
 void Game::UnLoadLogoScene()
 {
-    Transition(false, 0, TS_BOTH);
-    menu.Unload(&sound, saveFile);
+    Transition(false, 0, TS_BOTH, frame);
+    menu.Unload(frame, &sound, saveFile);
 }
 
 void Game::UpdateMenuScreen()
 {
     menu.Update(frame, &sound, saveFile);
 
-    switch (menu.HandleInput(&sound, saveFile))
+    switch (menu.HandleInput(frame, &sound, saveFile))
     {
     case SKIP_LOGO:
         frame = 689;
@@ -646,15 +687,15 @@ void Game::UpdateMenuScreen()
         break;
     case START_TUTORIAL:
         UnLoadLogoScene();
-        StartGame(TUTORIAL_GAME, -1, 5);
+        StartGame(GAME_TUTORIAL);
         break;
-    case START_1P_GAME:
+    case START_STORY_MODE:
         UnLoadLogoScene();
-        StartGame(SINGLEPLAYER_GAME, 240, 12);
+        StartGame(GAME_STORY_MODE);
         break;
     case START_MP_GAME:
         UnLoadLogoScene();
-        StartGame(MULTIPLAYER_GAME, 180, 99);
+        StartGame(GAME_MULTIPLAYER_VS);
         break;
     }
 }
@@ -700,11 +741,11 @@ void Game::StartMinigame(Tile tile)
         return;
     }
 
-    Transition(false, 0, TS_BOTTOM);
+    Transition(false, 0, TS_BOTTOM, frame);
     mode = MINIGAME;
     ToggleHud(false);
     currentMinigame->Load();
-    Transition(true, 30, TS_BOTTOM);
+    Transition(true, 30, TS_BOTTOM, frame);
 }
 
 void Game::DeleteMinigame(bool doTransition)
@@ -721,11 +762,11 @@ void Game::DeleteMinigame(bool doTransition)
         return;
     }
 
-    Transition(false, 0, TS_BOTTOM);
+    Transition(false, 0, TS_BOTTOM, frame);
     currentMinigame->Unload();
     currentMinigame = NULL;
     ToggleHud(true);
-    Transition(true, 30, TS_BOTTOM);
+    Transition(true, 30, TS_BOTTOM, frame);
 }
 
 void Game::ShowMinigameResult(MinigameResult indicator, int frames)
@@ -750,10 +791,10 @@ void Game::StartGameOver(bool hasWon)
     {
         return;
     }
-    wonGame = hasWon;
+    levelClear = hasWon;
     player.walking = false;
 
-    Transition(false, 0, TS_BOTH);
+    Transition(false, 0, TS_BOTH, frame);
 
     // Clear indicator
     if (showingIndicatorFor > 0)
@@ -790,7 +831,7 @@ void Game::StartGameOver(bool hasWon)
     }
 
     // Achievements
-    if (gameType == TUTORIAL_GAME)
+    if (gameType == GAME_TUTORIAL)
     {
         AwardMineral(MIENRAL_ANALCIME);
     }
@@ -803,7 +844,7 @@ void Game::UpdateGameOver()
     switch (gameOverFrame)
     {
     case -150:
-        if (!wonGame)
+        if (!levelClear)
         {
             sound.PlaySFX(SFX_GOODBYE_WALTER);
         }
@@ -814,7 +855,7 @@ void Game::UpdateGameOver()
     case -58:
     case -59:
     case -60:
-        if (!wonGame)
+        if (!levelClear)
         {
             setRumble(gameOverFrame % 2 == 0);
         }
@@ -823,7 +864,7 @@ void Game::UpdateGameOver()
         sound.StopSFX();
         break;
     case 0:
-        if (!wonGame)
+        if (!levelClear)
         {
             sound.PlayBGM(BGM_BABY_BLUE, false);
         }
@@ -831,30 +872,40 @@ void Game::UpdateGameOver()
         {
             sound.PlayBGM(BGM_RODRIGO_Y_GABRIELA, false);
         }
-        Transition(true, 60, TS_BOTH);
+        Transition(true, 60, TS_BOTH, frame);
         break;
     case 520:
-        if (!wonGame)
+        if (!levelClear)
         {
-            Transition(false, 0, TS_BOTH);
+            Transition(false, 0, TS_BOTH, frame);
         }
         break;
     case 575:
-        if (wonGame)
+        if (levelClear)
         {
-            Transition(false, 0, TS_BOTH);
+            Transition(false, 0, TS_BOTH, frame);
             sound.StopBGM();
         }
         break;
     case 620:
-        if (!wonGame)
+        if (!levelClear)
         {
+            if (gameType == GAME_STORY_MODE)
+            {
+                StartDay(saveFile->storyModeDay);
+                return;
+            }
             QuitToTitle();
         }
         break;
     case 660:
-        if (wonGame)
+        if (levelClear)
         {
+            if (gameType == GAME_STORY_MODE)
+            {
+                StartNextDay();
+                return;
+            }
             QuitToTitle();
         }
         break;
@@ -887,7 +938,7 @@ void Game::Render()
         player.Update(frame);
         player.Move(map);
 
-        if (gameType == MULTIPLAYER_GAME)
+        if (gameType == GAME_MULTIPLAYER_VS)
         {
             player2->Update(frame);
             player2->Move(map);
@@ -898,8 +949,8 @@ void Game::Render()
 
     // Draw objects
     map.Draw();
-    player.Draw(gameType == MULTIPLAYER_GAME ? (isHostClient() ? 1 : 2) : 0);
-    if (gameType == MULTIPLAYER_GAME && (mode != GAME_OVER))
+    player.Draw(gameType == GAME_MULTIPLAYER_VS ? (isHostClient() ? 1 : 2) : 0);
+    if (gameType == GAME_MULTIPLAYER_VS && (mode != GAME_OVER))
     {
         player2->Draw(!isHostClient() ? 1 : 2);
     }
@@ -907,7 +958,7 @@ void Game::Render()
 
 void Game::Update()
 {
-    if (mode != MAIN_MENU && gameType == MULTIPLAYER_GAME && !isQuitting)
+    if (mode != MAIN_MENU && gameType == GAME_MULTIPLAYER_VS && !isQuitting)
     {
         if (getMultiplayerStatus() == MP_CONNECTION_LOST)
         {
@@ -963,7 +1014,13 @@ void Game::Update()
     }
 
     // Update transition
-    UpdateTransition();
+    UpdateTransitions(frame);
+
+    // Handle story mode stuff
+    if (gameType == GAME_STORY_MODE)
+    {
+        UpdateDayTransition();
+    }
 
     // Update text layers
     NF_UpdateTextLayers();
@@ -977,7 +1034,7 @@ void Game::Update()
             player.HandleInput(keysHeld());
         }
 
-        if (gameType != MULTIPLAYER_GAME &&
+        if (gameType != GAME_MULTIPLAYER_VS &&
             (mode == PAUSED) && (keysDown() & KEY_B))
         {
             NF_DeleteTiledBg(1, PAUSED_BG);
@@ -985,7 +1042,7 @@ void Game::Update()
             QuitToTitle();
             return;
         }
-        else if (gameType != MULTIPLAYER_GAME &&
+        else if (gameType != GAME_MULTIPLAYER_VS &&
                  (mode == MOVE || mode == PAUSED) && (keysDown() & KEY_START))
         {
             TogglePauseMenu();
@@ -998,12 +1055,12 @@ void Game::Update()
             {
                 player.facing = DOWN;
                 
-                if (gameType == SINGLEPLAYER_GAME && player.GetTile(map) == MINIGAME_CRACK)
+                if (gameType == GAME_STORY_MODE && player.GetTile(map) == MINIGAME_CRACK)
                 {
                     AwardMineral(MINERAL_ALGODONITE);
                 }
             }
-            if (gameType == TUTORIAL_GAME && idleFrames > 3600)
+            if (gameType == GAME_TUTORIAL && idleFrames > 3600)
             {
                 idleFrames = 0;
                 AwardMineral(MINERAL_AMBER);
@@ -1041,12 +1098,12 @@ void Game::Update()
     UpdateCamera();
 
     // Update timer
-    if (mode != MAIN_MENU && mode != GAME_OVER && mode != PAUSED)
+    if (!(mode == MAIN_MENU || mode == GAME_OVER || mode == PAUSED || mode == STORY_TRANSITION))
     {
         // Update timer
         if (frame % 60 == 0 && timeLimit > -1 && mode != DIALOGUE)
         {
-            if (gameType != MULTIPLAYER_GAME || isHostClient())
+            if (gameType != GAME_MULTIPLAYER_VS || isHostClient())
             {
                 timeLimit--;
             }
@@ -1066,12 +1123,12 @@ void Game::Update()
 
                 if (timeLimit == 0)
                 {
-                    if (gameType == SINGLEPLAYER_GAME)
+                    if (gameType == GAME_STORY_MODE)
                     {
                         StartGameOver(false);
                         AwardMineral(MINERAL_QUARTZ);
                     }
-                    else if (gameType == MULTIPLAYER_GAME)
+                    else if (gameType == GAME_MULTIPLAYER_VS)
                     {
                         const bool isDraw = batchesComplete == player2BatchesComplete && currentBatchProgress == player2BatchProgress;
                         const bool localWin = (batchesComplete == player2BatchesComplete ? currentBatchProgress > player2BatchProgress : batchesComplete > player2BatchesComplete);
@@ -1105,7 +1162,7 @@ void Game::Update()
             }
             batchPurity = 100;
 
-            if (gameType != MULTIPLAYER_GAME && batchesComplete >= batchQuota)
+            if (gameType != GAME_MULTIPLAYER_VS && batchesComplete >= batchQuota)
             {
                 if (perfectClear)
                 {
