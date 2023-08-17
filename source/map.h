@@ -14,7 +14,11 @@
 class Map
 {
 private:
-    NE_Model *model;
+    const int MODEL_COUNT = 2;
+    const char *modelPaths[2] = {"model/superlab.dl", "model/superlab_mixer.dl"};
+    NE_Model *models[2];
+    u32 mixerAlpha = 31;
+
     NE_Material *material;
     SecurityCamera securityCamera;
 
@@ -35,6 +39,6 @@ public:
     int Load();
     Tile GetTileAt(int x, int z);
     void RotateSecurityCamera(float playerX, float playerZ);
-    void Draw();
+    void Draw(bool playerObscured);
     void Unload();
 };

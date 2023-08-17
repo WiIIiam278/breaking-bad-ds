@@ -951,7 +951,7 @@ void Game::Render()
     }
 
     // Draw objects
-    map.Draw();
+    map.Draw(player.tileX > 2 && player.tileX < 7 && player.tileZ > 4);
     player.Draw(gameType == GAME_MULTIPLAYER_VS ? (isHostClient() ? 1 : 2) : 0);
     if (gameType == GAME_MULTIPLAYER_VS && (mode != GAME_OVER))
     {
