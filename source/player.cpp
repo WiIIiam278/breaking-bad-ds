@@ -7,15 +7,23 @@ Player::Player()
 int Player::Load(Character character)
 {
     this->character = character;
-    model = NE_ModelCreate(NE_Static);
+    this->lyingDown = false;
+
+    model = NE_ModelCreate(NE_Animated);
     material = NE_MaterialCreate();
-    lyingDown = false;
+    animation[0] = NE_AnimationCreate();
+    animation[1] = NE_AnimationCreate();
 
     // Load assets from the filesystem
-    if (NE_ModelLoadStaticMeshFAT(model, "model/player.dl") == 0)
+    if (NE_ModelLoadDSMFAT(model, "model/player.dsm") == 0)
     {
         consoleDemoInit();
         printf("Couldn't load player mesh...");
+        return -1;
+    }
+    if (NE_AnimationLoadFAT(animation[0], "model/player_idle.dsa") == 0 || NE_AnimationLoadFAT(animation[1], "model/player_walk.dsa") == 0) {
+        consoleDemoInit();
+        printf("Couldn't load player animations...");
         return -1;
     }
 
@@ -47,6 +55,12 @@ int Player::Load(Character character)
     // Assign material to the model
     NE_ModelSetMaterial(model, material);
 
+    // Set animation
+    NE_ModelSetAnimation(model, animation[0]);
+    NE_ModelSetAnimationSecondary(model, animation[1]);
+    NE_ModelAnimStart(model, NE_ANIM_LOOP, floattof32(0.5));
+    NE_ModelAnimSecondaryStart(model, NE_ANIM_LOOP, floattof32(1));
+
     // Set some propierties to the material
     NE_MaterialSetPropierties(material,
                               RGB15(20, 20, 20), // Diffuse
@@ -73,7 +87,9 @@ void Player::ResetPosition()
 void Player::Move(Map &map)
 {
     if (!walking)
+    {
         return;
+    }
 
     switch (facing)
     {
@@ -110,11 +126,13 @@ void Player::Update(volatile int frame)
     float changeBy = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
     rotation += changeBy;
     NE_ModelSetRot(model, lyingDown ? 90 : 0, rotation, 0);
+    NE_ModelAnimSecondarySetFactor(model, floattof32((currentSpeed[0] + currentSpeed[1]) / MAX_SPEED));
 
     // Don't move walter if he's dead
     if (lyingDown)
     {
         lyingDownFrames++;
+        currentSpeed[0] = currentSpeed[1] = 0;
         return;
     }
 
@@ -124,6 +142,7 @@ void Player::Update(volatile int frame)
         targetX = tileX;
         targetZ = tileZ;
         walking = false;
+        currentSpeed[0] = currentSpeed[1] = 0;
         return;
     }
 
@@ -138,26 +157,46 @@ void Player::Update(volatile int frame)
         dY = -dY;
     }
 
+    for (int i = 0; i < 2; i++)
+    {
+        if (currentSpeed[i] > MAX_SPEED)
+        {
+            currentSpeed[i] = MAX_SPEED;
+        }
+    }
+
     if (translateX > x + TILE_SIZE)
     {
-        Translate(SPEED, dY, 0);
+        currentSpeed[0] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[1] = 0;
+        Translate(currentSpeed[0], dY, 0);
     }
     else if (translateX < x - TILE_SIZE)
     {
-        Translate(-SPEED, dY, 0);
+        currentSpeed[0] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[1] = 0;
+        Translate(-currentSpeed[0], dY, 0);
     }
     else if (translateZ > z + TILE_SIZE)
     {
-        Translate(0, dY, SPEED);
+        currentSpeed[1] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[0] = 0;
+        Translate(0, dY, currentSpeed[1]);
     }
     else if (translateZ < z - TILE_SIZE)
     {
-        Translate(0, dY, -SPEED);
+        currentSpeed[1] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[0] = 0;
+        Translate(0, dY, -currentSpeed[1]);
     }
     else
     {
         tileX = targetX;
         tileZ = targetZ;
+        if (!walking)
+        {
+            currentSpeed[0] = currentSpeed[1] = 0;
+        }
     }
 }
 
@@ -262,4 +301,6 @@ void Player::Unload()
 {
     NE_ModelDelete(model);
     NE_MaterialDelete(material);
+    NE_AnimationDelete(animation[0]);
+    NE_AnimationDelete(animation[1]);
 }

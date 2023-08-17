@@ -645,10 +645,9 @@ MenuSelection Menu::HandleLayoutInput(volatile int frame, Sound *sound, SaveFile
     }
 
     if (keysDown() & KEY_B)
-    {
-        const bool quitToTitle = state == MENU_MAIN;
-        SetState(quitToTitle ? MENU_TITLE : MENU_MAIN, frame, sound, saveFile);
-        return quitToTitle ? BACK_TO_TITLE : BACK_TO_MAIN_MENU;
+    {   
+        SetState(layout->backState, frame, sound, saveFile);
+        return NONE;
     }
 
     if (keysDown() & KEY_A || keysDown() & KEY_START)

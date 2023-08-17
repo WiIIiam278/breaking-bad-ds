@@ -28,6 +28,9 @@ Game::Game()
     irqSet(IRQ_VBLANK, NE_VBLFunc);
     irqSet(IRQ_HBLANK, NE_HBLFunc);
 
+    // Prepare WiFI
+    nifiPrepare();
+
     // Setup sound
     sound.LoadSound();
 }
@@ -1000,7 +1003,10 @@ void Game::Update()
     }
 
     // Wait for the VBlank interrupt
-    NE_WaitForVBL(NE_UPDATE_ANIMATIONS);
+    if (mode != PAUSED && !(mode == GAME_OVER && !levelClear))
+    {
+        NE_WaitForVBL(NE_UPDATE_ANIMATIONS);
+    }
 
     // Copy shadow OAM copy to the OAM of the 2D sub engine
     oamUpdate(&oamSub);

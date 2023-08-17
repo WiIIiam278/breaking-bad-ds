@@ -1,7 +1,5 @@
 #include "multiplayer.h"
 
-// note: Loading multiplayer takes about 147608 bytes of ram
-
 // ** Wifi variables **:
 int wifiChannel = 10;
 
@@ -40,49 +38,18 @@ int mpStatus = MP_CLIENT_SEARCHING;
 
 void joinMultiplayer(bool hostRoom)
 {
-    nifiInit();
+	nifiInit();
 	if (hostRoom)
-    {
-        createRoom();
+	{
+		createRoom();
 	}
-    else 
+	else
 	{
 		mpStatus = MP_CLIENT_SEARCHING;
 		joinRoomTimer = WIFI_TIMEOUT;
-        tryJoinRoom = true;
-        resetNifiValues();
-    }
-}
-
-void tickMultiplayer()
-{
-    if (tryJoinRoom)
-    {
-        joinRoomTimer--;
-        if (joinRoomTimer == 0) // Resend the request each time the timer is ended
-        {
-            scanForRoom();
-            // Reset the timer
-            joinRoomTimer = WIFI_TIMEOUT;
-        }
-		return;
-    }
-
-    // Check if the local client has lost the connection with the host
-    if (localClient->id != EMPTY && !isHost)
-    {
-        lastCommunication++;
-        if (lastCommunication == CLIENT_TIMEOUT)
-        {
-            for (int i = 0; i < MAX_CLIENT; i++)
-            {
-                removeClient(&clients[i]);
-            }
-			mpStatus = MP_CONNECTION_LOST;
-        }
-    }
-
-	shareRequest(localClient, TICK_GAME);
+		tryJoinRoom = true;
+		resetNifiValues();
+	}
 }
 
 void disableMultiplayer()
@@ -96,6 +63,37 @@ void disableMultiplayer()
 	resetNifiValues();
 	Wifi_DisableWifi();
 	mpStatus = MP_CONNECTION_LOST;
+}
+
+void tickMultiplayer()
+{
+	if (tryJoinRoom)
+	{
+		joinRoomTimer--;
+		if (joinRoomTimer == 0) // Resend the request each time the timer is ended
+		{
+			scanForRoom();
+			// Reset the timer
+			joinRoomTimer = WIFI_TIMEOUT;
+		}
+		return;
+	}
+
+	// Check if the local client has lost the connection with the host
+	if (localClient->id != EMPTY && !isHost)
+	{
+		lastCommunication++;
+		if (lastCommunication == CLIENT_TIMEOUT)
+		{
+			for (int i = 0; i < MAX_CLIENT; i++)
+			{
+				removeClient(&clients[i]);
+			}
+			mpStatus = MP_CONNECTION_LOST;
+		}
+	}
+
+	shareRequest(localClient, TICK_GAME);
 }
 
 /**
@@ -152,18 +150,24 @@ void resetNifiValues()
 }
 
 /**
+ * @brief Prepare the Nifi system
+ */
+void nifiPrepare()
+{
+	// Changes how packets are handled
+	Wifi_SetRawPacketMode(PACKET_MODE_NIFI);
+
+	// Init Wifi without automatic settings
+	Wifi_InitDefault(false);
+}
+
+/**
  * @brief Init the Nifi system
  *
  */
 void nifiInit()
 {
 	resetNifiValues();
-
-	// Changes how packets are handled
-	Wifi_SetRawPacketMode(PACKET_MODE_NIFI);
-
-	// Init Wifi without automatic settings
-	Wifi_InitDefault(false);
 
 	// Enable Wifi
 	Wifi_EnableWifi();
@@ -420,11 +424,11 @@ void createRequest(Client *clientSender, Client *clientToUpdate, enum RequestTyp
 	switch (requestType)
 	{
 	case TICK_GAME:
-		sprintf(buffer, "{GAME;TICK_GAME;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d}", clientSender->id, clientToUpdate->id, 
-			clientSender->playerTargetX, clientSender->playerTargetZ, 
-			clientSender->playerTileX, clientSender->playerTileZ,
-			clientSender->playerFacing, clientSender->timeLeft, 
-			clientSender->currentBatchStep, clientSender->batchesComplete);
+		sprintf(buffer, "{GAME;TICK_GAME;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d}", clientSender->id, clientToUpdate->id,
+				clientSender->playerTargetX, clientSender->playerTargetZ,
+				clientSender->playerTileX, clientSender->playerTileZ,
+				clientSender->playerFacing, clientSender->timeLeft,
+				clientSender->currentBatchStep, clientSender->batchesComplete);
 		break;
 	}
 
@@ -432,7 +436,7 @@ void createRequest(Client *clientSender, Client *clientToUpdate, enum RequestTyp
 	{
 		NF_WriteText(1, 0, 1, 2, buffer);
 	}
-	
+
 	AddDataTo(clientToUpdate, buffer);
 }
 
@@ -630,7 +634,7 @@ void addClient(int id, bool addHost)
 void scanForRoom()
 {
 	isHost = false;
-	
+
 	char buffer[25];
 	sprintf(buffer, "{ROOM;SCAN;%s}", localClient->macAddress);
 	SendWirelessData((unsigned short *)buffer, strlen(buffer) + 1);
@@ -753,7 +757,8 @@ int getMultiplayerStatus()
 	return mpStatus;
 }
 
-Client* getOpponent() {
+Client *getOpponent()
+{
 	for (int i = 1; i < MAX_CLIENT; i++)
 	{
 		if (clients[i].id != EMPTY)
@@ -765,10 +770,12 @@ Client* getOpponent() {
 	return NULL;
 }
 
-Client* getLocalClient() {
+Client *getLocalClient()
+{
 	return localClient;
 }
 
-bool isHostClient() {
+bool isHostClient()
+{
 	return isHost;
 }

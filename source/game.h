@@ -180,6 +180,7 @@ public:
 };
 
 extern "C" {
+    void nifiPrepare();
     Client* getOpponent();
     Client* getLocalClient();
     void tickMultiplayer();

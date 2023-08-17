@@ -15,13 +15,16 @@
 class Player
 {
 private:
-    const float SPEED = 0.125;
-    const float TILE_SIZE = 0.05;
+    const float MAX_SPEED = 0.125f;
+    const float ACCELERATION = 7.0f;
+    float currentSpeed[2] = { 0, 0 };
+    const float TILE_SIZE = (MAX_SPEED / ACCELERATION) + 0.05f;
 
     volatile float lyingDownFrames = 0;
 
     NE_Model *model;
     NE_Material *material;
+    NE_Animation *animation[2];
 
 public:
     bool isPlayer2 = false;
