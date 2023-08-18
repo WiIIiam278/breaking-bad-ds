@@ -71,6 +71,11 @@ int Menu::Load()
     NE_ModelTranslate(logo, x, Y, Z);
     NE_ModelTranslate(text, textX, Y + 0.1, Z + 4.55);
 
+    // Mark meshes for removal when deleted
+    NE_ModelFreeMeshWhenDeleted(skybox);
+    NE_ModelFreeMeshWhenDeleted(logo);
+    NE_ModelFreeMeshWhenDeleted(text);
+
     // Prepare sprites
     LoadInterfaceSprites();
 

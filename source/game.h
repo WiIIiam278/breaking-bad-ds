@@ -43,6 +43,7 @@ private:
     Menu menu;
     Map map;
     Player player;
+    NE_Animation *playerAnimations[2];
     Sound sound;
     const u32 CLEAR_COLOR = NE_Black;
 

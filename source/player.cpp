@@ -4,48 +4,43 @@ Player::Player()
 {
 }
 
-int Player::Load(Character character)
+int Player::Load(Character character, NE_Animation *animations[2])
 {
     this->character = character;
     this->lyingDown = false;
 
     model = NE_ModelCreate(NE_Animated);
     material = NE_MaterialCreate();
-    animation[0] = NE_AnimationCreate();
-    animation[1] = NE_AnimationCreate();
+    animation[0] = animations[0];
+    animation[1] = animations[1];
 
-    // Load assets from the filesystem
+    // Load model
     if (NE_ModelLoadDSMFAT(model, "model/player.dsm") == 0)
     {
         consoleDemoInit();
         printf("Couldn't load player mesh...");
         return -1;
     }
-    if (NE_AnimationLoadFAT(animation[0], "model/player_idle.dsa") == 0 || NE_AnimationLoadFAT(animation[1], "model/player_walk.dsa") == 0) {
-        consoleDemoInit();
-        printf("Couldn't load player animations...");
-        return -1;
-    }
 
-    // Load character model
-    int modelLoaded = 0;
+    // Load textures
+    int texturesLoaded = 0;
     switch (character)
     {
     case CHAR_WALT:
-        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
+        texturesLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
                                             NE_TEXGEN_TEXCOORD, "model/walter_tex.bin");
         break;
     case CHAR_JESSE:
-        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
+        texturesLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
                                             NE_TEXGEN_TEXCOORD, "model/jessie_tex.bin");
         break;
     case CHAR_YEPPERS:
-        modelLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
+        texturesLoaded = NE_MaterialTexLoadFAT(material, NE_A1RGB5, 128, 128,
                                             NE_TEXGEN_TEXCOORD, "model/yeppers_tex.bin");
         break;
     }
 
-    if (modelLoaded == 0)
+    if (texturesLoaded == 0)
     {
         consoleDemoInit();
         printf("Couldn't load player textures...");
@@ -68,6 +63,10 @@ int Player::Load(Character character)
                               RGB15(0, 0, 0),    // Specular
                               RGB15(0, 0, 0),    // Emission
                               false, false);     // Vertex color, use shininess table
+    
+    // Free mesh when deleted
+    NE_ModelFreeMeshWhenDeleted(model);
+
     return 0;
 }
 
@@ -301,6 +300,4 @@ void Player::Unload()
 {
     NE_ModelDelete(model);
     NE_MaterialDelete(material);
-    NE_AnimationDelete(animation[0]);
-    NE_AnimationDelete(animation[1]);
 }

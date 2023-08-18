@@ -30,7 +30,7 @@ void PipetteMinigame::Load()
     UpdateTubes(0);
 }
 
-void PipetteMinigame::Unload()
+void PipetteMinigame::Unload(Map* map)
 {
     DeleteBackground(PIPETTE_BACKGROUND_NAME);
 
@@ -57,7 +57,7 @@ void PipetteMinigame::Unload()
     NF_FreeSpriteGfx(1, 0);
 }
 
-void PipetteMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
+void PipetteMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
 {
     UpdateTubes(frame);
 

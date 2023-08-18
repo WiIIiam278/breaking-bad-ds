@@ -14,19 +14,20 @@
 class Map
 {
 private:
-    const int MODEL_COUNT = 2;
-    const char *modelPaths[2] = {"model/superlab.dl", "model/superlab_mixer.dl"};
-    NE_Model *models[2];
+    const int MODEL_COUNT = 3;
+    const char *modelPaths[3] = {"model/superlab.dl", "model/superlab_mixer.dl", "model/superlab_pipe.dl"};
+    NE_Model *models[3];
     u32 mixerAlpha = 31;
-
+    float pipePos[2] = { -191, -78 };
+    
     NE_Material *material;
     SecurityCamera securityCamera;
-
+    
     const Tile Tiles[9][10] = {
         {FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, MINIGAME_VALVE},
         {WALL, FLOOR, FLOOR, FLOOR, FLOOR, MINIGAME_MIX, FLOOR, FLOOR, FLOOR, WALL},
         {WALL, MINIGAME_PESTLE, FLOOR, WALL, WALL, WALL, FLOOR, FLOOR, FLOOR, WALL},
-        {WALL, FLOOR, FLOOR, WALL, WALL, WALL, WALL, FLOOR, MINIGAME_POUR, WALL},
+        {WALL, FLOOR, FLOOR, WALL, WALL, WALL, WALL, FLOOR, MINIGAME_POUR, WALL}, 
         {WALL, FLOOR, FLOOR, WALL, WALL, WALL, WALL, FLOOR, FLOOR, WALL},
         {WALL, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, WALL},
         {WALL, MINIGAME_PIPETTE, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, FLOOR, MINIGAME_CRACK, WALL},
@@ -39,6 +40,7 @@ public:
     int Load();
     Tile GetTileAt(int x, int z);
     void RotateSecurityCamera(float playerX, float playerZ);
+    void AdjustPipe(float pipeX, float pipeZ);
     void Draw(bool playerObscured);
     void Unload();
 };

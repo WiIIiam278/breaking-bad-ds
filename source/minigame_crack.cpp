@@ -16,7 +16,7 @@ void CrackMinigame::Load()
     UpdateSprites(0, nullptr);
 }
 
-void CrackMinigame::Unload()
+void CrackMinigame::Unload(Map* map)
 {
     DeleteBackground(CRACK_BACKGROUND_NAME);
 
@@ -131,7 +131,7 @@ bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2],
     return false;
 }
 
-void CrackMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
+void CrackMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
 {
     UpdateSprites(frame, sound);
 }

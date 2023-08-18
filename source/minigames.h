@@ -11,6 +11,7 @@
 
 #include "enums.h"
 #include "sound.h"
+#include "map.h"
 
 void LoadBackground(const char name[]);
 void DeleteBackground(const char name[]);
@@ -19,8 +20,8 @@ class Minigame
 {
 public:
     virtual void Load() = 0;
-    virtual void Unload() = 0;
-    virtual void Update(volatile int frame, uint32 keys, Sound *sound) = 0;
+    virtual void Unload(Map* map) = 0;
+    virtual void Update(volatile int frame, uint32 keys, Sound *sound, Map *map) = 0;
     virtual bool IsComplete() = 0;
     virtual MinigameResult GetResult(int framesTaken) = 0;
 
@@ -45,8 +46,8 @@ public:
     ValveMinigame();
 
     void Load();
-    void Unload();
-    void Update(volatile int frame, uint32 keys, Sound *sound);
+    void Unload(Map* map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -79,15 +80,17 @@ public:
     PestleMinigame();
 
     void Load();
-    void Unload();
-    void Update(volatile int frame, uint32 keys, Sound *sound);
+    void Unload(Map* map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
 
 class MixMinigame : public Minigame
 {
+public:
 private:
+    const int PIPE_POS[2] = { -191, -78 };
     const int PIPE_COUNT = 8;
     const int HORIZONTAL_PIPE_COUNT = 5;
     const u32 PIPE_SPRITES[8] = { 16, 17, 18, 19, 20, 21, 22, 23 };
@@ -97,7 +100,6 @@ private:
     const u32 PIPE_OFFSET = 40;
     const int TARGET_PIPE_POS[2] = { 110, 60 };
     const int TARGET_POS_VARIENCE = 2;
-    int pipePos[2] = { 0, 0 };
     bool pipeInPlace = false;
     int pipeInPlaceFrames = 0;
     
@@ -113,8 +115,8 @@ public:
     MixMinigame();
 
     void Load();
-    void Unload();
-    void Update(volatile int frame, uint32 keys, Sound *sound);
+    void Unload(Map* map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -162,8 +164,8 @@ public:
     PipetteMinigame();
 
     void Load();
-    void Unload();
-    void Update(volatile int frame, uint32 keys, Sound *sound);
+    void Unload(Map* map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -214,8 +216,8 @@ public:
     PourMinigame();
 
     void Load();
-    void Unload();
-    void Update(volatile int frame, uint32 keys, Sound *sound);
+    void Unload(Map* map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -242,8 +244,8 @@ public:
     CrackMinigame();
 
     void Load();
-    void Unload();
-    void Update(volatile int frame, uint32 keys, Sound *sound);
+    void Unload(Map* map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };

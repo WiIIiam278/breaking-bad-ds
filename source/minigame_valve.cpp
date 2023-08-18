@@ -19,7 +19,7 @@ void ValveMinigame::Load()
     NF_SpriteRotScale(1, VALVE_SPRITE, 0, 386, 386);
 }
 
-void ValveMinigame::Unload()
+void ValveMinigame::Unload(Map* map)
 {
     DeleteBackground(VALVE_BACKGROUND_NAME);
 
@@ -29,7 +29,7 @@ void ValveMinigame::Unload()
     NF_FreeSpriteGfx(1, 0);
 }
 
-void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound)
+void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound, Map *map)
 {
     if (IsComplete())
     {

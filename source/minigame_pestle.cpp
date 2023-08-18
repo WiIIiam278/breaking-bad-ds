@@ -28,7 +28,7 @@ void PestleMinigame::Load()
     }
 }
 
-void PestleMinigame::Unload()
+void PestleMinigame::Unload(Map* map)
 {
     DeleteBackground(PESTLE_BACKGROUND_NAME);
 
@@ -42,7 +42,7 @@ void PestleMinigame::Unload()
     NF_FreeSpriteGfx(1, 0);
 }
 
-void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
+void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
 {
     if (IsComplete())
     {

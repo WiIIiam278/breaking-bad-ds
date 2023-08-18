@@ -431,7 +431,7 @@ void Game::StartDialogue(ScriptId script)
     Transition(false, 0, TS_BOTTOM, frame);
     if (mode == MINIGAME)
     {
-        currentMinigame->Unload();
+        currentMinigame->Unload(&map);
     }
     mode = DIALOGUE;
     ToggleHud(false);
@@ -501,8 +501,18 @@ void Game::LoadLabScene()
         WaitLoop();
     }
 
+    // Load player animations
+    playerAnimations[0] = NE_AnimationCreate();
+    playerAnimations[1] = NE_AnimationCreate();
+    if (NE_AnimationLoadFAT(playerAnimations[0], "model/player_idle.dsa") == 0 || NE_AnimationLoadFAT(playerAnimations[1], "model/player_walk.dsa") == 0) {
+        consoleDemoInit();
+        printf("Couldn't load player animations...");
+        WaitLoop();
+        return;
+    }
+
     Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
-    if (player.Load(p1Char) == -1)
+    if (player.Load(p1Char, playerAnimations) == -1)
     {
         WaitLoop();
     }
@@ -510,7 +520,7 @@ void Game::LoadLabScene()
     {
         player2 = new Player();
         player2->isPlayer2 = true;
-        if (player2->Load(isHostClient() ? CHAR_JESSE : CHAR_WALT) == -1)
+        if (player2->Load(isHostClient() ? CHAR_JESSE : CHAR_WALT, playerAnimations) == -1)
         {
             WaitLoop();
         }
@@ -615,6 +625,8 @@ void Game::UnLoadLabScene()
     ToggleHud(false);
     map.Unload();
     player.Unload();
+    NE_AnimationDelete(playerAnimations[0]);
+    NE_AnimationDelete(playerAnimations[1]);
 
     // Unload multiplayer
     if (mode == GAME_MULTIPLAYER_VS)
@@ -647,6 +659,14 @@ void Game::StartMenuScreen(bool debugMode)
 
     debugFlag = debugMode;
     frame = 0;
+
+    if (debugFlag)
+    {
+        StartGame(GAME_TUTORIAL);
+        currentBatchProgress = 2;
+        return;
+    }
+
     mode = MAIN_MENU;
     LoadLogoScene();
 
@@ -760,13 +780,13 @@ void Game::DeleteMinigame(bool doTransition)
 
     if (!doTransition)
     {
-        currentMinigame->Unload();
+        currentMinigame->Unload(&map);
         currentMinigame = NULL;
         return;
     }
 
     Transition(false, 0, TS_BOTTOM, frame);
-    currentMinigame->Unload();
+    currentMinigame->Unload(&map);
     currentMinigame = NULL;
     ToggleHud(true);
     Transition(true, 30, TS_BOTTOM, frame);
@@ -1216,7 +1236,7 @@ void Game::Update()
     if (mode == MINIGAME)
     {
         inMinigameFor++;
-        currentMinigame->Update(frame, keysHeld(), &sound);
+        currentMinigame->Update(frame, keysHeld(), &sound, &map);
         if (currentMinigame->IsComplete() && currentBatchProgress == ((int)player.GetTile(map) - 3))
         {
             MinigameResult result = currentMinigame->GetResult(inMinigameFor);

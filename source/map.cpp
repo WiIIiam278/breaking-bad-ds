@@ -6,6 +6,9 @@ Map::Map()
 
 int Map::Load()
 {
+    pipePos[0] = -191;
+    pipePos[1] = -78;
+
     material = NE_MaterialCreate();
     if (NE_MaterialTexLoadFAT(material, NE_A1RGB5, 256, 256, NE_TEXGEN_TEXCOORD, "model/superlab_tex.bin") == 0)
     {
@@ -39,10 +42,13 @@ int Map::Load()
         NE_ModelScaleI(models[i], scale, scale, scale);
 
         // Set position
-        NE_ModelTranslate(models[i], -13, 0, 10);
+        NE_ModelSetCoord(models[i], -13, 0, 10);
 
         // Assign material to the model
         NE_ModelSetMaterial(models[i], material);
+
+        // Free mesh when deleted
+        NE_ModelFreeMeshWhenDeleted(models[i]);
     }
 
     // Load security camera
@@ -68,6 +74,11 @@ void Map::RotateSecurityCamera(float playerX, float playerZ)
     securityCamera.FacePlayer(playerX, playerZ);
 }
 
+void Map::AdjustPipe(float pipeX, float pipeZ)
+{
+    NE_ModelSetCoord(models[2], -13 - pipeX, -pipeZ, 10);
+}
+
 void Map::Draw(bool playerObscured)
 {
     if (playerObscured && mixerAlpha > 20)
@@ -82,7 +93,7 @@ void Map::Draw(bool playerObscured)
     // Draw the map
     for (int i = 0; i < MODEL_COUNT; i++)
     {
-        NE_PolyFormat(i == 1 ? mixerAlpha : 31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
+        NE_PolyFormat(i > 0 ? mixerAlpha : 31, 0, NE_LIGHT_0, NE_CULL_NONE, NE_FOG_ENABLE);
         NE_ModelDraw(models[i]);
     }
 

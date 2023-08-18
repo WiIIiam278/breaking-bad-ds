@@ -13,15 +13,13 @@ void MixMinigame::Load()
     NF_VramSpriteGfx(1, PIPE_SPRITES[0], 0, false);
     NF_VramSpritePal(1, PIPE_SPRITES[0], 0);
 
-    pipePos[0] = -191;
-    pipePos[1] = -78;
     lastStylusPos[0] = -1;
     lastStylusPos[1] = -1;
     rotatingCrank = -1;
     pipeInPlaceFrames = 0;
     pipeInPlace = false;
 
-    u16 currentPos[2] = {pipePos[0], pipePos[1]};
+    u16 currentPos[2] = {PIPE_POS[0], PIPE_POS[1]};
     int specialPipe = (HORIZONTAL_PIPE_COUNT / 2);
     for (int i = 0; i < PIPE_COUNT; i++)
     {
@@ -44,8 +42,9 @@ void MixMinigame::Load()
     }
 }
 
-void MixMinigame::Unload()
+void MixMinigame::Unload(Map* map)
 {
+    map->AdjustPipe(0, 0);
     DeleteBackground(MIX_BACKGROUND_NAME);
 
     for (int i = 0; i < PIPE_COUNT; i++)
@@ -63,7 +62,7 @@ void MixMinigame::Unload()
     NF_FreeSpriteGfx(1, 0);
 }
 
-void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
+void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
 {
     if (IsComplete())
     {
@@ -102,7 +101,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
             int scrubSpeed = abs((stylusPos[0] - lastStylusPos[0]) + (stylusPos[1] - lastStylusPos[1]));
             if ((lastStylusPos[0] != -1 && lastStylusPos[1] != -1) && scrubSpeed > 3)
             {
-                crankRot[rotatingCrank] += crankRot[rotatingCrank] < 511 ? (crankRot[rotatingCrank] < 255 ? 2 * (scrubSpeed / 6) : (scrubSpeed / 4)) : 0;
+                crankRot[rotatingCrank] += crankRot[rotatingCrank] < (rotatingCrank == 1 ? 210 : 511) ? (crankRot[rotatingCrank] < (rotatingCrank == 1 ? 105 : 255) ? 2 * (scrubSpeed / 6) : (scrubSpeed / 4)) : 0;
             }
 
             if (frame % 3 == 0)
@@ -134,7 +133,8 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound)
         }
     }
 
-    u16 currentPos[2] = {pipePos[0] + (crankRot[0] / 4), pipePos[1] + (crankRot[1] / 4)};
+    u16 currentPos[2] = {PIPE_POS[0] + (crankRot[0] / 4), PIPE_POS[1] + (crankRot[1] / 4)};
+    map->AdjustPipe(crankRot[0] / 98.5f, crankRot[1] / 52.5f);
     for (int i = 0; i < PIPE_COUNT; i++)
     {
         bool sideways = i < HORIZONTAL_PIPE_COUNT;
