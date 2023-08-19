@@ -1,6 +1,6 @@
 #include "game.h"
 
-const bool DEBUG_MODE = true;
+const bool DEBUG_MODE = false;
 Game game;
 
 const char *GetSaveFileName(const int argc, const char **argv)
