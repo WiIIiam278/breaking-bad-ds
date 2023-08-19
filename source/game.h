@@ -23,6 +23,7 @@
 #include "save.h"
 #include "levels.h"
 #include "transitions.h"
+#include "shop.h"
 
 using namespace std;
 
@@ -43,9 +44,12 @@ private:
     Menu menu;
     Map map;
     Player player;
-    NE_Animation *playerAnimations[2];
     Sound sound;
+    NE_Animation *playerAnimations[2];
     const u32 CLEAR_COLOR = NE_Black;
+
+    // Story mode
+    Shop shop;
 
     // Multiplayer
     Player *player2 = NULL;
@@ -127,7 +131,7 @@ public:
     void LoadSaveFile(const char* fileName);
 
     // Minerals
-    void AwardMineral(MineralType mineralType);
+    void AwardMineral(MineralType mineralType, bool silent);
 
     // Pause menu
     void TogglePauseMenu();
@@ -139,7 +143,9 @@ public:
     // Story mode
     void StartDay(uint16 day);
     void StartNextDay();
+    void OpenShopMenu();
     void UpdateDayTransition();
+    void UpdateShopMenu();
 
     // Quit to title
     void QuitToTitle();

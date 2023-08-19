@@ -8,7 +8,8 @@ enum Mode
     MINIGAME,
     GAME_OVER,
     PAUSED,
-    STORY_TRANSITION
+    STORY_TRANSITION,
+    STORY_SHOP
 };
 
 enum Direction
@@ -97,4 +98,15 @@ enum Character
     CHAR_WALT = 0,
     CHAR_JESSE = 1,
     CHAR_YEPPERS = 2
+};
+
+const int POWER_UP_COUNT = 5;
+const float WATCH_BATTERY_TIME_MULTIPLIER = 0.25f;
+enum PowerUpType
+{
+    PWR_AIR_JORDANS,
+    PWR_STEEL_HAMMER,
+    PWR_GOLDEN_PESTLE,
+    PWR_WATCH_BATTERY,
+    PWR_INSURANCE
 };

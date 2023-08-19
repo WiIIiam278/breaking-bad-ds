@@ -29,7 +29,7 @@ void ValveMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void ValveMinigame::Update(volatile int frame, uint32 keys, Sound* sound, Map *map)
+void ValveMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile)
 {
     if (IsComplete())
     {

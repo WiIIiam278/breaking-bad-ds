@@ -4,10 +4,11 @@ Player::Player()
 {
 }
 
-int Player::Load(Character character, NE_Animation *animations[2])
+int Player::Load(Character character, NE_Animation *animations[2], bool airJordans)
 {
     this->character = character;
     this->lyingDown = false;
+    this->maxSpeed = airJordans ? 0.155f : 0.125f;
 
     model = NE_ModelCreate(NE_Animated);
     material = NE_MaterialCreate();
@@ -54,7 +55,7 @@ int Player::Load(Character character, NE_Animation *animations[2])
     NE_ModelSetAnimation(model, animation[0]);
     NE_ModelSetAnimationSecondary(model, animation[1]);
     NE_ModelAnimStart(model, NE_ANIM_LOOP, floattof32(0.5));
-    NE_ModelAnimSecondaryStart(model, NE_ANIM_LOOP, floattof32(1));
+    NE_ModelAnimSecondaryStart(model, NE_ANIM_LOOP, floattof32(1 + (airJordans ? 0.5 : 0)));
 
     // Set some propierties to the material
     NE_MaterialSetPropierties(material,
@@ -125,7 +126,7 @@ void Player::Update(volatile int frame)
     float changeBy = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
     rotation += changeBy;
     NE_ModelSetRot(model, lyingDown ? 90 : 0, rotation, 0);
-    NE_ModelAnimSecondarySetFactor(model, floattof32((currentSpeed[0] + currentSpeed[1]) / MAX_SPEED));
+    NE_ModelAnimSecondarySetFactor(model, floattof32((currentSpeed[0] + currentSpeed[1]) / maxSpeed));
 
     // Don't move walter if he's dead
     if (lyingDown)
@@ -158,33 +159,33 @@ void Player::Update(volatile int frame)
 
     for (int i = 0; i < 2; i++)
     {
-        if (currentSpeed[i] > MAX_SPEED)
+        if (currentSpeed[i] > maxSpeed)
         {
-            currentSpeed[i] = MAX_SPEED;
+            currentSpeed[i] = maxSpeed;
         }
     }
 
     if (translateX > x + TILE_SIZE)
     {
-        currentSpeed[0] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[0] += (maxSpeed / ACCELERATION);
         currentSpeed[1] = 0;
         Translate(currentSpeed[0], dY, 0);
     }
     else if (translateX < x - TILE_SIZE)
     {
-        currentSpeed[0] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[0] += (maxSpeed / ACCELERATION);
         currentSpeed[1] = 0;
         Translate(-currentSpeed[0], dY, 0);
     }
     else if (translateZ > z + TILE_SIZE)
     {
-        currentSpeed[1] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[1] += (maxSpeed / ACCELERATION);
         currentSpeed[0] = 0;
         Translate(0, dY, currentSpeed[1]);
     }
     else if (translateZ < z - TILE_SIZE)
     {
-        currentSpeed[1] += (MAX_SPEED / ACCELERATION);
+        currentSpeed[1] += (maxSpeed / ACCELERATION);
         currentSpeed[0] = 0;
         Translate(0, dY, -currentSpeed[1]);
     }

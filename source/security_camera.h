@@ -15,7 +15,7 @@ private:
     NE_Material *material;
 
     const float x = -22.5;
-    const float y = 8;
+    const float y = 7.9;
     const float z = 16;
 
 public:

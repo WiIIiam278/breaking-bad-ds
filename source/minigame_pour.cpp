@@ -165,7 +165,7 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
     showingSwitches = true;
 }
 
-void PourMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void PourMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile)
 {
     bool complete = IsComplete();
     for (int i = 0; i < POURING_FLUID_COUNT; i++)

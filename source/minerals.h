@@ -74,7 +74,7 @@ const Mineral MINERALS[MINERAL_COUNT] =
     },
     {
         "Cerium",
-        "Choose Skyler over Gus",
+        "Buy Saul's \"Insurance\"",
         true
     },
     {

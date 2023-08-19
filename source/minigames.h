@@ -12,6 +12,7 @@
 #include "enums.h"
 #include "sound.h"
 #include "map.h"
+#include "save.h"
 
 void LoadBackground(const char name[]);
 void DeleteBackground(const char name[]);
@@ -21,7 +22,7 @@ class Minigame
 public:
     virtual void Load() = 0;
     virtual void Unload(Map* map) = 0;
-    virtual void Update(volatile int frame, uint32 keys, Sound *sound, Map *map) = 0;
+    virtual void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile) = 0;
     virtual bool IsComplete() = 0;
     virtual MinigameResult GetResult(int framesTaken) = 0;
 
@@ -47,7 +48,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -81,7 +82,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -116,7 +117,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -165,7 +166,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -217,7 +218,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -237,15 +238,15 @@ private:
     u32 spriteDamageTable[16][16];
     int spritePositions[16][16][2];
 
-    void UpdateSprites(volatile int frame, Sound *sound);
-    bool ProcessSprite(volatile int frame, int spriteId, int grid[2], Sound *sound);
+    void UpdateSprites(volatile int frame, Sound *sound, bool steelHammer);
+    bool ProcessSprite(volatile int frame, int spriteId, int grid[2], Sound *sound, bool steelHammer);
 
 public:
     CrackMinigame();
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };

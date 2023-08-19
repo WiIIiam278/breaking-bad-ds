@@ -42,7 +42,7 @@ void PestleMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile)
 {
     if (IsComplete())
     {
@@ -81,7 +81,7 @@ void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *
     {
         if (soluteDamage[i] < SOLUTE_MAX_DAMAGE && abs(pestlePos[0] - solutePos[i][0]) < PESTLE_PROXIMITY && abs(pestlePos[1] - solutePos[i][1]) < PESTLE_PROXIMITY && velocity > VELOCITY_THRESHOLD)
         {
-            soluteDamage[i]++;
+            soluteDamage[i] += (saveFile->storyModePowerUps[PWR_GOLDEN_PESTLE] ? SOLUTE_MAX_DAMAGE : 1);
             velocity -= 150;
 
             if (frame - lastSfxPlay > SFX_DURATION)

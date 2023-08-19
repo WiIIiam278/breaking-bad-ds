@@ -15,10 +15,10 @@
 class Player
 {
 private:
-    const float MAX_SPEED = 0.125f;
+    float maxSpeed = 0.125f;
     const float ACCELERATION = 7.0f;
     float currentSpeed[2] = { 0, 0 };
-    const float TILE_SIZE = (MAX_SPEED / ACCELERATION) + 0.15f;
+    const float TILE_SIZE = (maxSpeed / ACCELERATION) + 0.15f;
 
     volatile float lyingDownFrames = 0;
 
@@ -47,7 +47,7 @@ public:
 
     Player();
 
-    int Load(Character character, NE_Animation *animations[2]);
+    int Load(Character character, NE_Animation *animations[2], bool airJordans);
     void ResetPosition();
     void Move(Map& map);
     void Update(volatile int frame);

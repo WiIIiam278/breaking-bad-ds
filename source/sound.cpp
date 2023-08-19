@@ -137,7 +137,7 @@ void Sound::Update(volatile int frame)
 
 char* Sound::GetBgmTrackProgressString()
 {
-    // return a string in the format xx:xx. Assume 60fps.
+    // Return a string in the format xx:xx. Assume 60fps.
     const int trackFiles = GetTrackFileCount(currentBgm);
     int frames = 0;
     int totalFrames = 0;

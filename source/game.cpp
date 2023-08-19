@@ -163,12 +163,16 @@ void Game::TranslateCamera(float x, float y, float z)
     cameraTz += z;
 }
 
-void Game::AwardMineral(MineralType mineralType)
+void Game::AwardMineral(MineralType mineralType, bool silent)
 {
     if (!saveFile->minerals[mineralType])
     {
         saveFile->minerals[mineralType] = true;
-        sound.PlaySFX(SFX_MINERALS);
+
+        if (!silent)
+        {
+            sound.PlaySFX(SFX_MINERALS);
+        }
     }
 }
 
@@ -347,6 +351,19 @@ void Game::StartNextDay()
     SaveGame(saveFile, saveFileName);
 }
 
+void Game::OpenShopMenu()
+{
+    if (gameType != GAME_STORY_MODE)
+    {
+        return;
+    }
+    mode = STORY_SHOP;
+    ToggleHud(false);
+    Transition(false, 0, TS_TOP, frame);
+    frame = 0;
+    shop.Load(frame, &sound, saveFile);
+}
+
 void Game::UpdateDayTransition()
 {
     if (!(gameType == GAME_STORY_MODE && mode == STORY_TRANSITION))
@@ -369,15 +386,16 @@ void Game::UpdateDayTransition()
         NF_WriteText(1, 0, 13, 9, dayText);
 
         // Level details
+        int levelTime = level->time + (((int) (((float) level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
         char levelText[32];
-        sprintf(levelText, "Time: %02i:%02i", level->time / 60, level->time % 60);
+        sprintf(levelText, "Time: %is", levelTime);
         NF_WriteText(1, 0, 10, 11, levelText);
 
         sprintf(levelText, "Quota: %i", level->quota);
-        NF_WriteText(1, 0, 11, 12, levelText);
+        NF_WriteText(1, 0, 10, 12, levelText);
 
         sprintf(levelText, "Money: $%i", saveFile->storyModeMoney);
-        NF_WriteText(1, 0, 11 - ((int) (saveFile->storyModeMoney / 10)), 13, levelText);
+        NF_WriteText(1, 0, 10, 13, levelText);
     }
     
     if (frame == 240)
@@ -392,6 +410,26 @@ void Game::UpdateDayTransition()
     {
         Transition(true, 60, TS_BOTH, frame);
         mode = MOVE;
+    }
+}
+
+void Game::UpdateShopMenu()
+{
+    if (!(gameType == GAME_STORY_MODE && mode == STORY_SHOP))
+    {
+        return;
+    }
+
+    if (shop.Update(frame, &sound, saveFile))
+    {
+        shop.Unload(frame, &sound);
+        Transition(false, 0, TS_BOTH, frame);
+        SaveGame(saveFile, saveFileName);
+        if (saveFile->storyModePowerUps[PWR_INSURANCE])
+        {
+            AwardMineral(MINERAL_CERIUM, false);
+        }
+        StartNextDay();
     }
 }
 
@@ -512,7 +550,7 @@ void Game::LoadLabScene()
     }
 
     Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
-    if (player.Load(p1Char, playerAnimations) == -1)
+    if (player.Load(p1Char, playerAnimations, (gameType == GAME_STORY_MODE && saveFile->storyModePowerUps[PWR_AIR_JORDANS])) == -1)
     {
         WaitLoop();
     }
@@ -520,7 +558,7 @@ void Game::LoadLabScene()
     {
         player2 = new Player();
         player2->isPlayer2 = true;
-        if (player2->Load(isHostClient() ? CHAR_JESSE : CHAR_WALT, playerAnimations) == -1)
+        if (player2->Load(isHostClient() ? CHAR_JESSE : CHAR_WALT, playerAnimations, false) == -1)
         {
             WaitLoop();
         }
@@ -529,10 +567,10 @@ void Game::LoadLabScene()
     switch (p1Char)
     {
         case CHAR_JESSE:
-            AwardMineral(MINERAL_YTTRIUM);
+            AwardMineral(MINERAL_YTTRIUM, true);
             break;
         case CHAR_YEPPERS:
-            AwardMineral(MINERAL_RUBY);
+            AwardMineral(MINERAL_RUBY, false);
             break;
     }
 
@@ -564,7 +602,7 @@ void Game::LoadLabScene()
 void Game::StartLevel(const Level *level)
 {
     // Set level params
-    this->timeLimit = level->time;
+    this->timeLimit = level->time + (((int) (((float) level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
     this->batchQuota = level->quota;
 
     // Reset game state
@@ -662,8 +700,7 @@ void Game::StartMenuScreen(bool debugMode)
 
     if (debugFlag)
     {
-        StartGame(GAME_TUTORIAL);
-        currentBatchProgress = 2;
+        StartGame(GAME_STORY_MODE);
         return;
     }
 
@@ -856,7 +893,7 @@ void Game::StartGameOver(bool hasWon)
     // Achievements
     if (gameType == GAME_TUTORIAL)
     {
-        AwardMineral(MIENRAL_ANALCIME);
+        AwardMineral(MIENRAL_ANALCIME, true);
     }
 }
 
@@ -926,6 +963,18 @@ void Game::UpdateGameOver()
         {
             if (gameType == GAME_STORY_MODE)
             {
+                saveFile->storyModeMoney += ((batchQuota * 30) + (timeLimit * 3) + (perfectClear ? 150 : 0));
+                
+                bool allPowerups = true;
+                for (int i = 0; i < POWER_UP_COUNT; i++)
+                {
+                    allPowerups &= saveFile->storyModePowerUps[i];
+                }
+                if (!allPowerups)
+                {
+                    OpenShopMenu();
+                    return;
+                }
                 StartNextDay();
                 return;
             }
@@ -1046,6 +1095,7 @@ void Game::Update()
     if (gameType == GAME_STORY_MODE)
     {
         UpdateDayTransition();
+        UpdateShopMenu();
     }
 
     // Update text layers
@@ -1083,13 +1133,13 @@ void Game::Update()
                 
                 if (gameType == GAME_STORY_MODE && player.GetTile(map) == MINIGAME_CRACK)
                 {
-                    AwardMineral(MINERAL_ALGODONITE);
+                    AwardMineral(MINERAL_ALGODONITE, false);
                 }
             }
             if (gameType == GAME_TUTORIAL && idleFrames > 3600)
             {
                 idleFrames = 0;
-                AwardMineral(MINERAL_AMBER);
+                AwardMineral(MINERAL_AMBER, false);
                 StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
             }
         }
@@ -1152,7 +1202,7 @@ void Game::Update()
                     if (gameType == GAME_STORY_MODE)
                     {
                         StartGameOver(false);
-                        AwardMineral(MINERAL_QUARTZ);
+                        AwardMineral(MINERAL_QUARTZ, true);
                     }
                     else if (gameType == GAME_MULTIPLAYER_VS)
                     {
@@ -1160,7 +1210,7 @@ void Game::Update()
                         const bool localWin = (batchesComplete == player2BatchesComplete ? currentBatchProgress > player2BatchProgress : batchesComplete > player2BatchesComplete);
                         if (localWin)
                         {
-                            AwardMineral(MINERAL_AQUAMARINE);
+                            AwardMineral(MINERAL_AQUAMARINE, true);
                         }
                         
                         StartGameOver(!isDraw && localWin);
@@ -1180,11 +1230,11 @@ void Game::Update()
 
             if (batchPurity < 40)
             {
-                AwardMineral(MINERAL_FLUORITE);
+                AwardMineral(MINERAL_FLUORITE, true);
             }
             else if (batchPurity == 100)
             {
-                AwardMineral(MINERAL_TOPAZ);
+                AwardMineral(MINERAL_TOPAZ, true);
             }
             batchPurity = 100;
 
@@ -1192,7 +1242,7 @@ void Game::Update()
             {
                 if (perfectClear)
                 {
-                    AwardMineral(MINERAL_DIAMOND);
+                    AwardMineral(MINERAL_DIAMOND, true);
                 }
                 StartGameOver(true);
                 return;
@@ -1236,7 +1286,7 @@ void Game::Update()
     if (mode == MINIGAME)
     {
         inMinigameFor++;
-        currentMinigame->Update(frame, keysHeld(), &sound, &map);
+        currentMinigame->Update(frame, keysHeld(), &sound, &map, saveFile);
         if (currentMinigame->IsComplete() && currentBatchProgress == ((int)player.GetTile(map) - 3))
         {
             MinigameResult result = currentMinigame->GetResult(inMinigameFor);

@@ -45,13 +45,15 @@ SaveFile *CreateNewSaveFile()
     // Story mode
     saveFile->storyModeDay = 0;
     saveFile->storyModeMoney = 0;
-    saveFile->storyModePlayerSpeed = 0;
-    saveFile->storyModeTimeBonus = 0;
+    for (int p = 0; p < POWER_UP_COUNT; p++)
+    {
+        saveFile->storyModePowerUps[p] = false;
+    }
     
     // Minerals
-    for (int i = 0; i < MINERAL_COUNT; i++)
+    for (int m = 0; m < MINERAL_COUNT; m++)
     {
-        saveFile->minerals[i] = false;
+        saveFile->minerals[m] = false;
     }
     return saveFile;
 }

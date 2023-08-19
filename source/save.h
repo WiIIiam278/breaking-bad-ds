@@ -9,6 +9,7 @@
 #include <nds.h>
 #include <fat.h>
 
+#include "enums.h"
 #include "minerals.h"
 
 const char SAVE_FILE_HEADER[4] = {'M', 'E', 'T', 'H'};
@@ -21,8 +22,7 @@ struct SaveFile
 
     uint16 storyModeDay;
     int storyModeMoney;
-    int storyModePlayerSpeed;
-    int storyModeTimeBonus;
+    bool storyModePowerUps[POWER_UP_COUNT];
 
     bool minerals[MINERAL_COUNT];
 };

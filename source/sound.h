@@ -14,6 +14,7 @@ enum TrackId
     BGM_THE_COUSINS,
     BGM_CLEAR_WATERS,
     BGM_RODRIGO_Y_GABRIELA,
+    BGM_SAUL
 };
 
 struct BGM
@@ -27,7 +28,7 @@ struct BGM
     const int loopAfterFile;
 };
 
-const int BGM_COUNT = 6;
+const int BGM_COUNT = 7;
 const BGM BGMS[BGM_COUNT] =
     {
         {"Brekaing Bad (Title)",
@@ -54,17 +55,12 @@ const BGM BGMS[BGM_COUNT] =
         {"The Cousins (Superlab)",
          BGM_THE_COUSINS,
          77,
-         /* 8 */ 4,
-         {"bgm/the_cousins_hook_1",
-          "bgm/the_cousins_hook_2",
-          //   "bgm/the_cousins_hook_3",
-          //   "bgm/the_cousins_hook_4",
-          //   "bgm/the_cousins_hook_5",
-          //   "bgm/the_cousins_hook_6",
-          "bgm/the_cousins_loop_1",
-          "bgm/the_cousins_loop_2"},
-         {585, 585, /* 585, 585, 585, 585, */ 585, 585},
-         /* 3 */ 1},
+         3,
+         {"bgm/the_cousins_1",
+          "bgm/the_cousins_2",
+          "bgm/the_cousins_3"},
+         {585, 585, 585},
+         0},
         {
             "Clear Waters (Tutorial)",
             BGM_CLEAR_WATERS,
@@ -82,6 +78,15 @@ const BGM BGMS[BGM_COUNT] =
             1,
             {"bgm/rodrigo_y_gabriela"},
             {640},
+            0
+        },
+        {
+            "Saul's Theme",
+            BGM_SAUL,
+            127,
+            1,
+            {"bgm/sauls_theme"},
+            {300},
             0
         }};
 

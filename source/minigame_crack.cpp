@@ -13,7 +13,7 @@ void CrackMinigame::Load()
     NF_VramSpriteGfx(1, CRACK_SPRITE_BASE_ID, 0, false);
     NF_VramSpritePal(1, CRACK_SPRITE_BASE_ID, 0);
 
-    UpdateSprites(0, nullptr);
+    UpdateSprites(0, nullptr, false);
 }
 
 void CrackMinigame::Unload(Map* map)
@@ -34,7 +34,7 @@ void CrackMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void CrackMinigame::UpdateSprites(volatile int frame, Sound *sound)
+void CrackMinigame::UpdateSprites(volatile int frame, Sound *sound, bool steelHammer)
 {
     for (int x = 0; x < SPRITE_COUNTS[0]; x++)
     {
@@ -52,7 +52,7 @@ void CrackMinigame::UpdateSprites(volatile int frame, Sound *sound)
             }
 
             int grid[2] = {x, y};
-            if (ProcessSprite(frame, spriteId, grid, sound))
+            if (ProcessSprite(frame, spriteId, grid, sound, steelHammer))
             {
                 showingSprites = true;
                 return;
@@ -62,7 +62,7 @@ void CrackMinigame::UpdateSprites(volatile int frame, Sound *sound)
     showingSprites = true;
 }
 
-bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2], Sound *sound)
+bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2], Sound *sound, bool steelHammer)
 {
     int x = spritePositions[grid[0]][grid[1]][0];
     int y = spritePositions[grid[0]][grid[1]][1];
@@ -98,7 +98,7 @@ bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2],
 
             if (touch.px >= x && touch.px <= x + SPRITE_DIMS[0] && touch.py >= y && touch.py <= y + SPRITE_DIMS[1])
             {
-                bool criticalHit = frame % 2 == 0;
+                bool criticalHit = frame % 2 == 0 || steelHammer;
                 spriteDamageTable[grid[0]][grid[1]] += criticalHit ? 3 : (frame % 3 == 0) ? 1 : 2;
                 if (spriteDamageTable[grid[0]][grid[1]] >= 5)
                 {
@@ -131,9 +131,9 @@ bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2],
     return false;
 }
 
-void CrackMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void CrackMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile)
 {
-    UpdateSprites(frame, sound);
+    UpdateSprites(frame, sound, saveFile->storyModePowerUps[PWR_STEEL_HAMMER]);
 }
 
 bool CrackMinigame::IsComplete()
