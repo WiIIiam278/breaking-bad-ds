@@ -559,7 +559,7 @@ void Game::LoadLabScene()
     }
 
     Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
-    if (player.Load(p1Char, playerAnimations, (gameType == GAME_STORY_MODE && saveFile->storyModePowerUps[PWR_AIR_JORDANS])) == -1)
+    if (player.Load(p1Char, playerAnimations) == -1)
     {
         WaitLoop();
     }
@@ -567,7 +567,7 @@ void Game::LoadLabScene()
     {
         player2 = new Player();
         player2->isPlayer2 = true;
-        if (player2->Load(isHostClient() ? CHAR_JESSE : CHAR_WALT, playerAnimations, false) == -1)
+        if (player2->Load(isHostClient() ? CHAR_JESSE : CHAR_WALT, playerAnimations) == -1)
         {
             WaitLoop();
         }
@@ -621,14 +621,14 @@ void Game::StartLevel(const Level *level)
     batchesComplete = 0;
 
     // Player setup
-    player.ResetPosition();
+    player.ResetPosition((gameType == GAME_STORY_MODE && saveFile->storyModePowerUps[PWR_AIR_JORDANS]));
     if (gameType == GAME_MULTIPLAYER_VS)
     {
         bool isHost = isHostClient();
         player.Translate(isHost ? -11.5 : -9.0, 0, 4.5);
         player.targetX = player.tileX = isHost ? 4 : 3;
 
-        player2->ResetPosition();
+        player2->ResetPosition(false);
         player2->Translate(!isHost ? -11.5 : -9.0, 0, 4.5);
         player2->targetX = player2->tileX = !isHost ? 4 : 3;
         player2->targetZ = player2->tileZ = 1;
@@ -969,6 +969,13 @@ void Game::UpdateGameOver()
         {
             if (gameType == GAME_STORY_MODE)
             {
+                if (saveFile->storyModeDay >= LEVEL_COUNT)
+                {
+                    CheckDialogue();
+                    // todo: Start ending
+                    return;
+                }
+
                 saveFile->storyModeMoney += ((batchQuota * 30) + (timeLimit * 3) + (perfectClear ? 150 : 0));
 
                 bool allPowerups = true;

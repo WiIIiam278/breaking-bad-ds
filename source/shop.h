@@ -40,7 +40,7 @@ const PowerUp POWER_UPS[5] =
     {
         "Explosives",
         "(...)",
-        2999
+        1949
     }
 };
 

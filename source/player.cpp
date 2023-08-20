@@ -4,11 +4,11 @@ Player::Player()
 {
 }
 
-int Player::Load(Character character, NE_Animation *animations[2], bool airJordans)
+int Player::Load(Character character, NE_Animation *animations[2])
 {
+    this->maxSpeed = 0.125f;
     this->character = character;
     this->lyingDown = false;
-    this->maxSpeed = airJordans ? 0.155f : 0.125f;
 
     model = NE_ModelCreate(NE_Animated);
     material = NE_MaterialCreate();
@@ -55,7 +55,7 @@ int Player::Load(Character character, NE_Animation *animations[2], bool airJorda
     NE_ModelSetAnimation(model, animation[0]);
     NE_ModelSetAnimationSecondary(model, animation[1]);
     NE_ModelAnimStart(model, NE_ANIM_LOOP, floattof32(0.5));
-    NE_ModelAnimSecondaryStart(model, NE_ANIM_LOOP, floattof32(1 + (airJordans ? 0.5 : 0)));
+    NE_ModelAnimSecondaryStart(model, NE_ANIM_LOOP, floattof32(1));
 
     // Set some propierties to the material
     NE_MaterialSetPropierties(material,
@@ -71,8 +71,11 @@ int Player::Load(Character character, NE_Animation *animations[2], bool airJorda
     return 0;
 }
 
-void Player::ResetPosition()
+void Player::ResetPosition(bool airJordans)
 {
+    this->maxSpeed = airJordans ? 0.155f : 0.125f;
+    NE_ModelAnimSecondarySetSpeed(model, floattof32(1 + (airJordans ? 0.5 : 0)));
+
     // Set position, rotation and scale
     x = 0;
     y = 0.4;

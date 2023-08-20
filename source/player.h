@@ -47,8 +47,8 @@ public:
 
     Player();
 
-    int Load(Character character, NE_Animation *animations[2], bool airJordans);
-    void ResetPosition();
+    int Load(Character character, NE_Animation *animations[2]);
+    void ResetPosition(bool airJordans);
     void Move(Map& map);
     void Update(volatile int frame);
     void Translate(float x, float y, float z);
