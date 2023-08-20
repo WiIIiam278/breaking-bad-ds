@@ -6,7 +6,7 @@ struct Level
     int time;
 };
 
-const int LEVEL_COUNT = 7;
+const int LEVEL_COUNT = 5;
 const Level LEVEL_STORY_MODE[LEVEL_COUNT] = {
     {
         8,
@@ -18,23 +18,15 @@ const Level LEVEL_STORY_MODE[LEVEL_COUNT] = {
     },
     {
         12,
-        200,
+        225,
     },
     {
         14,
-        200
+        215
     },
     {
-        15,
-        180
-    },
-    {
-        15,
-        170
-    },
-    {
-        17,
-        170
+        16,
+        235
     }
 };
 
@@ -45,5 +37,5 @@ const Level LEVEL_TUTORIAL = {
 
 const Level LEVEL_MULTIPLAYER_VS = {
     99,
-    180
+    300
 };

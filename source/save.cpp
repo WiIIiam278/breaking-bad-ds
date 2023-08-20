@@ -45,6 +45,7 @@ SaveFile *CreateNewSaveFile()
     // Story mode
     saveFile->storyModeDay = 0;
     saveFile->storyModeMoney = 0;
+    saveFile->storyModeDialogueProgress = 0;
     for (int p = 0; p < POWER_UP_COUNT; p++)
     {
         saveFile->storyModePowerUps[p] = false;

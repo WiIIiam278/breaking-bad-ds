@@ -82,6 +82,10 @@ void Player::ResetPosition()
     NE_ModelSetRot(model, 0, rotation, 0);
     NE_ModelScaleI(model, scale, scale, scale);
     NE_ModelSetCoordI(model, x, y, z);
+    if (lyingDown)
+    {
+        SetLyingDown(false);
+    }
 }
 
 void Player::Move(Map &map)
@@ -215,10 +219,18 @@ Tile Player::GetTile(Map &map)
 
 void Player::SetLyingDown(bool lyingDown)
 {
+    if (!this->lyingDown && lyingDown)
+    {
+        Translate(0, 0, -2.0f);
+        facing = DOWN;
+    }
+    else if (this->lyingDown && !lyingDown)
+    {
+        Translate(0, 0, 2.0f);
+    }
+
     this->lyingDown = lyingDown;
-    Translate(0, 0.3f, -2.0f);
-    facing = DOWN;
-    NE_ModelSetRot(model, lyingDown ? 90 : 0, rotation, 0);
+    NE_ModelSetRot(model, this->lyingDown ? 90 : 0, rotation, 0);
 }
 
 void Player::HandleInput(uint32 keys)

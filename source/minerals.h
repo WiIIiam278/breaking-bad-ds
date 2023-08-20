@@ -69,12 +69,12 @@ const Mineral MINERALS[MINERAL_COUNT] =
     },
     {
         "Diamond",
-        "Complete a perfect quota clear",
-        false
+        "Perform a perfect quota clear",
+        true
     },
     {
         "Cerium",
-        "Buy Saul's \"Insurance\"",
+        "Buy explosives from Saul",
         true
     },
     {
@@ -84,7 +84,7 @@ const Mineral MINERALS[MINERAL_COUNT] =
     },
     {
         "Emerald",
-        "Complete Story Mode",
+        "Beat Story Mode",
         false
     },
 };

@@ -21,6 +21,7 @@ struct SaveFile
     uint16 version;
 
     uint16 storyModeDay;
+    int storyModeDialogueProgress;
     int storyModeMoney;
     bool storyModePowerUps[POWER_UP_COUNT];
 

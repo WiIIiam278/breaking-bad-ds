@@ -6,7 +6,7 @@ Game::Game()
     consoleDemoInit();
     consoleClear();
     printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");
-    
+
     // Initialize nitroFS
     if (!nitroFSInit(NULL))
     {
@@ -28,7 +28,7 @@ Game::Game()
     irqSet(IRQ_VBLANK, NE_VBLFunc);
     irqSet(IRQ_HBLANK, NE_HBLFunc);
 
-    // Prepare WiFI
+    // Prepare NiFi
     nifiPrepare();
 
     // Setup sound
@@ -93,7 +93,7 @@ void Game::Prepare3DGraphics()
     camera = NE_CameraCreate();
 }
 
-void Game::LoadSaveFile(const char* fileName)
+void Game::LoadSaveFile(const char *fileName)
 {
     saveFile = CreateNewSaveFile();
     saveFileName = fileName;
@@ -290,7 +290,7 @@ void Game::UpdateHud()
         {
             NF_MoveSprite(1, HUD_MAP_PLAYER2_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (player2->x * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (player2->z * 4.4));
         }
-        NF_MoveSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][0] * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (HUD_BATCH_PROGRESS_MARKER_COORDS[currentBatchProgress][1] * 4.4));
+        NF_MoveSprite(1, HUD_MAP_MARKER_SPRITE, HUD_MAP_ORIGIN_COORDS[0] - (HUD_MAP_MARKER_COORDS[currentBatchProgress][0] * 4.1), HUD_MAP_ORIGIN_COORDS[1] - (HUD_MAP_MARKER_COORDS[currentBatchProgress][1] * 4.4));
         for (int i = 0; i < HUD_CHECKBOX_COUNT; i++)
         {
             if (isMultiplayer)
@@ -341,6 +341,7 @@ void Game::StartDay(uint16 day)
     mode = STORY_TRANSITION;
     ToggleHud(false);
     Transition(false, 0, TS_TOP, frame);
+    sound.StopBGM();
     frame = 0;
     showingDayNumber = true;
 }
@@ -386,7 +387,7 @@ void Game::UpdateDayTransition()
         NF_WriteText(1, 0, 13, 9, dayText);
 
         // Level details
-        int levelTime = level->time + (((int) (((float) level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
+        int levelTime = level->time + (((int)(((float)level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
         char levelText[32];
         sprintf(levelText, "Time: %is", levelTime);
         NF_WriteText(1, 0, 10, 11, levelText);
@@ -397,7 +398,7 @@ void Game::UpdateDayTransition()
         sprintf(levelText, "Money: $%i", saveFile->storyModeMoney);
         NF_WriteText(1, 0, 10, 13, levelText);
     }
-    
+
     if (frame == 240)
     {
         Transition(false, 0, TS_BOTH, frame);
@@ -425,7 +426,7 @@ void Game::UpdateShopMenu()
         shop.Unload(frame, &sound);
         Transition(false, 0, TS_BOTH, frame);
         SaveGame(saveFile, saveFileName);
-        if (saveFile->storyModePowerUps[PWR_INSURANCE])
+        if (saveFile->storyModePowerUps[PWR_EXPLOSIVES])
         {
             AwardMineral(MINERAL_CERIUM, false);
         }
@@ -493,15 +494,21 @@ void Game::EndDialogue()
     player.inDialogue = false;
 }
 
-void Game::CheckTutorials()
+void Game::CheckDialogue()
 {
-    if (gameType == GAME_TUTORIAL)
+    if (gameType == GAME_TUTORIAL || gameType == GAME_STORY_MODE)
     {
-        int dialogueId = dialogue.GetTutorialDialogue(tutorialProgress, currentBatchProgress, player.GetTile(map));
+        if (mode == DIALOGUE)
+        {
+            return;
+        }
+
+        int dialogueId = (gameType == GAME_TUTORIAL ? dialogue.GetTutorialDialogue(dialogueProgress, currentBatchProgress, player.GetTile(map))
+                                                    : dialogue.GetStoryDialogue(dialogueProgress, currentBatchProgress, batchesComplete, player.GetTile(map), saveFile));
         if (dialogueId != -1)
         {
             StartDialogue((ScriptId)dialogueId);
-            tutorialProgress++;
+            dialogueProgress++;
         }
     }
 }
@@ -511,6 +518,7 @@ void Game::StartGame(GameType gameType)
     Transition(false, 0, TS_BOTH, frame);
     this->isQuitting = false;
     this->gameType = gameType;
+    this->dialogueProgress = gameType == GAME_STORY_MODE ? saveFile->storyModeDialogueProgress : 0;
     this->frame = 0;
     this->mode = MOVE;
 
@@ -542,7 +550,8 @@ void Game::LoadLabScene()
     // Load player animations
     playerAnimations[0] = NE_AnimationCreate();
     playerAnimations[1] = NE_AnimationCreate();
-    if (NE_AnimationLoadFAT(playerAnimations[0], "model/player_idle.dsa") == 0 || NE_AnimationLoadFAT(playerAnimations[1], "model/player_walk.dsa") == 0) {
+    if (NE_AnimationLoadFAT(playerAnimations[0], "model/player_idle.dsa") == 0 || NE_AnimationLoadFAT(playerAnimations[1], "model/player_walk.dsa") == 0)
+    {
         consoleDemoInit();
         printf("Couldn't load player animations...");
         WaitLoop();
@@ -563,15 +572,15 @@ void Game::LoadLabScene()
             WaitLoop();
         }
     }
-    
+
     switch (p1Char)
     {
-        case CHAR_JESSE:
-            AwardMineral(MINERAL_YTTRIUM, true);
-            break;
-        case CHAR_YEPPERS:
-            AwardMineral(MINERAL_RUBY, false);
-            break;
+    case CHAR_JESSE:
+        AwardMineral(MINERAL_YTTRIUM, true);
+        break;
+    case CHAR_YEPPERS:
+        AwardMineral(MINERAL_RUBY, false);
+        break;
     }
 
     // Set fog color
@@ -602,12 +611,11 @@ void Game::LoadLabScene()
 void Game::StartLevel(const Level *level)
 {
     // Set level params
-    this->timeLimit = level->time + (((int) (((float) level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
+    this->timeLimit = level->time + (((int)(((float)level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
     this->batchQuota = level->quota;
 
     // Reset game state
     levelClear = false;
-    tutorialProgress = 0;
     currentBatchProgress = 0;
     batchPurity = 100;
     batchesComplete = 0;
@@ -640,19 +648,16 @@ void Game::StartLevel(const Level *level)
                  cameraX, cameraY, cameraZ,
                  -11.5, 2, 8.5,
                  0, 1, 0);
-    
-    // Enable HUD
-    ToggleHud(true);
 
-    // Start tutorial if needed
-    if (gameType == GAME_TUTORIAL)
+    // Enable HUD, start sound effects, start dialogue if needed
+    ToggleHud(true);
+    sound.PlayBGM(gameType == GAME_TUTORIAL ? BGM_CLEAR_WATERS : BGM_THE_COUSINS, true);
+    CheckDialogue();
+
+    // Fade in (story mode)
+    if (gameType == GAME_STORY_MODE && mode == DIALOGUE)
     {
-        sound.PlayBGM(BGM_CLEAR_WATERS, true);
-        CheckTutorials();
-    }
-    else
-    {
-        sound.PlayBGM(BGM_THE_COUSINS, true);
+        Transition(true, 60, TS_TOP, frame);
     }
 }
 
@@ -762,7 +767,7 @@ void Game::UpdateMenuScreen()
 
 void Game::StartMinigame(Tile tile)
 {
-    CheckTutorials();
+    CheckDialogue();
     if (mode == MINIGAME || mode == DIALOGUE)
     {
         return;
@@ -900,6 +905,7 @@ void Game::StartGameOver(bool hasWon)
 void Game::UpdateGameOver()
 {
     gameOverFrame++;
+    NF_WriteText(1, 0, 11, 11, (gameType == GAME_MULTIPLAYER_VS ? (levelClear ? "YOU WIN!" : "YOU LOSE!") : (levelClear ? "DAY CLEAR!" : "GAME OVER")));
 
     switch (gameOverFrame)
     {
@@ -964,7 +970,7 @@ void Game::UpdateGameOver()
             if (gameType == GAME_STORY_MODE)
             {
                 saveFile->storyModeMoney += ((batchQuota * 30) + (timeLimit * 3) + (perfectClear ? 150 : 0));
-                
+
                 bool allPowerups = true;
                 for (int i = 0; i < POWER_UP_COUNT; i++)
                 {
@@ -1130,17 +1136,24 @@ void Game::Update()
             if (idleFrames == 1800)
             {
                 player.facing = DOWN;
-                
+
                 if (gameType == GAME_STORY_MODE && player.GetTile(map) == MINIGAME_CRACK)
                 {
                     AwardMineral(MINERAL_ALGODONITE, false);
                 }
             }
-            if (gameType == GAME_TUTORIAL && idleFrames > 3600)
+            if (idleFrames > 3600)
             {
                 idleFrames = 0;
-                AwardMineral(MINERAL_AMBER, false);
-                StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
+                if (gameType == GAME_TUTORIAL)
+                {
+                    AwardMineral(MINERAL_AMBER, false);
+                    StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
+                }
+                else if (gameType == GAME_STORY_MODE)
+                {
+                    StartDialogue(SCRIPT_GUS_IDLE);
+                }
             }
         }
         else
@@ -1155,7 +1168,7 @@ void Game::Update()
             if (showingIndicatorFor == 0)
             {
                 NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
-                CheckTutorials();
+                CheckDialogue();
             }
         }
     }
@@ -1212,7 +1225,7 @@ void Game::Update()
                         {
                             AwardMineral(MINERAL_AQUAMARINE, true);
                         }
-                        
+
                         StartGameOver(!isDraw && localWin);
                     }
                     return;
@@ -1224,7 +1237,7 @@ void Game::Update()
         if (currentBatchProgress >= 6)
         {
             sound.PlaySFX(SFX_ACCEPTABLE);
-            batchesComplete += (BASE_BATCH_YIELD * ((float) batchPurity / 100.0f));
+            batchesComplete += (BASE_BATCH_YIELD * ((float)batchPurity / 100.0f));
             currentBatchProgress = 0;
             perfectClear &= batchPurity == 100;
 
@@ -1244,6 +1257,13 @@ void Game::Update()
                 {
                     AwardMineral(MINERAL_DIAMOND, true);
                 }
+
+                CheckDialogue();
+                if (mode == DIALOGUE)
+                {
+                    return;
+                }
+
                 StartGameOver(true);
                 return;
             }

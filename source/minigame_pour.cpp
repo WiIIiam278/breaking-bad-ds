@@ -31,7 +31,7 @@ void PourMinigame::Load()
     }
 }
 
-void PourMinigame::Unload(Map* map)
+void PourMinigame::Unload(Map *map)
 {
     DeleteBackground(POUR_BACKGROUND_NAME);
 
@@ -194,6 +194,6 @@ bool PourMinigame::IsComplete()
 
 MinigameResult PourMinigame::GetResult(int framesTaken)
 {
-    return (framesTaken < 1100) ? RESULT_GOOD : (framesTaken < 1850) ? RESULT_OKAY
-                                                                     : RESULT_BAD;
+    return (framesTaken < 900) ? RESULT_GOOD : (framesTaken < 1450) ? RESULT_OKAY
+                                                                    : RESULT_BAD;
 }

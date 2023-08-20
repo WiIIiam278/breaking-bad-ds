@@ -69,11 +69,8 @@ private:
     NE_Camera *camera;
 
     // Dialogue
+    int dialogueProgress = 0;
     Dialogue dialogue;
-
-    // Tutorial
-    int tutorialProgress = 0;
-    const float HUD_BATCH_PROGRESS_MARKER_COORDS[6][2] = {{-24.8, 1.9}, {-4, 6.8}, {-14.4, 4.2}, {-4, 16.2}, {-22.1, 9.1}, {-22.1, 16.2}};
 
     // Game
     int timeLimit = -1;
@@ -94,6 +91,7 @@ private:
     const int HUD_MAP_PLAYER_SPRITE = 6;
     const int HUD_MAP_PLAYER2_SPRITE = 7;
     const int HUD_MAP_MARKER_SPRITE = 8;
+    const float HUD_MAP_MARKER_COORDS[6][2] = {{-24.8, 1.9}, {-4, 6.8}, {-14.4, 4.2}, {-4, 16.2}, {-22.1, 9.1}, {-22.1, 16.2}};
     const int HUD_CHECKBOX_SPRITES[6] = {9, 10, 11, 12, 13, 14};
     const int HUD_TIMER_SPRITES[3] = {20, 21, 22};
     const int HUD_PURITY_SPRITES[3] = {23, 24, 25};
@@ -153,7 +151,7 @@ public:
     // Dialogue
     void StartDialogue(ScriptId scriptId);
     void EndDialogue();
-    void CheckTutorials();
+    void CheckDialogue();
 
     // Camera
     void UpdateCamera();

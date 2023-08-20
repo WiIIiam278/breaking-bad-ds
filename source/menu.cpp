@@ -590,14 +590,24 @@ MenuSelection Menu::HandleInput(volatile int frame, Sound *sound, SaveFile *save
             if (keysDown() & KEY_RIGHT)
             {
                 currentSoundTestTrack++;
+                sound->PlaySFX(SFX_MENU_SELECT);
+
+                if (currentSoundTestTrack >= BGM_COUNT)
+                {
+                    currentSoundTestTrack = 0;
+                }
             }
             else if (keysDown() & KEY_LEFT)
             {
                 currentSoundTestTrack--;
+                sound->PlaySFX(SFX_MENU_SELECT);
+
+                if (currentSoundTestTrack < 0)
+                {
+                    currentSoundTestTrack = BGM_COUNT - 1;
+                }
             }
-            currentSoundTestTrack = (currentSoundTestTrack < 0)                 ? 0
-                                    : (currentSoundTestTrack > (BGM_COUNT - 1)) ? (BGM_COUNT - 1)
-                                                                                : currentSoundTestTrack;
+            
             sound->PlayBGM(static_cast<TrackId>(currentSoundTestTrack), true);
             setRumble(currentSoundTestTrack % 2 == 0);
         }
