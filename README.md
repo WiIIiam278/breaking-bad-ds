@@ -14,6 +14,20 @@
 
 *Breaking Bad*, as a Nintendo DS game, complete with 3D graphics and models. Master the art of the cook on your Nintendo DS system and prepare the perfect batch&mdash;lest you meet the wrong end of Gus. Hone your cook in both Singleplayer and Local Multiplayer Vs.
 
+## Screenshots
+<table>
+<tr>
+<td><img alt="Title screen" src="screenshots/brbds-title-screen.png" width="256px" /></td>
+<td><img alt="Story mode" src="screenshots/brbds-story-mode.png" width="256px" /></td>
+<td><img alt="In the lab" src="screenshots/brbds-in-the-lab.png" width="256px" /></td>
+</tr>
+<tr>
+<td><img alt="Pipette minigame" src="screenshots/brbds-minigame.png" width="256px" /></td>
+<td><img alt="Local Multiplayer Vs. mode" src="screenshots/brbds-multiplayer-vs.png" width="256px" /></td>
+<td><img alt="Hank's minerals" src="screenshots/brbds-hank.png" width="256px" /></td>
+</tr>
+</table>
+
 ## Playing
 For the absolute best experience, pop the ROM on a flashcart and enjoy!
 
@@ -30,7 +44,13 @@ Sorry, this *won't work on a DSi/3DS with TwiLight Menu++* (for now). This also 
 The Tutorial will teach you how to play! Gale will provide instructions on how to complete each Minigame. To access the Tutorial, select it from the Main Menu.
 
 ### Story Mode (1P)
-(wip)
+To start story mode, start the game. Touch to start, then tap "Start Game → Story Mode."
+
+Gus has appointed you Head Cook! Meet his ever-increasing demands by cooking against the clock in the Superlab. Each day, you'll be given a Quota you must complete within a set time limit to progress on to the next day. After each day, you'll receive your pay packet based on your performance and efficiency, which you can spend in Saul's shop!
+
+Story mode lasts five days, and there are two possible endings ("Good" and "Bad"). Good luck!
+
+**About save data:** Story progress is not saved after powering off the Nintendo DS system or emulator due to LibFAT not working correctly on most flash carts. Some flash carts do support saving, however, and the game will attempt to save your progress to your SD card. Making save states is reccommended if you're using an emulator!
 
 ### Local Multiplayer (2P)
 Breaking Bad for Nintendo DS also supports up to two Nintendo DS systems playing together in a Multiplayer Vs. Battle to see who can complete their batches the quickest. You can emulate this through multiple instances on MelonDS currently, or run on hardware with two systems and two flashcarts. To set this up:
@@ -59,7 +79,7 @@ This game supports the [Nintendo DS Rumble Pak](https://en.wikipedia.org/wiki/Ru
 devKitARM, NFLib and Nitro-Engine must be installed. Then, just run `make` following to build a `.nds` ROM file.
 
 ### Asset preparation
-There's scripts for converting assets and moving them into the correct nitrofiles directories. Run `bash ./convert.sh` inside `graphics/sprite` for instance to automatically prepare all the sprite images. If you've updated the graphics, delete the `build/` directory before building.
+There's scripts for converting the various assets and moving them into the correct nitrofiles directories. Run `bash ./convert.sh` inside `graphics/sprite` for instance to automatically prepare all the sprite images. If you've updated the graphics, delete the `build/` directory before building.
 
 ## License
 The source code for this project is licensed under Apache-2.0, except otherwise stated. For more information, see [LICENSE](https://github.com/WiIIiam278/breaking-bad-ds/blob/main/LICENSE).

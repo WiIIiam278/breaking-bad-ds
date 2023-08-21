@@ -1,6 +1,8 @@
 ## Copyright Attribution
 
-Breaking Bad and related properties are owned and copyrighted by their respective authors.
+*Breaking Bad and related properties are owned and copyrighted by their respective authors.*
+
+This project and its source code is licensed under Apache-2.0, except where otherwise stated below:
 
 ### Attribution
 #### Models
@@ -32,6 +34,3 @@ Breaking Bad and related properties are owned and copyrighted by their respectiv
 - Crank by MasterSuite (https://freesound.org/people/MasterSuite/sounds/667389/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
 - CLICK - plastic bottle lid - SNAP by Duisterwho (https://freesound.org/people/Duisterwho/sounds/644049/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
 - Shopvac by Dnab55 (https://freesound.org/people/Dnab55/sounds/129347/) &mdash; Licensed under CC0 (Creative Commons Public Domain)
-
-#### Everything else
-- by William278 (me! &mdash; https://william278.net/)
