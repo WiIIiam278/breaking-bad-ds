@@ -5,7 +5,7 @@
 </h1>
 <p align="center">
 <a href="https://github.com/WiIIiam278/breaking-bad-ds/actions/workflows/ci.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/WiIIiam278/breaking-bad-ds/ci.yml?branch=master&logo=github"/>
+    <img src="https://img.shields.io/github/actions/workflow/status/WiIIiam278/breaking-bad-ds/ci.yml?branch=main&logo=github"/>
 </a>
 <a href="https://discord.gg/tVYhJfyDWG">
     <img src="https://img.shields.io/discord/818135932103557162.svg?label=&logo=discord&logoColor=fff&color=7389D8&labelColor=6A7EC2" />
