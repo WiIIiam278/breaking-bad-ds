@@ -50,6 +50,9 @@ private:
 
     // Story mode
     Shop shop;
+    const char GOOD_ENDING_BG[32] = "bg/good_ending";
+    const char BAD_ENDING_BG[32] = "bg/bad_ending";
+    bool showingWinScreen = false;
 
     // Multiplayer
     Player *player2 = NULL;
@@ -144,6 +147,8 @@ public:
     void OpenShopMenu();
     void UpdateDayTransition();
     void UpdateShopMenu();
+    void ShowEndScreen(bool winScreen);
+    void UpdateEndScreen();
 
     // Quit to title
     void QuitToTitle();

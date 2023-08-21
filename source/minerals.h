@@ -84,7 +84,7 @@ const Mineral MINERALS[MINERAL_COUNT] =
     },
     {
         "Emerald",
-        "Beat Story Mode",
+        "Complete Story Mode",
         false
     },
 };

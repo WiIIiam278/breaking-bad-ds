@@ -7,7 +7,7 @@ struct Level
 };
 
 const int LEVEL_COUNT = 5;
-const Level LEVEL_STORY_MODE[LEVEL_COUNT] = {
+const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
     {
         8,
         240
@@ -21,12 +21,16 @@ const Level LEVEL_STORY_MODE[LEVEL_COUNT] = {
         225,
     },
     {
-        14,
+        1 /* 14 */,
         215
     },
     {
-        16,
+        1 /* 16 */,
         235
+    },
+    {
+        1,
+        60
     }
 };
 

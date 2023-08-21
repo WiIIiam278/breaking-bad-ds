@@ -337,13 +337,22 @@ void Game::StartDay(uint16 day)
     {
         return;
     }
-    saveFile->storyModeDay = day;
-    mode = STORY_TRANSITION;
     ToggleHud(false);
     Transition(false, 0, TS_TOP, frame);
-    sound.StopBGM();
-    frame = 0;
-    showingDayNumber = true;
+    saveFile->storyModeDay = day;
+
+    if (day < LEVEL_COUNT)
+    {
+        mode = STORY_TRANSITION;
+        sound.StopBGM();
+        frame = 0;
+        showingDayNumber = true;
+        return;
+    }
+
+    StartLevel(&LEVEL_STORY_MODE[day]);
+    Transition(true, 60, TS_BOTH, frame);
+    mode = MOVE;
 }
 
 void Game::StartNextDay()
@@ -431,6 +440,74 @@ void Game::UpdateShopMenu()
             AwardMineral(MINERAL_CERIUM, false);
         }
         StartNextDay();
+    }
+}
+
+void Game::ShowEndScreen(bool winScreen)
+{
+    if (gameType != GAME_STORY_MODE)
+    {
+        return;
+    }
+    mode = STORY_END_SCREEN;
+    showingWinScreen = winScreen;
+    frame = 0;
+
+    Transition(false, 0, TS_BOTH, frame);
+    NF_ClearTextLayer(1, 0);
+    sound.StopBGM();
+    ToggleHud(false);
+
+    sound.PlayBGM(BGM_TITLE_LOOP, true);
+    if (winScreen)
+    {
+        NF_LoadTiledBg(GOOD_ENDING_BG, GOOD_ENDING_BG, 256, 256);
+        NF_CreateTiledBg(1, PAUSED_BG, GOOD_ENDING_BG);
+    }
+    else
+    {
+        NF_LoadTiledBg(BAD_ENDING_BG, BAD_ENDING_BG, 256, 256);
+        NF_CreateTiledBg(1, PAUSED_BG, BAD_ENDING_BG);
+    }
+}
+
+void Game::UpdateEndScreen()
+{
+    if (gameType != GAME_STORY_MODE || mode != STORY_END_SCREEN)
+    {
+        return;
+    }
+    if (frame == 10)
+    {
+        Transition(true, 60, TS_BOTTOM, frame);
+    }
+    if (frame == 1080)
+    {
+        Transition(false, 120, TS_BOTTOM, frame);
+    }
+    if (frame > 1200)
+    {
+        NF_DeleteTiledBg(1, PAUSED_BG);
+        if (showingWinScreen)
+        {
+            NF_UnloadTiledBg(GOOD_ENDING_BG);
+        }
+        else
+        {
+            NF_UnloadTiledBg(BAD_ENDING_BG);
+        }
+
+        saveFile->storyModeDay = 0;
+        saveFile->storyModeDialogueProgress = 0;
+        saveFile->storyModeMoney = 0;
+        for (int p = 0; p < POWER_UP_COUNT; p++)
+        {
+            saveFile->storyModePowerUps[p] = false;
+        }
+
+        levelClear = true;
+        AwardMineral(MINERAL_EMERALD, true);
+        QuitToTitle();
     }
 }
 
@@ -651,7 +728,18 @@ void Game::StartLevel(const Level *level)
 
     // Enable HUD, start sound effects, start dialogue if needed
     ToggleHud(true);
-    sound.PlayBGM(gameType == GAME_TUTORIAL ? BGM_CLEAR_WATERS : BGM_THE_COUSINS, true);
+    switch (gameType)
+    {
+    case GAME_STORY_MODE:
+        sound.PlayBGM(saveFile->storyModeDay < LEVEL_COUNT ? BGM_THE_COUSINS : BGM_FINAL_COOK, true);
+        break;
+    case GAME_MULTIPLAYER_VS:
+        sound.PlayBGM(BGM_THE_COUSINS, true);
+        break;
+    case GAME_TUTORIAL:
+        sound.PlayBGM(BGM_CLEAR_WATERS, true);
+        break;
+    }
     CheckDialogue();
 
     // Fade in (story mode)
@@ -956,8 +1044,15 @@ void Game::UpdateGameOver()
     case 620:
         if (!levelClear)
         {
+            NF_ClearTextLayer(1, 0);
             if (gameType == GAME_STORY_MODE)
             {
+                if (saveFile->storyModeDay == LEVEL_COUNT - 1 && dialogueProgress == LEVEL_COUNT + 1)
+                {
+                    ShowEndScreen(false);
+                    return;
+                }
+
                 StartDay(saveFile->storyModeDay);
                 return;
             }
@@ -967,12 +1062,12 @@ void Game::UpdateGameOver()
     case 660:
         if (levelClear)
         {
+            NF_ClearTextLayer(1, 0);
             if (gameType == GAME_STORY_MODE)
             {
-                if (saveFile->storyModeDay >= LEVEL_COUNT)
+                if (saveFile->storyModeDay == LEVEL_COUNT - 1)
                 {
                     CheckDialogue();
-                    // todo: Start ending
                     return;
                 }
 
@@ -1109,6 +1204,7 @@ void Game::Update()
     {
         UpdateDayTransition();
         UpdateShopMenu();
+        UpdateEndScreen();
     }
 
     // Update text layers
@@ -1157,7 +1253,7 @@ void Game::Update()
                     AwardMineral(MINERAL_AMBER, false);
                     StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
                 }
-                else if (gameType == GAME_STORY_MODE)
+                else if (gameType == GAME_STORY_MODE && saveFile->storyModeDay < LEVEL_COUNT)
                 {
                     StartDialogue(SCRIPT_GUS_IDLE);
                 }
@@ -1187,6 +1283,27 @@ void Game::Update()
         {
             sound.PlaySFX(SFX_MENU_DRUM);
             EndDialogue();
+
+            if (gameType == GAME_STORY_MODE)
+            {
+                if (saveFile->storyModeDay == LEVEL_COUNT - 1 && dialogueProgress == LEVEL_COUNT + 1)
+                {
+                    if (saveFile->storyModePowerUps[PWR_EXPLOSIVES])
+                    {
+                        StartNextDay();
+                    }
+                    else
+                    {
+                        player.ResetPosition(false);
+                        player.Translate(-6.5, 0, 8.5);
+                        StartGameOver(false);
+                    }
+                }
+                else if (saveFile->storyModeDay == LEVEL_COUNT && dialogueProgress == LEVEL_COUNT + 2)
+                {
+                    ShowEndScreen(true);
+                }
+            }   
         }
     }
 
@@ -1206,13 +1323,13 @@ void Game::Update()
 
             if (batchesComplete < batchQuota)
             {
-                if (timeLimit < 30)
+                if (timeLimit < 30 || (gameType == GAME_STORY_MODE && saveFile->storyModeDay == LEVEL_COUNT))
                 {
-                    NE_SpecialEffectNoiseConfig((31 - timeLimit) / 4);
+                    NE_SpecialEffectNoiseConfig((31 - (timeLimit <= 20 ? timeLimit : 20)) / 4);
                     NE_SpecialEffectSet(NE_NOISE);
                 }
 
-                if (timeLimit < 10)
+                if (timeLimit <= 10)
                 {
                     sound.PlaySFX(SFX_MENU_DRUM);
                 }
@@ -1243,7 +1360,11 @@ void Game::Update()
         // Update batch progress
         if (currentBatchProgress >= 6)
         {
-            sound.PlaySFX(SFX_ACCEPTABLE);
+            if (!(gameType == GAME_STORY_MODE && saveFile->storyModeDay == LEVEL_COUNT))
+            {
+                sound.PlaySFX(SFX_ACCEPTABLE);
+            }
+
             batchesComplete += (BASE_BATCH_YIELD * ((float)batchPurity / 100.0f));
             currentBatchProgress = 0;
             perfectClear &= batchPurity == 100;
@@ -1265,9 +1386,26 @@ void Game::Update()
                     AwardMineral(MINERAL_DIAMOND, true);
                 }
 
-                CheckDialogue();
-                if (mode == DIALOGUE)
+                if (gameType == GAME_STORY_MODE && saveFile->storyModeDay == LEVEL_COUNT)
                 {
+                    dialogueProgress = LEVEL_COUNT + 2;
+                    Transition(false, 0, TS_BOTH, frame);
+
+                    if (mode == MINIGAME)
+                    {
+                        DeleteMinigame(false);
+                    }
+                    else
+                    {
+                        ToggleHud(false);
+                    }
+                    if (showingIndicatorFor > 0)
+                    {
+                        NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
+                        showingIndicatorFor = 0;
+                    }
+
+                    StartDialogue(SCRIPT_GUS_ANGUISH);
                     return;
                 }
 

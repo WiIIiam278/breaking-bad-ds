@@ -14,7 +14,8 @@ enum TrackId
     BGM_THE_COUSINS,
     BGM_CLEAR_WATERS,
     BGM_RODRIGO_Y_GABRIELA,
-    BGM_SAUL
+    BGM_SAUL,
+    BGM_FINAL_COOK
 };
 
 struct BGM
@@ -28,10 +29,10 @@ struct BGM
     const int loopAfterFile;
 };
 
-const int BGM_COUNT = 7;
+const int BGM_COUNT = 8;
 const BGM BGMS[BGM_COUNT] =
     {
-        {"Brekaing Bad (Title)",
+        {"Breaking Bad (Title)",
          BGM_TITLE_INTRO,
          127,
          1,
@@ -54,12 +55,11 @@ const BGM BGMS[BGM_COUNT] =
          0},
         {"The Cousins (Superlab)",
          BGM_THE_COUSINS,
-         77,
-         3,
+         80,
+         2,
          {"bgm/the_cousins_1",
-          "bgm/the_cousins_2",
-          "bgm/the_cousins_3"},
-         {585, 585, 585},
+          "bgm/the_cousins_2"},
+         {585, 585},
          0},
         {
             "Clear Waters (Tutorial)",
@@ -88,7 +88,17 @@ const BGM BGMS[BGM_COUNT] =
             {"bgm/sauls_theme"},
             {300},
             0
-        }};
+        },
+        {
+            "The Final Cook",
+            BGM_FINAL_COOK,
+            127,
+            1,
+            {"bgm/the_final_cook"},
+            {620},
+            0
+        }
+    };
 
 enum EffectId
 {

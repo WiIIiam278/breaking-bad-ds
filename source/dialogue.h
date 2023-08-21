@@ -72,7 +72,8 @@ enum ScriptId
   SCRIPT_GALE_DAY_4,
   SCRIPT_GUS_DAY_5,
   SCRIPT_ENDING_GOOD,
-  SCRIPT_ENDING_BAD
+  SCRIPT_ENDING_BAD,
+  SCRIPT_GUS_ANGUISH
 };
 
 const Script SCRIPTS[64] = {
@@ -415,41 +416,110 @@ const Script SCRIPTS[64] = {
       }
     },
     {GALE,
-    1,
+    8,
       {
-        "Day 4"
+        "M-M-M-M-M-M-M-M-M-M-M-Mister W-W-W-W-W-White...",
+        "I-I-I'm just here to...      observe today...",
+        "(you gotta get out of here)",
+        "(the boss is coming)",
+        "(tomorrow after work)",
+        "(he... he...)",
+        "(he's watching now, too.)",
+        "(you need to come up with a  plan...)",
       },
       {
+        EMOTE_EXCLAMATION,
+        EMOTE_EXCLAMATION,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
         EMOTE_NONE
       }
     },
     {GUS,
-    1,
+    6,
       {
-        "Day 5"
+        "Good morning.",
+        "After work today, I would    like to speak with you.",
+        "Please make sure you are     available.",
+        "I have a proposition for you.",
+        "That is all.",
+        "I will make my way into the  lab this evening.",
       },
       {
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
         EMOTE_NONE
       }
     },
     {GALE,
-    1,
+    13,
       {
-        "Good Ending"
+        "M-M-Mister White!",
+        "(he's coming, isn't he?)",
+        "(you need to get out.)",
+        "(...)",
+        "(golly gosh! are those...    explosives?)",
+        "(you're going to blow up the lab?!)",
+        "(...)",
+        "(but what about Sally...?)",
+        "(...)",
+        "I'll help you.",
+        "But I'll need you to buy me  some time.",
+        "One last batch. That's all   I need.",
+        "We're in this together, sir."
       },
       {
+        EMOTE_EXCLAMATION,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE
+      }
+    },
+    {GUS,
+    7,
+      {
+        "Walter.",
+        "Have you ever heard the      expression...",
+        "...\"The road to hell is pavedwith good intentions?\"",
+        "I'm afraid I won't be needingyour services any more.",
+        "I have nothing more to say toyou.",
+        "Our arrangement is finished.",
+        "Goodbye."
+      },
+      {
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
+        EMOTE_NONE,
         EMOTE_NONE
       }
     },
     {GUS,
     1,
       {
-        "Bad Ending"
+        "HAAAAAAAAAAHHHHHH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
       },
       {
-        EMOTE_NONE
+        EMOTE_ANGRY
       }
-    }
+    },
     };
 
 const Portrait PORTRAITS[64] = {

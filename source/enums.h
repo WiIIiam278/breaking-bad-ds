@@ -9,7 +9,8 @@ enum Mode
     GAME_OVER,
     PAUSED,
     STORY_TRANSITION,
-    STORY_SHOP
+    STORY_SHOP,
+    STORY_END_SCREEN
 };
 
 enum Direction
