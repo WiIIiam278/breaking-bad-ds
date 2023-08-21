@@ -21,11 +21,11 @@ const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
         225,
     },
     {
-        1 /* 14 */,
+        14,
         215
     },
     {
-        1 /* 16 */,
+        16,
         235
     },
     {
