@@ -7,7 +7,6 @@
 
 #include <filesystem.h>
 #include <nds.h>
-#include <fat.h>
 
 #include "enums.h"
 #include "minerals.h"

@@ -8,7 +8,7 @@ const char *GetSaveFileName(const int argc, const char **argv)
     char saveName[256] = {'\0'};
     if (argc > 0 && strlen(argv[0]) > 4)
     {
-        snprintf(saveName, 255, "faT:/%.*s.sav", strlen(argv[0]) - 4, argv[0]);
+        snprintf(saveName, 255, "fat:/%.*s.sav", strlen(argv[0]) - 4, argv[0]);
     }
     else
     {

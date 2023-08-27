@@ -2,7 +2,6 @@
 
 Game::Game()
 {
-    fatInitDefault();
     consoleDemoInit();
     consoleClear();
     printf("\n\n\n\n\n\n\n\n\n\n\n    Getting Ready to Cook...\n");

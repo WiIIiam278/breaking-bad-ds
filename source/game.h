@@ -7,7 +7,6 @@
 
 #include <filesystem.h>
 #include <nds.h>
-#include <fat.h>
 #include <NEMain.h>
 #include <nf_lib.h>
 
