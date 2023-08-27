@@ -497,6 +497,7 @@ void Menu::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
         {
             showStartSprite = !showStartSprite;
         }
+        NF_WriteText(1, 0, 26, 0, "v1.0.1");
         break;
 
     case MENU_RUMBLE:
