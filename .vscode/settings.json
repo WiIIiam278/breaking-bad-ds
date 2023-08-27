@@ -51,5 +51,6 @@
         "stdio.h": "c",
         "nds.h": "c",
         "multiplayer.h": "c"
-    }
+    },
+    "C_Cpp.default.compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc"
 }

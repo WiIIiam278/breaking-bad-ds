@@ -10,23 +10,23 @@ const int LEVEL_COUNT = 5;
 const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
     {
         8,
-        240
+        265
     },
     {
         10,
-        225
+        245
     },
     {
         12,
-        225,
+        240,
     },
     {
         14,
-        215
+        230
     },
     {
         16,
-        235
+        250
     },
     {
         1,

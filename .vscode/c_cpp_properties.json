@@ -26,8 +26,7 @@
                 "databaseFilename": ""
             },
             "cStandard": "c11",
-            "cppStandard": "c++11",
-            "compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc"
+            "cppStandard": "c++11"
         }
     ],
     "version": 4
