@@ -41,7 +41,7 @@ You can also run this on a modded DSi or 3DS with Twilight Menu++ (other game lo
 <details>
 <summary>Download ROM QR code (v1.0.3)</summary>
 
-(todo)
+![QR code for installing the game on a DSi/3DS with TwilightMenu](dsi-qr-code.png)
 
 </details>
 
