@@ -11,6 +11,7 @@
 
 #include "map.h"
 #include "enums.h"
+#include "rumble.h"
 
 class Player
 {

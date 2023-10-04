@@ -13,6 +13,7 @@
 #include "sound.h"
 #include "map.h"
 #include "save.h"
+#include "rumble.h"
 
 void LoadBackground(const char name[]);
 void DeleteBackground(const char name[]);

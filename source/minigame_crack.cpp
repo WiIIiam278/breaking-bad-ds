@@ -105,7 +105,7 @@ bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2],
                     NF_SpriteFrame(1, spriteId, rand() % 7);
                     spriteDamageTable[grid[0]][grid[1]] = 6;
                 }
-                setRumble(criticalHit);
+                rumble(criticalHit);
                 return true;
             }
         }

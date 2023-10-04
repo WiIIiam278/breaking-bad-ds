@@ -75,7 +75,7 @@ bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
     {
         if (lineEmote == EMOTE_EXCLAMATION && charsToPrint < 4)
         {
-            setRumble(frame % 2);
+            rumble(frame % 2);
         }
         NF_SpriteFrame(1, DIALOGUE_EMOTES_SPRITE, lineEmote);
         NF_ShowSprite(1, DIALOGUE_EMOTES_SPRITE, true);
