@@ -2,18 +2,8 @@
 
 #include <nds.h>
 
-static bool canRumble = false;
-
-static void rumbleInit() {
-    canRumble = !isDSiMode() && isRumbleInserted();
-}
-
 static void rumble(bool actuator) {
-    if (canRumble) {
+    if (!isDSiMode()) {
         setRumble(actuator);
     }
-}
-
-static bool readyToRumble() {
-    return canRumble;
 }

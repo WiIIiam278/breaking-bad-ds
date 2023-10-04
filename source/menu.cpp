@@ -501,7 +501,7 @@ void Menu::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
         break;
 
     case MENU_RUMBLE:
-        if (readyToRumble()) {
+        if (!isDSiMode()) {
             NF_WriteText(1, 0, 2, 7, "A DS Rumble Pak is required.");
             NF_WriteText(1, 0, 2, 8, "to enable this feature. If a");
             NF_WriteText(1, 0, 2, 9, "Rumble Pak is inserted into");
@@ -514,11 +514,10 @@ void Menu::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
             rumble(frame % 2 == 0);
         } 
         else {
-            NF_WriteText(1, 0, 2, 8, "Rumble support is disabled.");
-            NF_WriteText(1, 0, 2, 11, "A DS Rumble Pak has not been");
-            NF_WriteText(1, 0, 2, 12, "inserted into SLOT-2, and/or");
-            NF_WriteText(1, 0, 2, 13, "you do not have a system");
-            NF_WriteText(1, 0, 2, 13, "that supports rumble.");
+            NF_WriteText(1, 0, 2, 9, "Rumble support is disabled.");
+            NF_WriteText(1, 0, 2, 11, "You do not have a system");
+            NF_WriteText(1, 0, 2, 12, "that supports the rumble");
+            NF_WriteText(1, 0, 2, 13, "feature of this game.");
         }
         break;
 

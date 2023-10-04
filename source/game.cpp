@@ -29,9 +29,6 @@ Game::Game()
 
     // Prepare NiFi
     nifiPrepare();
-    
-    // Prepare rumble
-    rumbleInit();
 
     // Setup sound
     sound.LoadSound();
