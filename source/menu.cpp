@@ -292,7 +292,7 @@ void Menu::SetState(MenuState newState, volatile int frame, Sound *sound, SaveFi
     if (state != MENU_LOGO && newState != MENU_LOGO)
     {
         sound->PlaySFX(SFX_MENU_DRUM);
-        setRumble(state % 2 == 0);
+        rumble(state % 2 == 0);
     }
     state = newState;
     ShowLayout();
@@ -497,19 +497,28 @@ void Menu::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
         {
             showStartSprite = !showStartSprite;
         }
-        NF_WriteText(1, 0, 26, 0, "v1.0.2");
+        NF_WriteText(1, 0, 26, 0, "v1.0.3");
         break;
 
     case MENU_RUMBLE:
-        NF_WriteText(1, 0, 2, 7, "A DS Rumble Pak is required.");
-        NF_WriteText(1, 0, 2, 8, "to enable this feature. If a");
-        NF_WriteText(1, 0, 2, 9, "Rumble Pak is inserted into");
-        NF_WriteText(1, 0, 2, 10, "SLOT-2, you should now feel.");
-        NF_WriteText(1, 0, 2, 11, "the rumble effect.");
+        if (!isDSiMode()) {
+            NF_WriteText(1, 0, 2, 7, "A DS Rumble Pak is required.");
+            NF_WriteText(1, 0, 2, 8, "to enable this feature. If a");
+            NF_WriteText(1, 0, 2, 9, "Rumble Pak is inserted into");
+            NF_WriteText(1, 0, 2, 10, "SLOT-2, you should now feel.");
+            NF_WriteText(1, 0, 2, 11, "the rumble effect.");
 
-        NF_WriteText(1, 0, 2, 14, "Remove the Rumble Pak from");
-        NF_WriteText(1, 0, 2, 15, "SLOT-2 to disable rumble.");
-        setRumble(frame % 2 == 0);
+            NF_WriteText(1, 0, 2, 14, "Remove the Rumble Pak from");
+            NF_WriteText(1, 0, 2, 15, "SLOT-2 to disable rumble.");
+        
+            rumble(frame % 2 == 0);
+        } 
+        else {
+            NF_WriteText(1, 0, 2, 9, "Rumble support is disabled.");
+            NF_WriteText(1, 0, 2, 11, "You do not have a system");
+            NF_WriteText(1, 0, 2, 12, "that supports the rumble");
+            NF_WriteText(1, 0, 2, 13, "feature of this game.");
+        }
         break;
 
     case MENU_MINERALS:
@@ -610,7 +619,7 @@ MenuSelection Menu::HandleInput(volatile int frame, Sound *sound, SaveFile *save
             }
             
             sound->PlayBGM(static_cast<TrackId>(currentSoundTestTrack), true);
-            setRumble(currentSoundTestTrack % 2 == 0);
+            rumble(currentSoundTestTrack % 2 == 0);
         }
         return HandleLayoutInput(frame, sound, saveFile, touch);
 
@@ -800,7 +809,7 @@ MenuSelection Menu::HandleClick(MenuSelection clicked, volatile int frame, Sound
             {
                 if (mpCurrentStatus == MP_HOST_READY || mpCurrentStatus == MP_CLIENT_READY)
                 {
-                    setRumble(rand() % 2 == 0);
+                    rumble(rand() % 2 == 0);
                     return NONE;
                 }
                 SetState(MENU_GAME_SELECT, frame, sound, saveFile);

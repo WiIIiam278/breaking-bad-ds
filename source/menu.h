@@ -16,6 +16,7 @@
 #include "minerals.h"
 #include "save.h"
 #include "transitions.h"
+#include "rumble.h"
 
 class Menu
 {

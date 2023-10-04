@@ -14,6 +14,7 @@
 #include "sound.h"
 #include "enums.h"
 #include "levels.h"
+#include "rumble.h"
 
 enum Speaker
 {

@@ -71,7 +71,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map
 
     if (pipeInPlace)
     {
-        setRumble(pipeInPlaceFrames % 2);
+        rumble(pipeInPlaceFrames % 2);
         if (pipeInPlaceFrames == 45)
         {
             sound->PlaySFX(SFX_VACCUM);
@@ -108,7 +108,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map
             {
                 int otherCrank = rotatingCrank == 0 ? 1 : 0;
                 crankRot[otherCrank] -= crankRot[otherCrank] > 0 ? (crankRot[otherCrank] < 255 ? 1 : 2) : 0;
-                setRumble(scrubSpeed % 2);
+                rumble(scrubSpeed % 2);
             }
 
             if (scrubSpeed > 5 && (frame % 30 == 0))
@@ -156,7 +156,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map
     {
         pipeInPlace = true;
         sound->PlaySFX(SFX_CLICK);
-        setRumble(frame % 2);
+        rumble(frame % 2);
     }
 }
 

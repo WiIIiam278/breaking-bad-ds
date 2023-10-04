@@ -1010,7 +1010,7 @@ void Game::UpdateGameOver()
     case -60:
         if (!levelClear)
         {
-            setRumble(gameOverFrame % 2 == 0);
+            rumble(gameOverFrame % 2 == 0);
         }
         break;
     case -10:

@@ -36,8 +36,18 @@ But if you're not as bothered as Walter is about doing things with the proper ge
 
 To run this on melonDS, you'll need to go into the Emulator Config -> DLDI -> Enable DLDI, since this uses the homebrew nitrofile system.  I reccommend the Software video emulator for best results to make the models pop, as the OpenGL backend doesn't quite support the DS's hardware-accellerated outlines just yet.
 
+### On a modded DSi/3DS
+You can also run this on a modded DSi or 3DS with Twilight Menu++ (other game loaders have not been tested). You can download the game ROM by scanning the QR code below in your loader's menu, if your system supports this. Please make sure you use v1.0.3+, or your game may crash on startup!
+
+<details>
+<summary>Download ROM QR code (v1.0.3)</summary>
+
+![QR code for installing the game on a DSi/3DS with TwilightMenu](dsi-qr-code.png)
+
+</details>
+
 ### Unsupported platforms
-Sorry, this *won't work on a DSi/3DS with TwiLight Menu++* (for now). This also *won't work on the Wii U Virtual Console emulator*. I'm sorry to ruin your dreams. If you run this on a cool setup, take a picture and [email me](mailto:will27528+brbads@gmail.com).
+Sorry, this *won't work on the Wii U Virtual Console emulator*. I'm sorry to ruin your dreams. If you run this on a cool setup, take a picture and [email me](mailto:will27528+brbads@gmail.com).
 
 ## Instructions
 ### Tutorial (1P)

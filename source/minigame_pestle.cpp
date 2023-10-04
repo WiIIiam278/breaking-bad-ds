@@ -58,7 +58,7 @@ void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *
         pestlePos[1] = std::min(43, touch.py - 64);
         if (pestlePos[1] == 43)
         {
-            setRumble(frame % 2 == 0);
+            rumble(frame % 2 == 0);
         }
 
         if (frame - lastVelocityCheckFrame > SWING_LENGTH)

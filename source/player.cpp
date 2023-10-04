@@ -117,7 +117,7 @@ void Player::Move(Map &map)
     Tile target = map.GetTileAt(targetX, targetZ);
     if (target == WALL || target == VOID)
     {
-        setRumble(rand() % 2 == 0);
+        rumble(rand() % 2 == 0);
         targetX = tileX;
         targetZ = tileZ;
         walking = false;
