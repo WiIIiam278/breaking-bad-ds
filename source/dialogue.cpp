@@ -243,9 +243,9 @@ int Dialogue::GetTutorialDialogue(int tutorialProgress, int batchProgress, Tile 
     return -1;
 }
 
-int Dialogue::GetStoryDialogue(int dialogueProgress, int batchProgress, int batchesComplete, Tile playerTile, SaveFile *saveFile)
+int Dialogue::GetStoryDialogue(int dialogueProgress, int batchProgress, int batchesComplete, Tile playerTile)
 {
-    switch (saveFile->storyModeDay)
+    switch (globalSave.currentDay)
     {
         case 0: 
             return dialogueProgress == 0 ? SCRIPT_GUS_DAY_1 : -1;
@@ -256,9 +256,9 @@ int Dialogue::GetStoryDialogue(int dialogueProgress, int batchProgress, int batc
         case 3: 
             return dialogueProgress == 3 ? SCRIPT_GALE_DAY_4 : -1;
         case 4:
-            if (dialogueProgress == 5 && batchesComplete >= LEVEL_STORY_MODE[saveFile->storyModeDay].quota)
+            if (dialogueProgress == 5 && batchesComplete >= LEVEL_STORY_MODE[globalSave.currentDay].quota)
             {
-                return saveFile->storyModePowerUps[PWR_EXPLOSIVES] ? SCRIPT_ENDING_GOOD : SCRIPT_ENDING_BAD;
+                return globalSave.powerUps[PWR_EXPLOSIVES] ? SCRIPT_ENDING_GOOD : SCRIPT_ENDING_BAD;
             }
             return dialogueProgress == 4 ? SCRIPT_GUS_DAY_5 : -1;
     }

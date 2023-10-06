@@ -10,7 +10,7 @@
 #include <NEMain.h>
 #include <nf_lib.h>
 
-#include "save.h"
+#include "save.hpp"
 #include "sound.h"
 #include "enums.h"
 #include "levels.h"
@@ -556,5 +556,5 @@ public:
   bool Update(volatile int frame, uint32 keys, Sound *sound);
   void Unload();
   int GetTutorialDialogue(int tutorialProgress, int batchProgress, Tile playerTile);
-  int GetStoryDialogue(int dialogueProgress, int batchProgress, int batchesComplete, Tile playerTile, SaveFile *saveFile);
+  int GetStoryDialogue(int dialogueProgress, int batchProgress, int batchesComplete, Tile playerTile);
 };

@@ -62,7 +62,7 @@ void MixMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile)
+void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
 {
     if (IsComplete())
     {

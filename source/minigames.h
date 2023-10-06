@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <memory>
+#include <algorithm>
 
 #include <filesystem.h>
 #include <nds.h>
@@ -12,7 +13,7 @@
 #include "enums.h"
 #include "sound.h"
 #include "map.h"
-#include "save.h"
+#include "save.hpp"
 #include "rumble.h"
 
 void LoadBackground(const char name[]);
@@ -23,7 +24,7 @@ class Minigame
 public:
     virtual void Load() = 0;
     virtual void Unload(Map* map) = 0;
-    virtual void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile) = 0;
+    virtual void Update(volatile int frame, uint32 keys, Sound *sound, Map *map) = 0;
     virtual bool IsComplete() = 0;
     virtual MinigameResult GetResult(int framesTaken) = 0;
 
@@ -49,7 +50,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -83,7 +84,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -118,7 +119,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -167,7 +168,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -219,7 +220,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };
@@ -247,7 +248,7 @@ public:
 
     void Load();
     void Unload(Map* map);
-    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile);
+    void Update(volatile int frame, uint32 keys, Sound *sound, Map *map);
     bool IsComplete();
     MinigameResult GetResult(int framesTaken);
 };

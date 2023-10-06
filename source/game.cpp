@@ -32,6 +32,9 @@ Game::Game()
 
     // Setup sound
     sound.LoadSound();
+
+    // Load global save
+    globalSave.loadData();
 }
 
 void Game::WaitLoop()
@@ -90,13 +93,6 @@ void Game::Prepare3DGraphics()
 
     // Create camera
     camera = NE_CameraCreate();
-}
-
-void Game::LoadSaveFile(const char *fileName)
-{
-    saveFile = CreateNewSaveFile();
-    saveFileName = fileName;
-    LoadGame(saveFile, fileName);
 }
 
 void Game::UpdateCamera()
@@ -164,9 +160,9 @@ void Game::TranslateCamera(float x, float y, float z)
 
 void Game::AwardMineral(MineralType mineralType, bool silent)
 {
-    if (!saveFile->minerals[mineralType])
+    if (!globalSave.minerals[mineralType])
     {
-        saveFile->minerals[mineralType] = true;
+        globalSave.minerals[mineralType] = true;
 
         if (!silent)
         {
@@ -338,7 +334,7 @@ void Game::StartDay(uint16 day)
     }
     ToggleHud(false);
     Transition(false, 0, TS_TOP, frame);
-    saveFile->storyModeDay = day;
+    globalSave.currentDay = day;
 
     if (day < LEVEL_COUNT)
     {
@@ -356,8 +352,8 @@ void Game::StartDay(uint16 day)
 
 void Game::StartNextDay()
 {
-    StartDay(saveFile->storyModeDay + 1);
-    SaveGame(saveFile, saveFileName);
+    StartDay(globalSave.currentDay + 1);
+    globalSave.saveData();
 }
 
 void Game::OpenShopMenu()
@@ -370,7 +366,7 @@ void Game::OpenShopMenu()
     ToggleHud(false);
     Transition(false, 0, TS_TOP, frame);
     frame = 0;
-    shop.Load(frame, &sound, saveFile);
+    shop.Load(frame, &sound);
 }
 
 void Game::UpdateDayTransition()
@@ -381,7 +377,7 @@ void Game::UpdateDayTransition()
         return;
     }
 
-    const Level *level = &LEVEL_STORY_MODE[saveFile->storyModeDay];
+    const Level *level = &LEVEL_STORY_MODE[globalSave.currentDay];
     if (frame <= 1)
     {
         Transition(true, 60, TS_BOTTOM, frame);
@@ -391,11 +387,11 @@ void Game::UpdateDayTransition()
     {
         // Day no
         char dayText[12];
-        sprintf(dayText, "Day %i", saveFile->storyModeDay + 1);
+        sprintf(dayText, "Day %i", globalSave.currentDay + 1);
         NF_WriteText(1, 0, 13, 9, dayText);
 
         // Level details
-        int levelTime = level->time + (((int)(((float)level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
+        int levelTime = level->time + (((int)(((float)level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * globalSave.powerUps[PWR_WATCH_BATTERY] ? 1 : 0);
         char levelText[32];
         sprintf(levelText, "Time: %is", levelTime);
         NF_WriteText(1, 0, 10, 11, levelText);
@@ -403,7 +399,7 @@ void Game::UpdateDayTransition()
         sprintf(levelText, "Quota: %i", level->quota);
         NF_WriteText(1, 0, 10, 12, levelText);
 
-        sprintf(levelText, "Money: $%i", saveFile->storyModeMoney);
+        sprintf(levelText, "Money: $%i", globalSave.currentMoney);
         NF_WriteText(1, 0, 10, 13, levelText);
     }
 
@@ -429,12 +425,12 @@ void Game::UpdateShopMenu()
         return;
     }
 
-    if (shop.Update(frame, &sound, saveFile))
+    if (shop.Update(frame, &sound))
     {
         shop.Unload(frame, &sound);
         Transition(false, 0, TS_BOTH, frame);
-        SaveGame(saveFile, saveFileName);
-        if (saveFile->storyModePowerUps[PWR_EXPLOSIVES])
+        globalSave.saveData();
+        if (globalSave.powerUps[PWR_EXPLOSIVES])
         {
             AwardMineral(MINERAL_CERIUM, false);
         }
@@ -496,12 +492,12 @@ void Game::UpdateEndScreen()
             NF_UnloadTiledBg(BAD_ENDING_BG);
         }
 
-        saveFile->storyModeDay = 0;
-        saveFile->storyModeDialogueProgress = 0;
-        saveFile->storyModeMoney = 0;
+        globalSave.currentDay = 0;
+        globalSave.currentDialogue = 0;
+        globalSave.currentMoney = 0;
         for (int p = 0; p < POWER_UP_COUNT; p++)
         {
-            saveFile->storyModePowerUps[p] = false;
+            globalSave.powerUps[p] = false;
         }
 
         levelClear = true;
@@ -529,7 +525,7 @@ void Game::QuitToTitle()
     sound.StopBGM();
     UnLoadLabScene();
     NE_SpecialEffectSet(NE_NONE);
-    SaveGame(saveFile, saveFileName);
+    globalSave.saveData();
     StartMenuScreen(false);
     if (!levelClear)
     {
@@ -580,7 +576,7 @@ void Game::CheckDialogue()
         }
 
         int dialogueId = (gameType == GAME_TUTORIAL ? dialogue.GetTutorialDialogue(dialogueProgress, currentBatchProgress, player.GetTile(map))
-                                                    : dialogue.GetStoryDialogue(dialogueProgress, currentBatchProgress, batchesComplete, player.GetTile(map), saveFile));
+                                                    : dialogue.GetStoryDialogue(dialogueProgress, currentBatchProgress, batchesComplete, player.GetTile(map)));
         if (dialogueId != -1)
         {
             StartDialogue((ScriptId)dialogueId);
@@ -594,7 +590,7 @@ void Game::StartGame(GameType gameType)
     Transition(false, 0, TS_BOTH, frame);
     this->isQuitting = false;
     this->gameType = gameType;
-    this->dialogueProgress = gameType == GAME_STORY_MODE ? saveFile->storyModeDialogueProgress : 0;
+    this->dialogueProgress = gameType == GAME_STORY_MODE ? globalSave.currentDialogue : 0;
     this->frame = 0;
     this->mode = MOVE;
 
@@ -604,7 +600,7 @@ void Game::StartGame(GameType gameType)
     // Start game
     if (gameType == GAME_STORY_MODE)
     {
-        StartDay(saveFile->storyModeDay);
+        StartDay(globalSave.currentDay);
     }
     else
     {
@@ -687,7 +683,7 @@ void Game::LoadLabScene()
 void Game::StartLevel(const Level *level)
 {
     // Set level params
-    this->timeLimit = level->time + (((int)(((float)level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * saveFile->storyModePowerUps[PWR_WATCH_BATTERY] ? 1 : 0);
+    this->timeLimit = level->time + (((int)(((float)level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * globalSave.powerUps[PWR_WATCH_BATTERY] ? 1 : 0);
     this->batchQuota = level->quota;
 
     // Reset game state
@@ -697,7 +693,7 @@ void Game::StartLevel(const Level *level)
     batchesComplete = 0;
 
     // Player setup
-    player.ResetPosition((gameType == GAME_STORY_MODE && saveFile->storyModePowerUps[PWR_AIR_JORDANS]));
+    player.ResetPosition((gameType == GAME_STORY_MODE && globalSave.powerUps[PWR_AIR_JORDANS]));
     if (gameType == GAME_MULTIPLAYER_VS)
     {
         bool isHost = isHostClient();
@@ -730,7 +726,7 @@ void Game::StartLevel(const Level *level)
     switch (gameType)
     {
     case GAME_STORY_MODE:
-        sound.PlayBGM(saveFile->storyModeDay < LEVEL_COUNT ? BGM_THE_COUSINS : BGM_FINAL_COOK, true);
+        sound.PlayBGM(globalSave.currentDay < LEVEL_COUNT ? BGM_THE_COUSINS : BGM_FINAL_COOK, true);
         break;
     case GAME_MULTIPLAYER_VS:
         sound.PlayBGM(BGM_THE_COUSINS, true);
@@ -818,20 +814,20 @@ void Game::LoadLogoScene()
     {
         WaitLoop();
     }
-    menu.SetState(MENU_LOGO, frame, &sound, saveFile);
+    menu.SetState(MENU_LOGO, frame, &sound);
 }
 
 void Game::UnLoadLogoScene()
 {
     Transition(false, 0, TS_BOTH, frame);
-    menu.Unload(frame, &sound, saveFile);
+    menu.Unload(frame, &sound);
 }
 
 void Game::UpdateMenuScreen()
 {
-    menu.Update(frame, &sound, saveFile);
+    menu.Update(frame, &sound);
 
-    switch (menu.HandleInput(frame, &sound, saveFile))
+    switch (menu.HandleInput(frame, &sound))
     {
     case SKIP_LOGO:
         frame = 689;
@@ -1046,13 +1042,13 @@ void Game::UpdateGameOver()
             NF_ClearTextLayer(1, 0);
             if (gameType == GAME_STORY_MODE)
             {
-                if (saveFile->storyModeDay == LEVEL_COUNT - 1 && dialogueProgress == LEVEL_COUNT + 1)
+                if (globalSave.currentDay == LEVEL_COUNT - 1 && dialogueProgress == LEVEL_COUNT + 1)
                 {
                     ShowEndScreen(false);
                     return;
                 }
 
-                StartDay(saveFile->storyModeDay);
+                StartDay(globalSave.currentDay);
                 return;
             }
             QuitToTitle();
@@ -1064,18 +1060,18 @@ void Game::UpdateGameOver()
             NF_ClearTextLayer(1, 0);
             if (gameType == GAME_STORY_MODE)
             {
-                if (saveFile->storyModeDay == LEVEL_COUNT - 1)
+                if (globalSave.currentDay == LEVEL_COUNT - 1)
                 {
                     CheckDialogue();
                     return;
                 }
 
-                saveFile->storyModeMoney += ((batchQuota * 30) + (timeLimit * 3) + (perfectClear ? 150 : 0));
+                globalSave.currentMoney += ((batchQuota * 30) + (timeLimit * 3) + (perfectClear ? 150 : 0));
 
                 bool allPowerups = true;
                 for (int i = 0; i < POWER_UP_COUNT; i++)
                 {
-                    allPowerups &= saveFile->storyModePowerUps[i];
+                    allPowerups &= globalSave.powerUps[i];
                 }
                 if (!allPowerups)
                 {
@@ -1141,7 +1137,7 @@ void Game::Update()
     {
         if (getMultiplayerStatus() == MP_CONNECTION_LOST)
         {
-            QuitToTitle(); // todo display that connection was lost
+            QuitToTitle();
         }
         else
         {
@@ -1252,7 +1248,7 @@ void Game::Update()
                     AwardMineral(MINERAL_AMBER, false);
                     StartDialogue(SCRIPT_GALE_TUTORIAL_IDLE);
                 }
-                else if (gameType == GAME_STORY_MODE && saveFile->storyModeDay < LEVEL_COUNT)
+                else if (gameType == GAME_STORY_MODE && globalSave.currentDay < LEVEL_COUNT)
                 {
                     StartDialogue(SCRIPT_GUS_IDLE);
                 }
@@ -1285,9 +1281,9 @@ void Game::Update()
 
             if (gameType == GAME_STORY_MODE)
             {
-                if (saveFile->storyModeDay == LEVEL_COUNT - 1 && dialogueProgress == LEVEL_COUNT + 1)
+                if (globalSave.currentDay == LEVEL_COUNT - 1 && dialogueProgress == LEVEL_COUNT + 1)
                 {
-                    if (saveFile->storyModePowerUps[PWR_EXPLOSIVES])
+                    if (globalSave.powerUps[PWR_EXPLOSIVES])
                     {
                         StartNextDay();
                     }
@@ -1298,7 +1294,7 @@ void Game::Update()
                         StartGameOver(false);
                     }
                 }
-                else if (saveFile->storyModeDay == LEVEL_COUNT && dialogueProgress == LEVEL_COUNT + 2)
+                else if (globalSave.currentDay == LEVEL_COUNT && dialogueProgress == LEVEL_COUNT + 2)
                 {
                     ShowEndScreen(true);
                 }
@@ -1322,7 +1318,7 @@ void Game::Update()
 
             if (batchesComplete < batchQuota)
             {
-                if (timeLimit < 30 || (gameType == GAME_STORY_MODE && saveFile->storyModeDay == LEVEL_COUNT))
+                if (timeLimit < 30 || (gameType == GAME_STORY_MODE && globalSave.currentDay == LEVEL_COUNT))
                 {
                     NE_SpecialEffectNoiseConfig((31 - (timeLimit <= 20 ? timeLimit : 20)) / 4);
                     NE_SpecialEffectSet(NE_NOISE);
@@ -1359,7 +1355,7 @@ void Game::Update()
         // Update batch progress
         if (currentBatchProgress >= 6)
         {
-            if (!(gameType == GAME_STORY_MODE && saveFile->storyModeDay == LEVEL_COUNT))
+            if (!(gameType == GAME_STORY_MODE && globalSave.currentDay == LEVEL_COUNT))
             {
                 sound.PlaySFX(SFX_ACCEPTABLE);
             }
@@ -1385,7 +1381,7 @@ void Game::Update()
                     AwardMineral(MINERAL_DIAMOND, true);
                 }
 
-                if (gameType == GAME_STORY_MODE && saveFile->storyModeDay == LEVEL_COUNT)
+                if (gameType == GAME_STORY_MODE && globalSave.currentDay == LEVEL_COUNT)
                 {
                     dialogueProgress = LEVEL_COUNT + 2;
                     Transition(false, 0, TS_BOTH, frame);
@@ -1450,7 +1446,7 @@ void Game::Update()
     if (mode == MINIGAME)
     {
         inMinigameFor++;
-        currentMinigame->Update(frame, keysHeld(), &sound, &map, saveFile);
+        currentMinigame->Update(frame, keysHeld(), &sound, &map);
         if (currentMinigame->IsComplete() && currentBatchProgress == ((int)player.GetTile(map) - 3))
         {
             MinigameResult result = currentMinigame->GetResult(inMinigameFor);
