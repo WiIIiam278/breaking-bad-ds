@@ -91,8 +91,8 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
     {
         touchPosition touch;
         touchRead(&touch);
-        if (touch.px >= PUMP_SWITCH_POS[0] + 16 && touch.px <= PUMP_SWITCH_POS[0] + 48 &&
-            touch.py >= PUMP_SWITCH_POS[1] && touch.py <= PUMP_SWITCH_POS[1] + 32)
+        if (touch.px >= PUMP_SWITCH_POS[0] + 8 && touch.px <= PUMP_SWITCH_POS[0] + 56 &&
+            touch.py >= PUMP_SWITCH_POS[1] - 8 && touch.py <= PUMP_SWITCH_POS[1] + 40)
         {
             if (selectedSwitch != 0)
             {
@@ -102,8 +102,8 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
             targetDrainRate = 0;
             targetPumpRate = MAX_PUMP_RATE;
         }
-        else if (touch.px >= DRAIN_SWITCH_POS[0] + 16 && touch.px <= DRAIN_SWITCH_POS[0] + 48 &&
-                 touch.py >= DRAIN_SWITCH_POS[1] && touch.py <= DRAIN_SWITCH_POS[1] + 32)
+        else if (touch.px >= DRAIN_SWITCH_POS[0] + 8 && touch.px <= DRAIN_SWITCH_POS[0] + 56 &&
+                 touch.py >= DRAIN_SWITCH_POS[1] - 8 && touch.py <= DRAIN_SWITCH_POS[1] + 40)
         {
             if (selectedSwitch != 1)
             {
