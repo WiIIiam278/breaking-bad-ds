@@ -5,6 +5,7 @@
 
 #include <nds.h>
 #include <cstdio>
+#include <fat.h>
 
 u8 cardCommand(u8 command, bool hold);
 u8 cardTransfer(u8 data);
@@ -22,9 +23,11 @@ public:
     void seek(s32 offset, u8 mode);
     ~CardBuffer() {close();}
 private:
+    bool _running_in_fat;
     int _pos = 0;
     FILE* _fatFile = nullptr;
     bool _opened = false;
 };
 
 extern CardBuffer fCard;
+extern bool cardRead;

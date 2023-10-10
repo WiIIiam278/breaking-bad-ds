@@ -6,11 +6,14 @@
 void CardBuffer::open(const char *mode) {
     if (_opened)
         return;
-    // If opening fails, then we know we are in an emulator
-    // fopen will return nullptr, which is checked for in
-    // read and write.
     _pos = 0;
-    _fatFile = fopen("fat:/breaking-bad-ds.sav", mode);
+    _running_in_fat = access("sd:/", F_OK) == 0; // Returns 0 on success
+    if (_running_in_fat) {  // check if sd was inited
+        _fatFile = fopen("sd:/breaking-bad-ds.sav", mode);
+    }
+    else {
+        _fatFile = nullptr;
+    }
     _opened = true;
 }
 
@@ -29,16 +32,25 @@ u8 cardCommand(u8 command, bool hold) {
     eepromWaitBusy();
     REG_AUXSPIDATA = command;
     eepromWaitBusy();
-    return REG_AUXSPIDATA;
+    return REG_AUXSPIDATA & 0xFF;
 }
 
 u8 cardTransfer(u8 data) {
     REG_AUXSPIDATA = data;
     eepromWaitBusy();
-    return REG_AUXSPIDATA;
+    return REG_AUXSPIDATA & 0xFF;
 }
 
 void cardWaitInProgress() {
+    cardCommand(SPI_EEPROM_RDSR, true);
+    cardCommand(0, false);
+
+    if (REG_AUXSPIDATA == 0xFF) 
+    {
+        printf("\n   ** Failed to read save! **\n");
+        return; //todo error
+    }
+
     do {
         cardCommand(SPI_EEPROM_RDSR, true);
         cardCommand(0, false);
@@ -46,11 +58,8 @@ void cardWaitInProgress() {
 }
 
 void cardReadBytes(u8* dst, u32 addr, u16 size) {
-    printf("set bus\n");
     sysSetCardOwner(BUS_OWNER_ARM9);
-    printf("card cmd\n");
     cardCommand(SPI_EEPROM_READ, true);
-    printf("card tf\n");
     cardTransfer(addr >> 8);
     cardTransfer(addr & 0xff);
     for (u16 i = 0; i < size; i++) {
@@ -60,7 +69,6 @@ void cardReadBytes(u8* dst, u32 addr, u16 size) {
             *dst++ = cardCommand(0, false);
         }
     }
-    printf("card wait\n");
     cardWaitInProgress();
     cardWaitInProgress();
     swiDelay(14);
@@ -97,18 +105,21 @@ void cardWriteBytes(u8* src, u32 addr, u16 size) {
 }
 
 void CardBuffer::read(void *data, size_t size) {
-    printf("reading %i\n", size);
-    if (!_opened) {
-        printf("read cancel\n");
+    if (!_opened)
         return;
+    if (!_running_in_fat) {
+        cardReadBytes((u8*)data, _pos, size);
     }
-    if (_fatFile == nullptr) {
-        printf("read card\n");
-        cardReadBytes((u8 *) data, _pos, size);
-    } else {
-        printf("read fat 0\n");
-        size_t bytes_read = fread(data, size, 1, _fatFile);
-        for(;bytes_read < size; bytes_read++) {
+    else if (_fatFile != nullptr) {
+        size_t bytes_read = fread(data, 1, size, _fatFile);
+        for (;bytes_read < size; bytes_read++) {
+            static_cast<u8*>(data)[bytes_read] = 0xff;
+        }
+    }
+    else {
+        // We are running in fat but file was not opened
+        // We simulate that behaviour by writing 0xff
+        for (size_t bytes_read = 0; bytes_read < size; bytes_read++) {
             static_cast<u8*>(data)[bytes_read] = 0xff;
         }
     }
@@ -118,11 +129,13 @@ void CardBuffer::read(void *data, size_t size) {
 void CardBuffer::write(void *src, size_t size) {
     if (!_opened)
         return;
-    if (_fatFile == nullptr) {
+    if (!_running_in_fat) {
         cardWriteBytes((u8*)src, _pos, size);
-    } else {
+    }
+    else if (_fatFile != nullptr) {
         fwrite(src, size, 1, _fatFile);
     }
+    // The else branch would be running in file but file couldn't be opened
     _pos += size;
 }
 

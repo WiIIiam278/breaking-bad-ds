@@ -14,19 +14,15 @@ void SaveData::clear() {
 }
 
 void SaveData::loadData() {
-    char header[4];
-    char expectedHeader[4] = {'M', 'E', 'T', 'H'};
+    // Initializing it like this for some reason fixes the issues
+    unsigned char header[4] = {0xDE, 0xAD, 0xBE, 0xEF};
+    char expectedHeader[4] = {'U', 'S', 'A', 'V'};
 
-    printf("state 0\n");
     fCard.open("rb");
-    printf("open\n");
     fCard.seek(0, SEEK_SET);
-    printf("seek\n");
     fCard.read(header, 4);
-    printf("read\n");
 
     if (memcmp(header, expectedHeader, 4) != 0) {
-        printf("state 1\n");
         fCard.close();
         clear();
         return;
@@ -35,12 +31,10 @@ void SaveData::loadData() {
     u32 saveVersion_;
     fCard.read(&saveVersion_, 4);
     if (saveVersion_ != saveVersion) {
-        printf("state 2\n");
         fCard.close();
         clear();
         return;
     }
-    printf("state 3\n");
     
     fCard.read(minerals, 2 * MINERAL_SAVE_SIZE);
     fCard.read(powerUps, 2 * POWER_UP_SAVE_SIZE);
@@ -54,7 +48,7 @@ void SaveData::loadData() {
 }
 
 void SaveData::saveData() {
-    char header[4] = {'M', 'E', 'T', 'H'};
+    char header[4] = {'U', 'S', 'A', 'V'};
 
     fCard.open("wb");
     fCard.seek(0, SEEK_SET);
