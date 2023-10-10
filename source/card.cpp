@@ -45,10 +45,12 @@ void cardWaitInProgress() {
     cardCommand(SPI_EEPROM_RDSR, true);
     cardCommand(0, false);
 
+    // If EEPROM read/writes aren't supported
     if (REG_AUXSPIDATA == 0xFF) 
     {
-        printf("\n   ** Failed to read save! **\n");
-        return; //todo error
+        consoleClear();
+        saveFailed = true;
+        return;
     }
 
     do {
@@ -160,3 +162,4 @@ int CardBuffer::tell() const {
 }
 
 CardBuffer fCard;
+bool saveFailed;

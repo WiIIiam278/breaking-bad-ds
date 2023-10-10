@@ -497,6 +497,9 @@ void Menu::Update(volatile int frame, Sound *sound)
         {
             showStartSprite = !showStartSprite;
         }
+        if (!canSave()) {
+            NF_WriteText(1, 0, 0, 0, "Cannot save game!");
+        }
         NF_WriteText(1, 0, 26, 0, "v1.0.4");
         break;
 

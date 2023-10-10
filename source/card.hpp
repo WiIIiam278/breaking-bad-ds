@@ -31,3 +31,4 @@ private:
 
 extern CardBuffer fCard;
 extern bool cardRead;
+extern bool saveFailed;

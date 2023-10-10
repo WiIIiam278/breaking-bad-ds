@@ -27,3 +27,4 @@ public:
 };
 
 extern SaveData globalSave;
+bool canSave();
