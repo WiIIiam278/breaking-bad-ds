@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
 
 #include <filesystem.h>
 #include <nds.h>

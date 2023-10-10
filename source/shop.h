@@ -1,12 +1,12 @@
 #pragma once
 
-#include "enums.h"
-#include "sound.h"
-#include "save.h"
-#include "transitions.h"
-
 #include <nds.h>
 #include <nf_lib.h>
+
+#include "enums.h"
+#include "sound.h"
+#include "transitions.h"
+#include "save.hpp"
 
 struct PowerUp
 {
@@ -15,7 +15,7 @@ struct PowerUp
     const int price;
 };
 
-const PowerUp POWER_UPS[5] = 
+const PowerUp POWER_UPS[POWER_UP_COUNT] = 
 {
     {
         "Air Jordans",
@@ -55,7 +55,7 @@ private:
 public:
     Shop();
 
-    void Load(volatile int frame, Sound *sound, SaveFile *saveFile);
-    bool Update(volatile int frame, Sound *sound, SaveFile *saveFile);
+    void Load(volatile int frame, Sound *sound);
+    bool Update(volatile int frame, Sound *sound);
     void Unload(volatile int frame, Sound *sound);
 };

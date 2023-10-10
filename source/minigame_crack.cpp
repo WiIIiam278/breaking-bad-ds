@@ -131,9 +131,9 @@ bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2],
     return false;
 }
 
-void CrackMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map, SaveFile *saveFile)
+void CrackMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
 {
-    UpdateSprites(frame, sound, saveFile->storyModePowerUps[PWR_STEEL_HAMMER]);
+    UpdateSprites(frame, sound, globalSave.powerUps[PWR_STEEL_HAMMER]);
 }
 
 bool CrackMinigame::IsComplete()

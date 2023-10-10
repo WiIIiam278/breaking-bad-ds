@@ -4,7 +4,7 @@ Shop::Shop()
 {
 }
 
-void Shop::Load(volatile int frame, Sound *sound, SaveFile *saveFile)
+void Shop::Load(volatile int frame, Sound *sound)
 {
     cursorPosition = -1;
     NF_LoadTiledBg(SAUL_BG, SAUL_BG, 256, 256);
@@ -15,7 +15,7 @@ void Shop::Load(volatile int frame, Sound *sound, SaveFile *saveFile)
 }
 
 // Returns true when the user backs out of the menu
-bool Shop::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
+bool Shop::Update(volatile int frame, Sound *sound)
 {
     NF_ClearTextLayer(1, 0);
     if (keysDown() & KEY_B)
@@ -45,11 +45,11 @@ bool Shop::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
     }
     else if (keysDown() & KEY_A)
     {
-        if (cursorPosition > -1 && saveFile->storyModeMoney >= POWER_UPS[cursorPosition].price)
+        if (cursorPosition > -1 && globalSave.currentMoney >= POWER_UPS[cursorPosition].price)
         {
             sound->PlaySFX(SFX_SUCCESS_BELL);
-            saveFile->storyModePowerUps[cursorPosition] = true;
-            saveFile->storyModeMoney -= POWER_UPS[cursorPosition].price;
+            globalSave.powerUps[cursorPosition] = true;
+            globalSave.currentMoney -= POWER_UPS[cursorPosition].price;
         }
         else
         {
@@ -65,7 +65,7 @@ bool Shop::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
     else
     {
         const PowerUp *selected = &POWER_UPS[cursorPosition];
-        if (!saveFile->storyModePowerUps[cursorPosition])
+        if (!globalSave.powerUps[cursorPosition])
         {
             char itemTopLine[48];
             sprintf(itemTopLine, "%s ($%i)", selected->name, selected->price);
@@ -82,7 +82,7 @@ bool Shop::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
     for (int i = 0; i < POWER_UP_COUNT; i++)
     {
         const PowerUp *item = &POWER_UPS[i];
-        bool hasBought = saveFile->storyModePowerUps[i];
+        bool hasBought = globalSave.powerUps[i];
 
         char itemLine[32];
         if (cursorPosition == i)
@@ -97,7 +97,7 @@ bool Shop::Update(volatile int frame, Sound *sound, SaveFile *saveFile)
     }
 
     char money[32];
-    sprintf(money, "$%i", saveFile->storyModeMoney);
+    sprintf(money, "$%i", globalSave.currentMoney);
     NF_WriteText(1, 0, 24, 20, money);
 
     return false;

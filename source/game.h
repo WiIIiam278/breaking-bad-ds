@@ -19,7 +19,7 @@
 #include "debug.h"
 #include "sound.h"
 #include "multiplayer.h"
-#include "save.h"
+#include "save.hpp"
 #include "levels.h"
 #include "transitions.h"
 #include "shop.h"
@@ -33,10 +33,6 @@ private:
     bool debugFlag = true;
     Mode mode = MOVE;
     bool isQuitting = false;
-
-    // Save file
-    const char* saveFileName;
-    SaveFile *saveFile;
 
     // Main game settings
     GameType gameType;
@@ -128,7 +124,7 @@ public:
     void WaitLoop();
     void Prepare3DGraphics();
     void Prepare2DGraphics();
-    void LoadSaveFile(const char* fileName);
+    void LoadSaveFile();
 
     // Minerals
     void AwardMineral(MineralType mineralType, bool silent);
