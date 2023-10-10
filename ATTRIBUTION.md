@@ -22,6 +22,7 @@ This project and its source code is licensed under Apache-2.0, except where othe
 - 2D graphics: NightFoxLib by NightFox (https://github.com/knightfox75/nds_nflib/)
 - devKitARM and libnds by the devKitPro team (https://github.com/devkitPro/libnds)
 - Nintendo DS NiFi Template by Fewnity (https://github.com/Fewnity/Nintendo-DS-Nifi-Template/), based on jpenny19993 and Stephen Stair's original work (libwifi)
+- Save system by C3RV1, based on their awesome work for Undertale DS (https://github.com/C3RV1/UndertaleNDS/) &mdash; Licensed under GPL-3.0
 
 #### Sound
 - Metal sound 12 (drumming sink) by giddster (https://freesound.org/people/giddster/sounds/387958/) &mdash; Licensed under CC0 (Creative Commons Public Domain)

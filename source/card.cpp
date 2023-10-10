@@ -1,3 +1,5 @@
+// This file is licensed under the GNU GPL 3.0
+
 //
 // Created by cervi on 28/09/2022.
 //
