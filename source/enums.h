@@ -25,7 +25,8 @@ enum GameType
 {
     GAME_TUTORIAL,
     GAME_STORY_MODE,
-    GAME_MULTIPLAYER_VS
+    GAME_MULTIPLAYER_VS,
+    GAME_CUSTOM,
 };
 
 enum Tile
@@ -62,7 +63,9 @@ enum MenuSelection
     OPEN_EXTRAS_MENU,
     OPEN_SOUND_TEST_MENU,
     OPEN_MINERALS_MENU,
-    BACK_TO_EXTRAS_MENU
+    BACK_TO_EXTRAS_MENU,
+    OPEN_CUSTOM_GAME_MENU,
+    START_CUSTOM_GAME,
 };
 
 enum MenuState
@@ -85,6 +88,9 @@ enum MenuState
     MENU_RUMBLE,
     MENU_MUSIC_PLAYER,
     MENU_MINERALS,
+
+    // Custom game
+    MENU_CUSTOM_GAME,
 };
 
 enum MinigameResult

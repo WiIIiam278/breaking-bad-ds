@@ -403,6 +403,18 @@ void Menu::ShowMinerals(bool showSprites)
     }
 }
 
+char* Menu::GetCharacterName(Character character) {
+    switch (character) {
+        case CHAR_WALT:
+            return "Walt";
+        case CHAR_JESSE:
+            return "Jesse";
+        case CHAR_YEPPERS:
+            return "Kusuri";
+    }
+    return "Unknown";
+}
+
 void Menu::UpdateMinerals(volatile int frame, Sound *sound)
 {
     int row = 0;
@@ -500,7 +512,7 @@ void Menu::Update(volatile int frame, Sound *sound)
         if (!canSave()) {
             NF_WriteText(1, 0, 0, 0, "Cannot save game!");
         }
-        NF_WriteText(1, 0, 26, 0, "v1.0.4");
+        NF_WriteText(1, 0, 26, 0, "v1.0.5");
         break;
 
     case MENU_RUMBLE:
@@ -566,6 +578,65 @@ void Menu::Update(volatile int frame, Sound *sound)
     case MENU_MP_HOST_ROOM:
     case MENU_MP_JOIN_ROOM:
         UpdateMultiplayer();
+        break;
+    
+    case MENU_CUSTOM_GAME:
+        NF_WriteText(1, 0, 2, 2, "- Custom Cook -");
+
+        // Option config
+        char editorText[50];
+        for (int i = 0; i < CUSTOM_GAME_OPTION_COUNT; i++)
+        {
+            switch (i) {
+                case 0:
+                    if (customGameValues[i] == 5) {
+                        sprintf(
+                            editorText,
+                            "%s%s: Final Cook", customGameCursor == i ? "> " : "", 
+                            customGameIds[i]
+                        );
+                    }
+                    else
+                    {
+                        sprintf(
+                            editorText,
+                            "%s%s: %i", customGameCursor == i ? "> " : "", 
+                            customGameIds[i],
+                            customGameValues[i] + 1
+                        );
+                    }
+                    break;
+                case 1:
+                    sprintf(
+                        editorText,
+                        "%s%s: $%i", customGameCursor == i ? "> " : "", 
+                        customGameIds[i],
+                        customGameValues[i]
+                    );
+                    break;
+                case 2:
+                    sprintf(
+                        editorText, 
+                        "%s%s: %s", customGameCursor == i ? "> " : "",
+                        customGameIds[i],
+                        GetCharacterName(static_cast<Character>(customGameValues[i]))
+                    );
+                    break;
+                default:
+                    sprintf(
+                        editorText, 
+                        "%s%s: %s", customGameCursor == i ? "> " : "",
+                        customGameIds[i],
+                        customGameValues[i] ? "On" : "Off"
+                    );
+                    break;
+            }
+            
+            NF_WriteText(1, 0, 3 - (customGameCursor == i ? 2 : 0), 5 + (i * 2), editorText);
+        }
+
+        NF_WriteText(1, 0, 2, 20, "UP/DOWN: Select");
+        NF_WriteText(1, 0, 2, 21, "LEFT/RIGHT: Edit");
         break;
     }
 
@@ -644,6 +715,55 @@ MenuSelection Menu::HandleInput(volatile int frame, Sound *sound)
             return START_MP_GAME;
         }
         break;
+
+    case MENU_CUSTOM_GAME:
+        if (keysDown() & KEY_RIGHT || keysDown() & KEY_LEFT
+             || keysDown() & KEY_DOWN || keysDown() & KEY_UP)
+        {
+            // Adjust cursor
+            if (keysDown() & KEY_UP) 
+            {
+                customGameCursor--;
+                sound->PlaySFX(SFX_MENU_SELECT);
+            }
+            else if (keysDown() & KEY_DOWN)
+            {
+                customGameCursor++;
+                sound->PlaySFX(SFX_MENU_SELECT);
+            }
+            if (customGameCursor < 0)
+            {
+                customGameCursor = CUSTOM_GAME_OPTION_COUNT - 1;
+            } 
+            else if (customGameCursor >= CUSTOM_GAME_OPTION_COUNT) 
+            {
+                customGameCursor = 0;
+            }
+
+            // Adjust value
+            int valueMin = CUSTOM_GAME_MENU_MAP[customGameCursor][0];
+            int valueMax = CUSTOM_GAME_MENU_MAP[customGameCursor][1];
+            int valueInc = CUSTOM_GAME_MENU_MAP[customGameCursor][2];
+            if (keysDown() & KEY_RIGHT)
+            {
+                customGameValues[customGameCursor] += valueInc;
+                sound->PlaySFX(SFX_SUCCESS_BELL);
+            }
+            else if (keysDown() & KEY_LEFT)
+            {
+                customGameValues[customGameCursor] -= valueInc;
+                sound->PlaySFX(SFX_SUCCESS_BELL);
+            }
+            if (customGameValues[customGameCursor] < valueMin) 
+            {
+                customGameValues[customGameCursor] = valueMax;
+            }
+            else if (customGameValues[customGameCursor] > valueMax)
+            {
+                customGameValues[customGameCursor] = valueMin;
+            }
+        }
+        return HandleLayoutInput(frame, sound, touch);
     }
 
     return HandleLayoutInput(frame, sound, touch);
@@ -832,6 +952,15 @@ MenuSelection Menu::HandleClick(MenuSelection clicked, volatile int frame, Sound
             return BACK_TO_EXTRAS_MENU;
         }
         return NONE;
+    case START_STORY_MODE:
+        if (CheckSelection(clicked)) {
+            if ((keysHeld() & KEY_SELECT) && (keysHeld() & KEY_R)) {
+                SetState(MENU_CUSTOM_GAME, frame, sound);
+                return OPEN_CUSTOM_GAME_MENU;
+            }
+            return clicked;
+        }
+        return NONE;
     default:
         if (CheckSelection(clicked))
         {
@@ -871,6 +1000,11 @@ void Menu::Draw(volatile int frame)
         NE_ModelDraw(logo);
         NE_ModelDraw(text);
     }
+}
+
+int* Menu::GetCustomGameValues()
+{
+    return customGameValues;
 }
 
 void Menu::Unload(volatile int frame, Sound *sound)

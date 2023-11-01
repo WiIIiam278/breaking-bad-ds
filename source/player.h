@@ -46,12 +46,13 @@ public:
     float y;
     float z;
     float rotation;
+    float dRot;
 
     Player();
 
     int Load(Character character, NE_Animation *animations[2]);
     void ResetPosition(bool airJordans);
-    void Move(Map& map);
+    void Move(Map& map, bool noclip);
     void Update(volatile int frame);
     void Translate(float x, float y, float z);
     Tile GetTile(Map& map);

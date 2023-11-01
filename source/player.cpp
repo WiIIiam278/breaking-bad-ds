@@ -91,7 +91,7 @@ void Player::ResetPosition(bool airJordans)
     }
 }
 
-void Player::Move(Map &map)
+void Player::Move(Map &map, bool noclip)
 {
     if (!walking)
     {
@@ -115,7 +115,7 @@ void Player::Move(Map &map)
     }
 
     Tile target = map.GetTileAt(targetX, targetZ);
-    if (target == WALL || target == VOID)
+    if (!noclip && (target == WALL || target == VOID))
     {
         rumble(rand() % 2 == 0);
         targetX = tileX;
@@ -130,8 +130,8 @@ void Player::Update(volatile int frame)
     // Update direction
     int turningSpeed = 20;
     float target = (facing + 1) * (511 / 4);
-    float changeBy = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
-    rotation += changeBy;
+    dRot = abs(target - rotation) > 10 ? (target - rotation > 0 ? turningSpeed : -turningSpeed) : 0;
+    rotation += dRot;
     NE_ModelSetRot(model, lyingDown ? 90 : 0, rotation, 0);
     NE_ModelAnimSecondarySetFactor(model, floattof32((currentSpeed[0] + currentSpeed[1]) / maxSpeed));
 

@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <string>
 
 #include <filesystem.h>
 #include <nds.h>
@@ -69,6 +70,38 @@ private:
     // Sound test
     int currentSoundTestTrack = 1;
 
+    // Custom game
+    int customGameCursor = 0;
+    const int CUSTOM_GAME_OPTION_COUNT = 7;
+    const int CUSTOM_GAME_MENU_MAP[7][3] = {
+        // Min/max/increment for custom games
+        {0, 5, 1},
+        {0, 10000, 100},
+        {0, 2, 1},
+        {false, true, 1},
+        {false, true, 1},
+        {false, true, 1},
+        {false, true, 1},
+    };
+    int customGameValues[7] = {
+        0,               // Day
+        0,               // Money
+        (int) CHAR_WALT, // Character
+        (int) true,      // Time limit
+        (int) true,      // Dialogue
+        (int) false,     // Noclip
+        (int) false,     // POV cam
+    };
+    char* customGameIds[7] = {
+        "Day",
+        "Money",
+        "Cook",
+        "Timer",
+        "Dialogue",
+        "Noclip",
+        "POV Cam"
+    };
+
     // Minerals
     const int MINERAL_GRID_BASE_POS[2] = {5, 41};
     const int MINERAL_GAP = 8;
@@ -105,11 +138,13 @@ public:
     void ShowMultiplayerStatus(bool showSprite);
     void ShowMinerals(bool showSprites);
     void UpdateMinerals(volatile int frame, Sound *sound);
+    char* GetCharacterName(Character character);
     MenuSelection HandleInput(volatile int frame, Sound *sound);
     MenuSelection HandleLayoutInput(volatile int frame, Sound *sound, touchPosition touch);
     MenuSelection HandleClick(MenuSelection clicked, volatile int frame, Sound *sound);
     bool IsTouchInBox(const int coords[2], const int boxDimensions[2], touchPosition touch);
     MenuSelection CheckSelection(MenuSelection tappedBox);
+    int* GetCustomGameValues();
     void Unload(volatile int frame, Sound *sound);
 };
 

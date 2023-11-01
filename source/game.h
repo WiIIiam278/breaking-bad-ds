@@ -33,6 +33,7 @@ private:
     bool debugFlag = true;
     Mode mode = MOVE;
     bool isQuitting = false;
+    bool customFlag = false;
 
     // Main game settings
     GameType gameType;
@@ -48,6 +49,21 @@ private:
     const char GOOD_ENDING_BG[32] = "bg/good_ending";
     const char BAD_ENDING_BG[32] = "bg/bad_ending";
     bool showingWinScreen = false;
+
+    // Cheats
+    const int CHEAT_COUNT = 4;
+    enum Cheat {
+        CHEAT_TIMER,
+        CHEAT_DIALOGUE,
+        CHEAT_NOCLIP,
+        CHEAT_POV
+    };
+    bool enabledCheats[4] = {
+        false, // Disable timer
+        false, // Skip dialogue
+        false, // Noclip
+        false  // POV camera
+    };
 
     // Multiplayer
     Player *player2 = NULL;

@@ -200,6 +200,7 @@ static Layout LAYOUTS[12] = {
      "bg/guassian"
      },
 
+    // Hank's minerals
      {1,
      {
          {1, {90, 26}, 5, BACK_TO_EXTRAS_MENU},
@@ -218,7 +219,30 @@ static Layout LAYOUTS[12] = {
      MENU_EXTRAS,
      3,
      "bg/minerals_hank"
-     }
+     },
+
+    // Level select
+    {2,
+     {
+         {0, {90, 36}, 2, START_CUSTOM_GAME},
+         {1, {90, 26}, 5, BACK_TO_GAME_MENU},
+     },
+     {
+         {135, 96},
+         {135, 136},
+     },
+     0,
+     {164, 10},
+     false,
+     {
+        {START_CUSTOM_GAME, NONE},
+        {BACK_TO_GAME_MENU, NONE},
+        {NONE, NONE},
+     },
+     MENU_GAME_SELECT,
+     2,
+     "bg/guassian"
+     },
 
 };
 
@@ -244,6 +268,8 @@ static Layout *GetLayoutForState(MenuState state)
         return &LAYOUTS[7];
     case MENU_MINERALS:
         return &LAYOUTS[8];
+    case MENU_CUSTOM_GAME:
+        return &LAYOUTS[9];
     default:
         return nullptr;
     }

@@ -107,6 +107,12 @@ void Game::UpdateCamera()
         break;
     case DIALOGUE:
     case PAUSED:
+        if (enabledCheats[CHEAT_POV]) {
+            cameraTx = player.x;
+            cameraTy = 2.5 + (player.y);
+            cameraTz = player.z;
+            break;
+        }
         cameraTx = player.x;
         cameraTy = 7.5;
         cameraTz = -2.5 - 2.5 + (player.z / 6);
@@ -131,6 +137,22 @@ void Game::UpdateCamera()
         }
         break;
     default:
+        if (enabledCheats[CHEAT_POV]) {
+            cameraTx = player.x;
+            cameraTy = 2.5 + (player.y);
+            cameraTz = player.z;
+    
+            // POV Camera pan controls (L/R)
+            if (keysHeld() & KEY_R)
+            {
+                NE_CameraRotate(camera, 0, 5, 0);
+            }
+            else if (keysHeld() & KEY_L)
+            {
+                NE_CameraRotate(camera, 0, -5, 0);
+            }
+            break;
+        }
         cameraTx = player.x;
         cameraTy = BASE_MOVE_CAMERA_POS[1] + (player.z / 6);
         cameraTz = BASE_MOVE_CAMERA_POS[2] + (player.z / 6);
@@ -160,6 +182,10 @@ void Game::TranslateCamera(float x, float y, float z)
 
 void Game::AwardMineral(MineralType mineralType, bool silent)
 {
+    if (this->customFlag)
+    {
+        return;
+    }
     if (!globalSave.minerals[mineralType])
     {
         globalSave.minerals[mineralType] = true;
@@ -353,7 +379,9 @@ void Game::StartDay(uint16 day)
 void Game::StartNextDay()
 {
     StartDay(globalSave.currentDay + 1);
-    globalSave.saveData();
+    if (!customFlag) {
+        globalSave.saveData();
+    }
 }
 
 void Game::OpenShopMenu()
@@ -393,8 +421,11 @@ void Game::UpdateDayTransition()
         // Level details
         int levelTime = level->time + (((int)(((float)level->time) * WATCH_BATTERY_TIME_MULTIPLIER)) * globalSave.powerUps[PWR_WATCH_BATTERY] ? 1 : 0);
         char levelText[32];
-        sprintf(levelText, "Time: %is", levelTime);
-        NF_WriteText(1, 0, 10, 11, levelText);
+        if (!enabledCheats[CHEAT_TIMER]) 
+        {
+            sprintf(levelText, "Time: %is", levelTime);
+            NF_WriteText(1, 0, 10, 11, levelText);
+        }
 
         sprintf(levelText, "Quota: %i", level->quota);
         NF_WriteText(1, 0, 10, 12, levelText);
@@ -429,7 +460,9 @@ void Game::UpdateShopMenu()
     {
         shop.Unload(frame, &sound);
         Transition(false, 0, TS_BOTH, frame);
-        globalSave.saveData();
+        if (!customFlag) {
+            globalSave.saveData();
+        }
         if (globalSave.powerUps[PWR_EXPLOSIVES])
         {
             AwardMineral(MINERAL_CERIUM, false);
@@ -525,7 +558,13 @@ void Game::QuitToTitle()
     sound.StopBGM();
     UnLoadLabScene();
     NE_SpecialEffectSet(NE_NONE);
-    globalSave.saveData();
+    if (!customFlag) {
+        globalSave.saveData();
+    }
+    else
+    {
+        globalSave.loadData();
+    }
     StartMenuScreen(false);
     if (!levelClear)
     {
@@ -579,7 +618,9 @@ void Game::CheckDialogue()
                                                     : dialogue.GetStoryDialogue(dialogueProgress, currentBatchProgress, batchesComplete, player.GetTile(map)));
         if (dialogueId != -1)
         {
-            StartDialogue((ScriptId)dialogueId);
+            if (!enabledCheats[CHEAT_DIALOGUE]) {
+                StartDialogue((ScriptId)dialogueId);
+            }
             dialogueProgress++;
         }
     }
@@ -589,6 +630,20 @@ void Game::StartGame(GameType gameType)
 {
     Transition(false, 0, TS_BOTH, frame);
     this->isQuitting = false;
+    
+    // Reset enabled cheats
+    for (int i = 0; i < CHEAT_COUNT; i++) {
+        enabledCheats[i] = false;
+    }
+
+    // Handle custom games
+    this->customFlag = false;
+    if (gameType == GAME_CUSTOM) {
+        gameType = GAME_STORY_MODE;
+        this->customFlag = true;
+    }
+
+    // Set params
     this->gameType = gameType;
     this->dialogueProgress = gameType == GAME_STORY_MODE ? globalSave.currentDialogue : 0;
     this->frame = 0;
@@ -598,6 +653,16 @@ void Game::StartGame(GameType gameType)
     LoadLabScene();
 
     // Start game
+    if (this->customFlag) {
+        int* values = menu.GetCustomGameValues();
+        globalSave.currentDay = values[0];
+        globalSave.currentMoney = values[1];
+        enabledCheats[CHEAT_TIMER] = !values[3];
+        enabledCheats[CHEAT_DIALOGUE] = !values[4];
+        enabledCheats[CHEAT_NOCLIP] = values[5];
+        enabledCheats[CHEAT_POV] = values[6];
+    }
+
     if (gameType == GAME_STORY_MODE)
     {
         StartDay(globalSave.currentDay);
@@ -630,11 +695,22 @@ void Game::LoadLabScene()
         return;
     }
 
+    // Determien player 1 character
     Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
+    
+    // If this is a custom game, use selected character
+    if (!isMultiplayer && this->customFlag)
+    {
+        p1Char = static_cast<Character>(menu.GetCustomGameValues()[2]);
+    }
+
+    // Load player 1
     if (player.Load(p1Char, playerAnimations) == -1)
     {
         WaitLoop();
     }
+
+    // Load player 2 (multiplayer vs.)
     if (isMultiplayer)
     {
         player2 = new Player();
@@ -645,6 +721,7 @@ void Game::LoadLabScene()
         }
     }
 
+    // Award achievements as neccessary
     switch (p1Char)
     {
     case CHAR_JESSE:
@@ -713,14 +790,26 @@ void Game::StartLevel(const Level *level)
     player.targetZ = player.tileZ = 1;
 
     // Setup camera
-    cameraX = BASE_MOVE_CAMERA_POS[0];
-    cameraY = BASE_MOVE_CAMERA_POS[1];
-    cameraZ = BASE_MOVE_CAMERA_POS[2];
-    NE_CameraSet(camera,
-                 cameraX, cameraY, cameraZ,
-                 -11.5, 2, 8.5,
-                 0, 1, 0);
-
+    if (!enabledCheats[CHEAT_POV]) {
+        cameraX = BASE_MOVE_CAMERA_POS[0];
+        cameraY = BASE_MOVE_CAMERA_POS[1];
+        cameraZ = BASE_MOVE_CAMERA_POS[2];
+        NE_CameraSet(camera,
+                    cameraX, cameraY, cameraZ,
+                    -11.5, 2, 8.5,
+                    0, 1, 0);
+    }
+    else
+    {
+        cameraX = player.x;
+        cameraY = 2.5 + (player.y);
+        cameraZ = player.z;
+        NE_CameraSet(camera,
+                    cameraX, cameraY, cameraZ,
+                    -11.5, cameraY, 8.5,
+                    0, 1, 0);
+    }
+    
     // Enable HUD, start sound effects, start dialogue if needed
     ToggleHud(true);
     switch (gameType)
@@ -844,6 +933,11 @@ void Game::UpdateMenuScreen()
     case START_MP_GAME:
         UnLoadLogoScene();
         StartGame(GAME_MULTIPLAYER_VS);
+        break;
+    case START_CUSTOM_GAME:
+        NF_ClearTextLayer(1, 0);
+        UnLoadLogoScene();
+        StartGame(GAME_CUSTOM);
         break;
     }
 }
@@ -1111,12 +1205,12 @@ void Game::Render()
     if (mode != PAUSED)
     {
         player.Update(frame);
-        player.Move(map);
+        player.Move(map, enabledCheats[CHEAT_NOCLIP]);
 
         if (gameType == GAME_MULTIPLAYER_VS)
         {
             player2->Update(frame);
-            player2->Move(map);
+            player2->Move(map, false);
         }
 
         map.RotateSecurityCamera(player.x, player.z);
@@ -1124,7 +1218,9 @@ void Game::Render()
 
     // Draw objects
     map.Draw(player.tileX > 2 && player.tileX < 7 && player.tileZ > 4);
-    player.Draw(gameType == GAME_MULTIPLAYER_VS ? (isHostClient() ? 1 : 2) : 0);
+    if (!enabledCheats[CHEAT_POV]) {
+        player.Draw(gameType == GAME_MULTIPLAYER_VS ? (isHostClient() ? 1 : 2) : 0);
+    }
     if (gameType == GAME_MULTIPLAYER_VS && (mode != GAME_OVER))
     {
         player2->Draw(!isHostClient() ? 1 : 2);
@@ -1311,7 +1407,7 @@ void Game::Update()
         // Update timer
         if (frame % 60 == 0 && timeLimit > -1 && mode != DIALOGUE)
         {
-            if (gameType != GAME_MULTIPLAYER_VS || isHostClient())
+            if ((gameType != GAME_MULTIPLAYER_VS && !enabledCheats[CHEAT_TIMER]) || isHostClient())
             {
                 timeLimit--;
             }
