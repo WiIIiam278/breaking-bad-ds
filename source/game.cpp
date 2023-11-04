@@ -656,6 +656,7 @@ void Game::StartGame(GameType gameType)
     if (this->customFlag) {
         int* values = menu.GetCustomGameValues();
         globalSave.currentDay = values[0];
+        this->dialogueProgress = values[0];
         globalSave.currentMoney = values[1];
         enabledCheats[CHEAT_TIMER] = !values[3];
         enabledCheats[CHEAT_DIALOGUE] = !values[4];
@@ -877,8 +878,8 @@ void Game::StartMenuScreen(bool debugMode)
 
     if (debugFlag)
     {
-        StartGame(GAME_STORY_MODE);
-        return;
+        // StartGame(GAME_STORY_MODE);
+        // return;
     }
 
     mode = MAIN_MENU;
@@ -1282,9 +1283,11 @@ void Game::Update()
     // Debug - print debug info
     if (debugFlag)
     {
-        char memUsage[100];
-        sprintf(memUsage, "Mem: %d (%d)", getMemUsed(), getMemFree());
-        NF_WriteText(1, 0, 1, 1, memUsage);
+        char debugText[100];
+        sprintf(debugText, "Mem: %d (%d)", getMemUsed(), getMemFree());
+        NF_WriteText(1, 0, 1, 1, debugText);
+        sprintf(debugText, "Dialogue: %i", dialogueProgress);
+        NF_WriteText(1, 0, 1, 2, debugText);
     }
 
     // Update transition

@@ -34,6 +34,16 @@ const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
     }
 };
 
+/* const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 }
+}; */
+
+
 const Level LEVEL_TUTORIAL = {
     5,
     -1
