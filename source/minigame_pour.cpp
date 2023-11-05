@@ -124,6 +124,16 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
             targetPumpRate = 0;
         }
     }
+    else
+    {
+        if (selectedSwitch != -1)
+        {
+            sound->PlaySFX(SFX_CLICK);
+        }
+        selectedSwitch = -1;
+        targetDrainRate = 0;
+        targetPumpRate = 0;
+    }
 
     if (frame % 10 == 0)
     {
