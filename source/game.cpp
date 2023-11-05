@@ -31,7 +31,14 @@ Game::Game()
     nifiPrepare();
 
     // Setup sound
-    sound.LoadSound();
+    mm_ds_system sys;
+    sys.mod_count 			= 0;
+    sys.samp_count			= 0;
+    sys.mem_bank			= nullptr;
+    sys.fifo_channel		= FIFO_MAXMOD;
+    mmInit(&sys);
+    Audio::initAudioStream();
+    Audio::LoadSFXs();
 
     // Load global save
     globalSave.loadData();
@@ -192,7 +199,7 @@ void Game::AwardMineral(MineralType mineralType, bool silent)
 
         if (!silent)
         {
-            sound.PlaySFX(SFX_MINERALS);
+            Audio::PlaySFX(SFX_MINERALS);
         }
     }
 }
@@ -206,7 +213,7 @@ void Game::TogglePauseMenu()
     bool pausing = mode == MOVE;
     Transition(false, 0, TS_BOTTOM, frame);
 
-    sound.PlaySFX(SFX_MENU_SELECT);
+    Audio::PlaySFX(SFX_MENU_SELECT);
     if (pausing)
     {
         player.canMove = false;
@@ -365,7 +372,7 @@ void Game::StartDay(uint16 day)
     if (day < LEVEL_COUNT)
     {
         mode = STORY_TRANSITION;
-        sound.StopBGM();
+        Audio::StopBGM();
         frame = 0;
         showingDayNumber = true;
         return;
@@ -394,7 +401,7 @@ void Game::OpenShopMenu()
     ToggleHud(false);
     Transition(false, 0, TS_TOP, frame);
     frame = 0;
-    shop.Load(frame, &sound);
+    shop.Load(frame);
 }
 
 void Game::UpdateDayTransition()
@@ -456,9 +463,9 @@ void Game::UpdateShopMenu()
         return;
     }
 
-    if (shop.Update(frame, &sound))
+    if (shop.Update(frame))
     {
-        shop.Unload(frame, &sound);
+        shop.Unload(frame);
         Transition(false, 0, TS_BOTH, frame);
         if (!customFlag) {
             globalSave.saveData();
@@ -483,10 +490,10 @@ void Game::ShowEndScreen(bool winScreen)
 
     Transition(false, 0, TS_BOTH, frame);
     NF_ClearTextLayer(1, 0);
-    sound.StopBGM();
+    Audio::StopBGM();
     ToggleHud(false);
 
-    sound.PlayBGM(BGM_TITLE_LOOP, true);
+    Audio::PlayBGM(BGM_TITLE_LOOP, true);
     if (winScreen)
     {
         NF_LoadTiledBg(GOOD_ENDING_BG, GOOD_ENDING_BG, 256, 256);
@@ -555,7 +562,7 @@ void Game::QuitToTitle()
         NF_DeleteSprite(1, QUALITY_INDICATOR_SPRITE);
         showingIndicatorFor = 0;
     }
-    sound.StopBGM();
+    Audio::StopBGM();
     UnLoadLabScene();
     NE_SpecialEffectSet(NE_NONE);
     if (!customFlag) {
@@ -568,7 +575,7 @@ void Game::QuitToTitle()
     StartMenuScreen(false);
     if (!levelClear)
     {
-        sound.PlaySFX(SFX_MENU_SELECT);
+        Audio::PlaySFX(SFX_MENU_SELECT);
     }
 }
 
@@ -816,13 +823,13 @@ void Game::StartLevel(const Level *level)
     switch (gameType)
     {
     case GAME_STORY_MODE:
-        sound.PlayBGM(globalSave.currentDay < LEVEL_COUNT ? BGM_THE_COUSINS : BGM_FINAL_COOK, true);
+        Audio::PlayBGM(globalSave.currentDay < LEVEL_COUNT ? BGM_THE_COUSINS : BGM_FINAL_COOK, true);
         break;
     case GAME_MULTIPLAYER_VS:
-        sound.PlayBGM(BGM_THE_COUSINS, true);
+        Audio::PlayBGM(BGM_THE_COUSINS, true);
         break;
     case GAME_TUTORIAL:
-        sound.PlayBGM(BGM_CLEAR_WATERS, true);
+        Audio::PlayBGM(BGM_CLEAR_WATERS, true);
         break;
     }
     CheckDialogue();
@@ -905,20 +912,20 @@ void Game::LoadLogoScene()
     {
         WaitLoop();
     }
-    menu.SetState(MENU_LOGO, frame, &sound);
+    menu.SetState(MENU_LOGO, frame);
 }
 
 void Game::UnLoadLogoScene()
 {
     Transition(false, 0, TS_BOTH, frame);
-    menu.Unload(frame, &sound);
+    menu.Unload(frame);
 }
 
 void Game::UpdateMenuScreen()
 {
-    menu.Update(frame, &sound);
+    menu.Update(frame);
 
-    switch (menu.HandleInput(frame, &sound))
+    switch (menu.HandleInput(frame))
     {
     case SKIP_LOGO:
         frame = 689;
@@ -1025,7 +1032,7 @@ void Game::ShowMinigameResult(MinigameResult indicator, int frames)
 
     if (indicator == RESULT_GOOD)
     {
-        sound.PlaySFX(SFX_SUCCESS_BELL);
+        Audio::PlaySFX(SFX_SUCCESS_BELL);
     }
 }
 
@@ -1058,7 +1065,7 @@ void Game::StartGameOver(bool hasWon)
     }
 
     // Set mode
-    sound.StopBGM();
+    Audio::StopBGM();
     NE_SpecialEffectSet(NE_NONE);
     mode = GAME_OVER;
     gameOverFrame = -170;
@@ -1091,7 +1098,7 @@ void Game::UpdateGameOver()
     case -150:
         if (!levelClear)
         {
-            sound.PlaySFX(SFX_GOODBYE_WALTER);
+            Audio::PlaySFX(SFX_GOODBYE_WALTER);
         }
         break;
     case -55:
@@ -1106,16 +1113,16 @@ void Game::UpdateGameOver()
         }
         break;
     case -10:
-        sound.StopSFX();
+        Audio::StopSFX();
         break;
     case 0:
         if (!levelClear)
         {
-            sound.PlayBGM(BGM_BABY_BLUE, false);
+            Audio::PlayBGM(BGM_BABY_BLUE, false);
         }
         else
         {
-            sound.PlayBGM(BGM_RODRIGO_Y_GABRIELA, false);
+            Audio::PlayBGM(BGM_RODRIGO_Y_GABRIELA, false);
         }
         Transition(true, 60, TS_BOTH, frame);
         break;
@@ -1129,7 +1136,7 @@ void Game::UpdateGameOver()
         if (levelClear)
         {
             Transition(false, 0, TS_BOTH, frame);
-            sound.StopBGM();
+            Audio::StopBGM();
         }
         break;
     case 620:
@@ -1374,9 +1381,9 @@ void Game::Update()
     // Update dialogue
     if (mode == DIALOGUE)
     {
-        if (dialogue.Update(frame, keysDown(), &sound))
+        if (dialogue.Update(frame, keysDown()))
         {
-            sound.PlaySFX(SFX_MENU_DRUM);
+            Audio::PlaySFX(SFX_MENU_DRUM);
             EndDialogue();
 
             if (gameType == GAME_STORY_MODE)
@@ -1426,7 +1433,7 @@ void Game::Update()
 
                 if (timeLimit <= 10)
                 {
-                    sound.PlaySFX(SFX_MENU_DRUM);
+                    Audio::PlaySFX(SFX_MENU_DRUM);
                 }
 
                 if (timeLimit == 0)
@@ -1457,7 +1464,7 @@ void Game::Update()
         {
             if (!(gameType == GAME_STORY_MODE && globalSave.currentDay == LEVEL_COUNT))
             {
-                sound.PlaySFX(SFX_ACCEPTABLE);
+                Audio::PlaySFX(SFX_ACCEPTABLE);
             }
 
             batchesComplete += (BASE_BATCH_YIELD * ((float)batchPurity / 100.0f));
@@ -1546,7 +1553,7 @@ void Game::Update()
     if (mode == MINIGAME)
     {
         inMinigameFor++;
-        currentMinigame->Update(frame, keysHeld(), &sound, &map);
+        currentMinigame->Update(frame, keysHeld(), &map);
         if (currentMinigame->IsComplete() && currentBatchProgress == ((int)player.GetTile(map) - 3))
         {
             MinigameResult result = currentMinigame->GetResult(inMinigameFor);
@@ -1578,7 +1585,7 @@ void Game::Update()
     }
 
     // Update sounds
-    sound.Update(frame);
+    // sound.Update(frame);
 
     // Refresh shadow OAM copy
     NF_SpriteOamSet(1);

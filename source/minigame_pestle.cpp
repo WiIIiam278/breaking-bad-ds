@@ -42,7 +42,7 @@ void PestleMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void PestleMinigame::Update(volatile int frame, uint32 keys, Map *map)
 {
     if (IsComplete())
     {
@@ -87,7 +87,7 @@ void PestleMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *
             if (frame - lastSfxPlay > SFX_DURATION)
             {
                 lastSfxPlay = frame;
-                sound->PlaySFX(SFX_PESTLE);
+                Audio::PlaySFX(SFX_PESTLE);
             }
 
             solutePos[i][0] = std::max(std::min(solutePos[i][0] + (rand() % 10) - 5, 100), 30);

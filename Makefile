@@ -58,9 +58,7 @@ ifneq ($(strip $(NITRO)),)
 LIBS := $(LIBS) -lfilesystem -lfat
 endif
 # automagically add maxmod library
-ifneq ($(strip $(AUDIO)),)
 LIBS := $(LIBS) -lmm9
-endif
 
 LIBS := $(LIBS) -lnds9
 

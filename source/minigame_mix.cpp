@@ -62,7 +62,7 @@ void MixMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void MixMinigame::Update(volatile int frame, uint32 keys, Map *map)
 {
     if (IsComplete())
     {
@@ -74,7 +74,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map
         rumble(pipeInPlaceFrames % 2);
         if (pipeInPlaceFrames == 45)
         {
-            sound->PlaySFX(SFX_VACCUM);
+            Audio::PlaySFX(SFX_VACCUM);
         }
         pipeInPlaceFrames++;
         return;
@@ -113,7 +113,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map
 
             if (scrubSpeed > 5 && (frame % 30 == 0))
             {
-                sound->PlaySFX(SFX_CRANK);
+                Audio::PlaySFX(SFX_CRANK);
             }
         }
         lastStylusPos[0] = stylusPos[0];
@@ -155,7 +155,7 @@ void MixMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map
     if (currentPos[0] > TARGET_PIPE_POS[0] - TARGET_POS_VARIENCE && currentPos[0] < TARGET_PIPE_POS[0] + TARGET_POS_VARIENCE && currentPos[1] > TARGET_PIPE_POS[1] - TARGET_POS_VARIENCE && currentPos[1] < TARGET_PIPE_POS[1] + TARGET_POS_VARIENCE)
     {
         pipeInPlace = true;
-        sound->PlaySFX(SFX_CLICK);
+        Audio::PlaySFX(SFX_CLICK);
         rumble(frame % 2);
     }
 }

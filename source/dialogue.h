@@ -11,7 +11,7 @@
 #include <nf_lib.h>
 
 #include "save.hpp"
-#include "sound.h"
+#include "sound.hpp"
 #include "enums.h"
 #include "levels.h"
 #include "rumble.h"
@@ -553,7 +553,7 @@ private:
 public:
   Dialogue();
   void Load(ScriptId script, volatile int frame);
-  bool Update(volatile int frame, uint32 keys, Sound *sound);
+  bool Update(volatile int frame, uint32 keys);
   void Unload();
   int GetTutorialDialogue(int tutorialProgress, int batchProgress, Tile playerTile);
   int GetStoryDialogue(int dialogueProgress, int batchProgress, int batchesComplete, Tile playerTile);

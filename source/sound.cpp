@@ -1,20 +1,30 @@
 #include "sound.hpp"
 
-namespace Audio {
+namespace Audio
+{
     WAV cBGMusic;
 
-    WAV* playingWavHead = nullptr;
+    WAV *playingWavHead = nullptr;
 
-    int WAV::loadWAV(const char *name) {
+    int WAV::loadWAV(const char *name)
+    {
+        // consoleDemoInit();
+        // setBrightness(2, 0);
+        // setBrightness(1, 0);
+        // setBrightness(0, 0);
+        printf("Loading %s\n", name);
+
         free_();
         _loops = 0;
         char buffer[100];
-        sprintf(buffer, "nitro:/bgm/%s.wav", name);
+        sprintf(buffer, "nitro:/%s.wav", name);
         FILE *f = fopen(buffer, "rb");
         _filename = new char[strlen(name) + 1];
         strcpy(_filename, name);
         if (f == nullptr)
+        {
             return 1;
+        }
         _stream = f;
 
         char header[4];
@@ -25,7 +35,9 @@ namespace Audio {
         const char dataHeader[4] = {'d', 'a', 't', 'a'};
 
         fread(header, 4, 1, f);
-        if (memcmp(header, riffHeader, 4) != 0) {
+        if (memcmp(header, riffHeader, 4) != 0)
+        {
+            printf("Riff header not found\n");
             fclose(f);
             return 2;
         }
@@ -33,14 +45,18 @@ namespace Audio {
         fseek(f, ftell(f) + 4, SEEK_SET); // skip chunk size
 
         fread(header, 4, 1, f);
-        if (memcmp(header, waveHeader, 4) != 0) {
+        if (memcmp(header, waveHeader, 4) != 0)
+        {
+            printf("Wave header not found\n");
             fclose(f);
             return 3;
         }
 
         // fmt header
         fread(header, 4, 1, f);
-        if (memcmp(header, fmtHeader, 4) != 0) {
+        if (memcmp(header, fmtHeader, 4) != 0)
+        {
+            printf("Fmt header not found\n");
             fclose(f);
             return 4;
         }
@@ -55,12 +71,16 @@ namespace Audio {
         fseek(f, ftell(f) + 2, SEEK_SET); // skip block align == self.num_channels * self.bits_per_sample // 8
         fread(&_bitsPerSample, 2, 1, f);
 
-        if (format != 1) {
+        if (format != 1)
+        {
+            printf("Format not PCM\n");
             fclose(f);
             return 5;
         }
 
-        if (channels > 2) {
+        if (channels > 2)
+        {
+            printf("Too many channels\n");
             return 6;
         }
 
@@ -68,7 +88,9 @@ namespace Audio {
 
         // data chunk
         fread(header, 4, 1, f);
-        if (memcmp(header, dataHeader, 4) != 0) {
+        if (memcmp(header, dataHeader, 4) != 0)
+        {
+            printf("Data header not found\n");
             fclose(f);
             return 7;
         }
@@ -79,11 +101,12 @@ namespace Audio {
         _dataStart = ftell(f);
 
         _loaded = true;
-
+        printf("Loaded %s\n", name);
         return 0;
     }
 
-    void WAV::free_() {
+    void WAV::free_()
+    {
         if (!_loaded)
             return;
         delete[] _filename;
@@ -93,7 +116,8 @@ namespace Audio {
         _loaded = false;
     }
 
-    void initAudioStream() {
+    void initAudioStream()
+    {
         mm_stream stream;
 
         stream.sampling_rate = 44100;
@@ -106,11 +130,14 @@ namespace Audio {
         mmStreamOpen(&stream);
     }
 
-    void WAV::play() {
-        if (!_loaded) {
+    void WAV::play()
+    {
+        if (!_loaded)
+        {
             return;
         }
-        if (_active) {
+        if (_active)
+        {
             stop();
         }
         fseek(_stream, _dataStart, SEEK_SET);
@@ -124,7 +151,8 @@ namespace Audio {
         playingWavHead = this;
     }
 
-    void WAV::stop() {
+    void WAV::stop()
+    {
         if (!_active)
             return;
         _active = false;
@@ -134,18 +162,22 @@ namespace Audio {
             playingWavHead = _next;
         if (_next != nullptr)
             _next->_prev = _prev;
-        if (deleteOnStop) {
+        if (deleteOnStop)
+        {
             free_();
             delete this;
         }
     }
 
-    mm_word fillAudioStream(mm_word length, mm_addr dest, mm_stream_formats format) {
-        WAV* current = playingWavHead;
+    mm_word fillAudioStream(mm_word length, mm_addr dest, mm_stream_formats format)
+    {
+        WAV *current = playingWavHead;
         memset(dest, 0, 4 * length);
-        while (current != nullptr) {
-            WAV* next = current->_next;
-            if (fillAudioStreamWav(current, length, (u16*)dest, format)) {
+        while (current != nullptr)
+        {
+            WAV *next = current->_next;
+            if (fillAudioStreamWav(current, length, (u16 *)dest, format))
+            {
                 current->stop();
             }
             current = next;
@@ -153,14 +185,15 @@ namespace Audio {
         return length;
     }
 
-    bool fillAudioStreamWav(WAV* wav, mm_word length, u16* dest, mm_stream_formats) {
+    bool fillAudioStreamWav(WAV *wav, mm_word length, u16 *dest, mm_stream_formats)
+    {
         if (wav == nullptr)
             return true;
         if (!wav->_active)
             return true;
         if (!wav->_loaded)
             return true;
-        FILE* stream = wav->_stream;
+        FILE *stream = wav->_stream;
         // TODO: convert bit depth
         if (wav->_bitsPerSample != 16)
             return true;
@@ -168,17 +201,23 @@ namespace Audio {
         u32 dstI = 0;
         // TODO: s32 addition; to clip
 
-        while (dstI < length) {
-            while (wav->_co >= 44100) {
+        while (dstI < length)
+        {
+            while (wav->_co >= 44100)
+            {
                 wav->_cValueIdx += 1;
-                if (wav->_cValueIdx >= wav->_maxValueIdx) {
-                    if ((u32)ftell(stream) >= wav->_dataEnd) {
-                        if (wav->_loops != 0) {
+                if (wav->_cValueIdx >= wav->_maxValueIdx)
+                {
+                    if ((u32)ftell(stream) >= wav->_dataEnd)
+                    {
+                        if (wav->_loops != 0)
+                        {
                             if (wav->_loops > 0)
                                 wav->_loops--;
                             fseek(stream, wav->_dataStart, SEEK_SET);
                         }
-                        else {
+                        else
+                        {
                             return true;
                         }
                     }
@@ -195,7 +234,8 @@ namespace Audio {
                 }
                 wav->_co -= 44100;
             }
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 2; i++)
+            {
                 if (!wav->_stereo)
                     dest[dstI * 2 + i] += wav->_values[wav->_cValueIdx];
                 else
@@ -207,19 +247,53 @@ namespace Audio {
         return false;
     }
 
-    void PlayBGM(BgmId bgm, bool loop) {
+    void LoadSFXs()
+    {
+        // Prepare sound engine
+        // soundEnable();
+        // NF_InitRawSoundBuffers();
+
+        
+        // Load SFX
+        // for (int i = 0; i < SFX_COUNT; i++)
+        // {
+        //     NF_LoadRawSound(SFXS[i], i, 22050, 0);
+        // }
+    }
+
+    void PlaySFX(SfxId sfx)
+    {
+        // NF_PlayRawSound(
+        //     sfx,
+        //     127,
+        //     64,
+        //     false,
+        //     0
+        // );
+    }
+
+    void StopSFX()
+    {
+        soundKill(0);
+    }
+
+    void PlayBGM(BgmId bgm, bool loop)
+    {
         StopBGM();
-        cBGMusic.loadWAV(BGMS[bgm].path);
+        int l = cBGMusic.loadWAV(BGMS[bgm].path);
         cBGMusic.setLoops(loop ? -1 : 0);
         cBGMusic.deleteOnStop = false;
         if (cBGMusic.getLoaded())
             cBGMusic.play();
-        else {
+        else
+        {
             cBGMusic.free_();
         }
+        while (l != 0) {}
     }
 
-    void StopBGM() {
+    void StopBGM()
+    {
         cBGMusic.stop();
         cBGMusic.free_();
     }

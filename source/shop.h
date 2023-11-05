@@ -4,7 +4,7 @@
 #include <nf_lib.h>
 
 #include "enums.h"
-#include "sound.h"
+#include "sound.hpp"
 #include "transitions.h"
 #include "save.hpp"
 
@@ -58,8 +58,8 @@ private:
 public:
     Shop();
 
-    void Load(volatile int frame, Sound *sound);
-    bool Update(volatile int frame, Sound *sound);
-    void WriteSaulDialogue(const char* topLine, const char* bottomLine, volatile int frame, Sound *sound);
-    void Unload(volatile int frame, Sound *sound);
+    void Load(volatile int frame);
+    bool Update(volatile int frame);
+    void WriteSaulDialogue(const char* topLine, const char* bottomLine, volatile int frame);
+    void Unload(volatile int frame);
 };

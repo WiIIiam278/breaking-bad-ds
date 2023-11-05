@@ -57,7 +57,7 @@ void PipetteMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void PipetteMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void PipetteMinigame::Update(volatile int frame, uint32 keys, Map *map)
 {
     UpdateTubes(frame);
 

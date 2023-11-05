@@ -11,7 +11,7 @@
 #include <nf_lib.h>
 
 #include "enums.h"
-#include "sound.h"
+#include "sound.hpp"
 #include "multiplayer.h"
 #include "layouts.h"
 #include "minerals.h"
@@ -129,23 +129,23 @@ public:
     void ShowLayout();
     void UpdateLayout(volatile int frame);
     void ShowBackground();
-    void Update(volatile int frame, Sound *sound);
+    void Update(volatile int frame);
     void Draw(volatile int frame);
-    void SetState(MenuState newState, volatile int frame, Sound *sound);
+    void SetState(MenuState newState, volatile int frame);
     void PositionLogo();
     void StartMultiplayer(bool mpCreatingRoom);
     void UpdateMultiplayer();
     void ShowMultiplayerStatus(bool showSprite);
     void ShowMinerals(bool showSprites);
-    void UpdateMinerals(volatile int frame, Sound *sound);
+    void UpdateMinerals(volatile int frame);
     char* GetCharacterName(Character character);
-    MenuSelection HandleInput(volatile int frame, Sound *sound);
-    MenuSelection HandleLayoutInput(volatile int frame, Sound *sound, touchPosition touch);
-    MenuSelection HandleClick(MenuSelection clicked, volatile int frame, Sound *sound);
+    MenuSelection HandleInput(volatile int frame);
+    MenuSelection HandleLayoutInput(volatile int frame, touchPosition touch);
+    MenuSelection HandleClick(MenuSelection clicked, volatile int frame);
     bool IsTouchInBox(const int coords[2], const int boxDimensions[2], touchPosition touch);
     MenuSelection CheckSelection(MenuSelection tappedBox);
     int* GetCustomGameValues();
-    void Unload(volatile int frame, Sound *sound);
+    void Unload(volatile int frame);
 };
 
 extern "C"

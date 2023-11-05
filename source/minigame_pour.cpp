@@ -20,7 +20,7 @@ void PourMinigame::Load()
     NF_VramSpritePal(1, POUR_SPRITES, 0);
 
     UpdateTray();
-    UpdateSwitches(0, nullptr);
+    UpdateSwitches(0);
 
     NF_CreateSprite(1, PIPE_SPRITE, 0, 0, PIPE_SPRITE_POS[0], PIPE_SPRITE_POS[1]);
     for (int i = 0; i < POURING_FLUID_COUNT; i++)
@@ -79,7 +79,7 @@ void PourMinigame::UpdateTray()
     showingTray = true;
 }
 
-void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
+void PourMinigame::UpdateSwitches(volatile int frame)
 {
     if (!showingSwitches)
     {
@@ -96,7 +96,7 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
         {
             if (selectedSwitch != 0)
             {
-                sound->PlaySFX(SFX_CLICK);
+                Audio::PlaySFX(SFX_CLICK);
             }
             selectedSwitch = 0;
             targetDrainRate = 0;
@@ -107,7 +107,7 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
         {
             if (selectedSwitch != 1)
             {
-                sound->PlaySFX(SFX_CLICK);
+                Audio::PlaySFX(SFX_CLICK);
             }
             selectedSwitch = 1;
             targetDrainRate = MAX_DRAIN_RATE;
@@ -117,7 +117,7 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
         {
             if (selectedSwitch != -1)
             {
-                sound->PlaySFX(SFX_CLICK);
+                Audio::PlaySFX(SFX_CLICK);
             }
             selectedSwitch = -1;
             targetDrainRate = 0;
@@ -128,7 +128,7 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
     {
         if (selectedSwitch != -1)
         {
-            sound->PlaySFX(SFX_CLICK);
+            Audio::PlaySFX(SFX_CLICK);
         }
         selectedSwitch = -1;
         targetDrainRate = 0;
@@ -175,7 +175,7 @@ void PourMinigame::UpdateSwitches(volatile int frame, Sound *sound)
     showingSwitches = true;
 }
 
-void PourMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void PourMinigame::Update(volatile int frame, uint32 keys, Map *map)
 {
     bool complete = IsComplete();
     for (int i = 0; i < POURING_FLUID_COUNT; i++)
@@ -190,7 +190,7 @@ void PourMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *ma
     }
 
     UpdateTray();
-    UpdateSwitches(frame, sound);
+    UpdateSwitches(frame);
 }
 
 bool PourMinigame::IsComplete()

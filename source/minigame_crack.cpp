@@ -13,7 +13,7 @@ void CrackMinigame::Load()
     NF_VramSpriteGfx(1, CRACK_SPRITE_BASE_ID, 0, false);
     NF_VramSpritePal(1, CRACK_SPRITE_BASE_ID, 0);
 
-    UpdateSprites(0, nullptr, false);
+    UpdateSprites(0, false);
 }
 
 void CrackMinigame::Unload(Map* map)
@@ -34,7 +34,7 @@ void CrackMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void CrackMinigame::UpdateSprites(volatile int frame, Sound *sound, bool steelHammer)
+void CrackMinigame::UpdateSprites(volatile int frame, bool steelHammer)
 {
     for (int x = 0; x < SPRITE_COUNTS[0]; x++)
     {
@@ -52,7 +52,7 @@ void CrackMinigame::UpdateSprites(volatile int frame, Sound *sound, bool steelHa
             }
 
             int grid[2] = {x, y};
-            if (ProcessSprite(frame, spriteId, grid, sound, steelHammer))
+            if (ProcessSprite(frame, spriteId, grid, steelHammer))
             {
                 showingSprites = true;
                 return;
@@ -62,7 +62,7 @@ void CrackMinigame::UpdateSprites(volatile int frame, Sound *sound, bool steelHa
     showingSprites = true;
 }
 
-bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2], Sound *sound, bool steelHammer)
+bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2], bool steelHammer)
 {
     int x = spritePositions[grid[0]][grid[1]][0];
     int y = spritePositions[grid[0]][grid[1]][1];
@@ -131,9 +131,9 @@ bool CrackMinigame::ProcessSprite(volatile int frame, int spriteId, int grid[2],
     return false;
 }
 
-void CrackMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void CrackMinigame::Update(volatile int frame, uint32 keys, Map *map)
 {
-    UpdateSprites(frame, sound, globalSave.powerUps[PWR_STEEL_HAMMER]);
+    UpdateSprites(frame, globalSave.powerUps[PWR_STEEL_HAMMER]);
 }
 
 bool CrackMinigame::IsComplete()

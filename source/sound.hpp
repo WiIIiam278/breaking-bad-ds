@@ -1,3 +1,8 @@
+// This file is licensed under the GNU GPL 3.0
+
+//
+// Created by cervi on 28/09/2022.
+//
 #pragma once
 
 #include <cstdio>
@@ -33,8 +38,8 @@ const Bgm BGMS[BGM_COUNT] =
         "bgm/title_hook"
     },
     {
-        "Breaking Bad (Menu)"
-        "bgm/title_loop",
+        "Breaking Bad (Menu)",
+        "bgm/title_loop"
     },
     {
         "Baby Blue (Game Over)",
@@ -42,11 +47,11 @@ const Bgm BGMS[BGM_COUNT] =
     },
     {
         "The Cousins (Superlab)",
-        "bgm/the_cousins"
+        "bgm/the_cousins_1"
     },
     {
         "Clear Waters (Tutorial)",
-        "bgm/clear_waters"
+        "bgm/clear_waters_1"
     },
     {
         "Rodrigo y Gabriela (Clear)",
@@ -78,22 +83,22 @@ enum SfxId
     SFX_MINERALS
 };
 
-const int SFX_COUNT = 12;
-const char* SFXS[SFX_COUNT] =
-{
-    {"sfx/menu_drum"},
-    {"sfx/menu_select"},
-    {"sfx/dialogue_bleep"},
-    {"sfx/success_bell"},
-    {"sfx/valve_turn"},
-    {"sfx/goodbye_walter"},
-    {"sfx/pestle"},
-    {"sfx/crank"},
-    {"sfx/click"},
-    {"sfx/vaccum"},
-    {"sfx/acceptable"},
-    {"sfx/minerals"}
-};
+// const int SFX_COUNT = 12;
+// const char* SFXS[SFX_COUNT] =
+// {
+//     {"sfx/menu_drum"},
+//     {"sfx/menu_select"},
+//     {"sfx/dialogue_bleep"},
+//     {"sfx/success_bell"},
+//     {"sfx/valve_turn"},
+//     {"sfx/goodbye_walter"},
+//     {"sfx/pestle"},
+//     {"sfx/crank"},
+//     {"sfx/click"},
+//     {"sfx/vaccum"},
+//     {"sfx/acceptable"},
+//     {"sfx/minerals"}
+// };
 
 namespace Audio {
     // We do not read a sample at a time, that would take too long. We load in chunks.
@@ -146,6 +151,10 @@ namespace Audio {
     void initAudioStream();
     mm_word fillAudioStream(mm_word length, mm_addr dest, mm_stream_formats format);
     bool fillAudioStreamWav(WAV* wav, mm_word length, u16* dest, mm_stream_formats format);
+
+    void LoadSFXs();
+    void PlaySFX(SfxId sfx);
+    void StopSFX();
 
     void PlayBGM(BgmId bgm, bool loop);
     void StopBGM();

@@ -29,7 +29,7 @@ void ValveMinigame::Unload(Map* map)
     NF_FreeSpriteGfx(1, 0);
 }
 
-void ValveMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *map)
+void ValveMinigame::Update(volatile int frame, uint32 keys, Map *map)
 {
     if (IsComplete())
     {
@@ -58,7 +58,7 @@ void ValveMinigame::Update(volatile int frame, uint32 keys, Sound *sound, Map *m
         // Play SFX, rumble
         if (frame % 120 == 0)
         {
-            sound->PlaySFX(SFX_VALVE_TURN);
+            Audio::PlaySFX(SFX_VALVE_TURN);
         }
         rumble(rotation % 3 == 0);
     }

@@ -9,6 +9,7 @@
 #include <nds.h>
 #include <NEMain.h>
 #include <nf_lib.h>
+#include <maxmod9.h>
 
 #include "menu.h"
 #include "map.h"
@@ -17,7 +18,7 @@
 #include "enums.h"
 #include "dialogue.h"
 #include "debug.h"
-#include "sound.h"
+#include "sound.hpp"
 #include "multiplayer.h"
 #include "save.hpp"
 #include "levels.h"
@@ -40,7 +41,6 @@ private:
     Menu menu;
     Map map;
     Player player;
-    Sound sound;
     NE_Animation *playerAnimations[2];
     const u32 CLEAR_COLOR = NE_Black;
 

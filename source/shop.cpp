@@ -4,24 +4,24 @@ Shop::Shop()
 {
 }
 
-void Shop::Load(volatile int frame, Sound *sound)
+void Shop::Load(volatile int frame)
 {
     cursorPosition = -1;
     dialogueStartFrame = frame;
     NF_LoadTiledBg(SAUL_BG, SAUL_BG, 256, 256);
     NF_CreateTiledBg(1, SAUL_BG_ID, SAUL_BG);
 
-    sound->PlayBGM(BGM_SAUL, true);
+    Audio::PlayBGM(BGM_SAUL, true);
     Transition(true, 30, TS_BOTTOM, frame);
 }
 
 // Returns true when the user backs out of the menu
-bool Shop::Update(volatile int frame, Sound *sound)
+bool Shop::Update(volatile int frame)
 {
     NF_ClearTextLayer(1, 0);
     if (keysDown() & KEY_B)
     {
-        sound->PlaySFX(SFX_MENU_DRUM);
+        Audio::PlaySFX(SFX_MENU_DRUM);
         return true;
     }
 
@@ -34,7 +34,7 @@ bool Shop::Update(volatile int frame, Sound *sound)
             cursorPosition = POWER_UP_COUNT - 1;
         }
         dialogueStartFrame = frame;
-        sound->PlaySFX(SFX_MENU_SELECT);
+        Audio::PlaySFX(SFX_MENU_SELECT);
     }
     else if (keysDown() & KEY_DOWN)
     {
@@ -44,25 +44,25 @@ bool Shop::Update(volatile int frame, Sound *sound)
             cursorPosition = 0;
         }
         dialogueStartFrame = frame;
-        sound->PlaySFX(SFX_MENU_SELECT);
+        Audio::PlaySFX(SFX_MENU_SELECT);
     }
     else if (keysDown() & KEY_A)
     {
         if (cursorPosition > -1 && globalSave.currentMoney >= POWER_UPS[cursorPosition].price)
         {
-            sound->PlaySFX(SFX_SUCCESS_BELL);
+            Audio::PlaySFX(SFX_SUCCESS_BELL);
             globalSave.powerUps[cursorPosition] = true;
             globalSave.currentMoney -= POWER_UPS[cursorPosition].price;
         }
         else
         {
-            sound->PlaySFX(SFX_MENU_DRUM);
+            Audio::PlaySFX(SFX_MENU_DRUM);
         }
     }
 
     if (cursorPosition == -1)
     {
-        WriteSaulDialogue("Ho-hoo! Look who we have here!", "I've got some great deals.", frame, sound);
+        WriteSaulDialogue("Ho-hoo! Look who we have here!", "I've got some great deals.", frame);
     }
     else
     {
@@ -71,11 +71,11 @@ bool Shop::Update(volatile int frame, Sound *sound)
         {
             char itemTopLine[48];
             sprintf(itemTopLine, "%s ($%i)", selected->name, selected->price);
-            WriteSaulDialogue(itemTopLine, selected->description, frame, sound);
+            WriteSaulDialogue(itemTopLine, selected->description, frame);
         }
         else
         {
-            WriteSaulDialogue("SOLD OUT", "Pleasure doin' business!", frame, sound);
+            WriteSaulDialogue("SOLD OUT", "Pleasure doin' business!", frame);
         }
     }
 
@@ -103,7 +103,7 @@ bool Shop::Update(volatile int frame, Sound *sound)
     return false;
 }
 
-void Shop::WriteSaulDialogue(const char* topLine, const char* bottomLine, volatile int frame, Sound *sound)
+void Shop::WriteSaulDialogue(const char* topLine, const char* bottomLine, volatile int frame)
 {
     // Draw 5 chars per frame
     int charsToPrint = (frame - dialogueStartFrame) / DIALOGUE_SPEED;
@@ -119,7 +119,7 @@ void Shop::WriteSaulDialogue(const char* topLine, const char* bottomLine, volati
     }
     else if (frame % DIALOGUE_SPEED == 0)
     {
-        sound->PlaySFX(SFX_DIALOGUE_BLEEP);
+        Audio::PlaySFX(SFX_DIALOGUE_BLEEP);
     }
 
     int topCharsToDraw = charsToPrint > topLineLength ? topLineLength : charsToPrint;
@@ -136,11 +136,11 @@ void Shop::WriteSaulDialogue(const char* topLine, const char* bottomLine, volati
     NF_WriteText(1, 0, 1, 3, bottomLineToPrint);
 }
 
-void Shop::Unload(volatile int frame, Sound *sound)
+void Shop::Unload(volatile int frame)
 {
     Transition(false, 0, TS_BOTTOM, frame);
     NF_ClearTextLayer(1, 0);
-    sound->StopBGM();
+    Audio::StopBGM();
     
     NF_DeleteTiledBg(1, SAUL_BG_ID);
     NF_UnloadTiledBg(SAUL_BG);

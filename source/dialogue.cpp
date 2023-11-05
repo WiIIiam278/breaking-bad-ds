@@ -56,7 +56,7 @@ void Dialogue::Start(Speaker speaker, const char script[][128], const Emote emot
     NF_SpriteRotScale(1, 11, 0, 512, 512);
 }
 
-bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
+bool Dialogue::Update(volatile int frame, uint32 keys)
 {
     Emote lineEmote = currentEmotes[currentLineIndex];
     int charsToPrint = (frame - currentLineStartFrame) / 3;
@@ -108,7 +108,7 @@ bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
         int speechFrame = (frame - currentLineStartFrame);
         if (speechFrame % 5 == 0)
         {
-            sound->PlaySFX(SFX_DIALOGUE_BLEEP);
+            Audio::PlaySFX(SFX_DIALOGUE_BLEEP);
         }
         if (speechFrame % 10 == 0)
         {
@@ -138,7 +138,7 @@ bool Dialogue::Update(volatile int frame, uint32 keys, Sound *sound)
         {
             currentLineIndex++;
             currentLineStartFrame = frame;
-            sound->PlaySFX(SFX_MENU_SELECT);
+            Audio::PlaySFX(SFX_MENU_SELECT);
 
             if (currentLineIndex >= currentScriptLength)
             {
