@@ -7,6 +7,7 @@ Shop::Shop()
 void Shop::Load(volatile int frame, Sound *sound)
 {
     cursorPosition = -1;
+    dialogueStartFrame = frame;
     NF_LoadTiledBg(SAUL_BG, SAUL_BG, 256, 256);
     NF_CreateTiledBg(1, SAUL_BG_ID, SAUL_BG);
 
@@ -32,6 +33,7 @@ bool Shop::Update(volatile int frame, Sound *sound)
         {
             cursorPosition = POWER_UP_COUNT - 1;
         }
+        dialogueStartFrame = frame;
         sound->PlaySFX(SFX_MENU_SELECT);
     }
     else if (keysDown() & KEY_DOWN)
@@ -41,6 +43,7 @@ bool Shop::Update(volatile int frame, Sound *sound)
         {
             cursorPosition = 0;
         }
+        dialogueStartFrame = frame;
         sound->PlaySFX(SFX_MENU_SELECT);
     }
     else if (keysDown() & KEY_A)
@@ -59,8 +62,7 @@ bool Shop::Update(volatile int frame, Sound *sound)
 
     if (cursorPosition == -1)
     {
-        NF_WriteText(1, 0, 1, 1, "Ho-hoo! Look who we have here!");
-        NF_WriteText(1, 0, 1, 3, "I've got some great deals.");
+        WriteSaulDialogue("Ho-hoo! Look who we have here!", "I've got some great deals.", frame, sound);
     }
     else
     {
@@ -69,13 +71,11 @@ bool Shop::Update(volatile int frame, Sound *sound)
         {
             char itemTopLine[48];
             sprintf(itemTopLine, "%s ($%i)", selected->name, selected->price);
-            NF_WriteText(1, 0, 1, 1, itemTopLine);
-            NF_WriteText(1, 0, 1, 3, selected->description);
+            WriteSaulDialogue(itemTopLine, selected->description, frame, sound);
         }
         else
         {
-            NF_WriteText(1, 0, 1, 1, "SOLD OUT");
-            NF_WriteText(1, 0, 1, 3, "Pleasure doin' business!");
+            WriteSaulDialogue("SOLD OUT", "Pleasure doin' business!", frame, sound);
         }
     }
 
@@ -101,6 +101,39 @@ bool Shop::Update(volatile int frame, Sound *sound)
     NF_WriteText(1, 0, 24, 20, money);
 
     return false;
+}
+
+void Shop::WriteSaulDialogue(const char* topLine, const char* bottomLine, volatile int frame, Sound *sound)
+{
+    // Draw 5 chars per frame
+    int charsToPrint = (frame - dialogueStartFrame) / DIALOGUE_SPEED;
+    int topLineLength = strlen(topLine);
+    int bottomLineLength = strlen(bottomLine);
+
+    // Play dialogue SFX
+    if ((charsToPrint > topLineLength + bottomLineLength))
+    {
+        NF_WriteText(1, 0, 1, 1, topLine);
+        NF_WriteText(1, 0, 1, 3, bottomLine);
+        return;
+    }
+    else if (frame % DIALOGUE_SPEED == 0)
+    {
+        sound->PlaySFX(SFX_DIALOGUE_BLEEP);
+    }
+
+    int topCharsToDraw = charsToPrint > topLineLength ? topLineLength : charsToPrint;
+    int bottomCharsToDraw = charsToPrint > topLineLength ? charsToPrint - topLineLength : 0;
+
+    char topLineToPrint[48];
+    char bottomLineToPrint[48];
+    strncpy(topLineToPrint, topLine, topCharsToDraw);
+    strncpy(bottomLineToPrint, bottomLine, bottomCharsToDraw);
+    topLineToPrint[topCharsToDraw] = '\0';
+    bottomLineToPrint[bottomCharsToDraw] = '\0';
+
+    NF_WriteText(1, 0, 1, 1, topLineToPrint);
+    NF_WriteText(1, 0, 1, 3, bottomLineToPrint);
 }
 
 void Shop::Unload(volatile int frame, Sound *sound)

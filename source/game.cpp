@@ -879,6 +879,7 @@ void Game::StartMenuScreen(bool debugMode)
     if (debugFlag)
     {
         StartGame(GAME_STORY_MODE);
+        OpenShopMenu();
         return;
     }
 

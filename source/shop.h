@@ -52,10 +52,14 @@ private:
 
     int cursorPosition = -1;
 
+    const int DIALOGUE_SPEED = 5;
+    int dialogueStartFrame = 0;
+
 public:
     Shop();
 
     void Load(volatile int frame, Sound *sound);
     bool Update(volatile int frame, Sound *sound);
+    void WriteSaulDialogue(const char* topLine, const char* bottomLine, volatile int frame, Sound *sound);
     void Unload(volatile int frame, Sound *sound);
 };
