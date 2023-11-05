@@ -101,7 +101,7 @@ private:
     const char PIPE_SPRITES_NAME[32] = "sprite/mixing_pipes";
     const char MIX_BACKGROUND_NAME[32] = "bg/mix_minigame";
     const u32 PIPE_OFFSET = 40;
-    const int TARGET_PIPE_POS[2] = { 110, 60 };
+    const int TARGET_PIPE_POS[2] = { 110, 64 };
     const int TARGET_POS_VARIENCE = 2;
     bool pipeInPlace = false;
     int pipeInPlaceFrames = 0;
