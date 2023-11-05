@@ -1,189 +1,226 @@
-#include "sound.h"
+#include "sound.hpp"
 
-Sound::Sound()
-{
-    progressString = new char[6];
-}
+namespace Audio {
+    WAV cBGMusic;
 
-void Sound::LoadSound()
-{
-    // Prepare sound engine
-    soundEnable();
-    NF_InitRawSoundBuffers();
+    WAV* playingWavHead = nullptr;
 
-    // Load raw sounds
-    int currentSlot = 0;
+    int WAV::loadWAV(const char *name) {
+        free_();
+        _loops = 0;
+        char buffer[100];
+        sprintf(buffer, "nitro:/bgm/%s.wav", name);
+        FILE *f = fopen(buffer, "rb");
+        _filename = new char[strlen(name) + 1];
+        strcpy(_filename, name);
+        if (f == nullptr)
+            return 1;
+        _stream = f;
 
-    // Load BGMS
-    for (int i = 0; i < BGM_COUNT; i++)
-    {
-        for (int j = 0; j < BGMS[i].fileCount; j++)
-        {
-            NF_LoadRawSound(BGMS[i].fileNames[j], currentSlot, SAMPLE_RATE, 0);
-            currentSlot++;
+        char header[4];
+
+        const char riffHeader[4] = {'R', 'I', 'F', 'F'};
+        const char waveHeader[4] = {'W', 'A', 'V', 'E'};
+        const char fmtHeader[4] = {'f', 'm', 't', ' '};
+        const char dataHeader[4] = {'d', 'a', 't', 'a'};
+
+        fread(header, 4, 1, f);
+        if (memcmp(header, riffHeader, 4) != 0) {
+            fclose(f);
+            return 2;
         }
-    }
 
-    // Load SFX
-    for (int i = 0; i < SFX_COUNT; i++)
-    {
-        NF_LoadRawSound(SFXS[i].fileName, currentSlot, SAMPLE_RATE, 0);
-        currentSlot++;
-    }
-}
+        fseek(f, ftell(f) + 4, SEEK_SET); // skip chunk size
 
-int Sound::GetTrackFileCount(TrackId bgm)
-{
-    int files = 0;
-    for (int i = 0; i < BGM_COUNT; i++)
-    {
-        for (int j = 0; j < BGMS[i].fileCount; j++)
-        {
-            if (BGMS[i].track == bgm)
-            {
-                files++;
-            }
+        fread(header, 4, 1, f);
+        if (memcmp(header, waveHeader, 4) != 0) {
+            fclose(f);
+            return 3;
         }
-    }
-    return files;
-}
 
-int Sound::GetSoundRamAddress(int id, bool sfx)
-{
-    int currentSlot = 0;
-    for (int i = 0; i < BGM_COUNT; i++)
-    {
-        for (int j = 0; j < BGMS[i].fileCount; j++)
-        {
-            if ((BGMS[i].track == id) && !sfx)
-            {
-                return currentSlot;
-            }
-            currentSlot++;
+        // fmt header
+        fread(header, 4, 1, f);
+        if (memcmp(header, fmtHeader, 4) != 0) {
+            fclose(f);
+            return 4;
         }
-    }
-    
-    if (sfx)
-    {
-        for (int i = 0; i < SFX_COUNT; i++)
-        {
-            if (SFXS[i].effect == id)
-            {
-                return currentSlot;
-            }
-            currentSlot++;
-        }
-    }
-    return -1;
-}
 
-BGM Sound::GetBGM(TrackId bgm)
-{
-    for (int i = 0; i < BGM_COUNT; i++)
-    {
-        if (BGMS[i].track == bgm)
-        {
-            return BGMS[i];
-        }
-    }
-    return BGMS[0];
-}
+        fseek(f, ftell(f) + 4, SEEK_SET); // skip chunk size == 0x10
 
-void Sound::PlayBGM(TrackId bgm, bool loop)
-{
-    StopBGM();
-    currentBgm = bgm;
-    looping = loop;
-    singleFile = (looping && GetTrackFileCount(BGMS[currentBgm].track) == 1);
-    currentBgmFile = 0;
-    currentBgmFrame = 0;
-    bgmPlaying = true;
-}
+        u16 format, channels;
+        fread(&format, 2, 1, f);
+        fread(&channels, 2, 1, f);
+        fread(&_sampleRate, 4, 1, f);
+        fseek(f, ftell(f) + 4, SEEK_SET); // skip byte rate == self.sample_rate * self.bits_per_sample * self.num_channels // 8
+        fseek(f, ftell(f) + 2, SEEK_SET); // skip block align == self.num_channels * self.bits_per_sample // 8
+        fread(&_bitsPerSample, 2, 1, f);
 
-void Sound::Update(volatile int frame)
-{
-    if (!bgmPlaying)
-    {
-        return;
-    }
-    if (currentBgmFrame >= BGMS[currentBgm].trackFrames[currentBgmFile])
-    {
-        if (!singleFile)
-        {
-            currentBgmFrame = 0;
-            currentBgmFile++;
-            if (currentBgmFile >= GetTrackFileCount(BGMS[currentBgm].track))
-            {
-                currentBgmFile = BGMS[currentBgm].loopAfterFile;
-            }
+        if (format != 1) {
+            fclose(f);
+            return 5;
         }
+
+        if (channels > 2) {
+            return 6;
+        }
+
+        _stereo = channels == 2;
+
+        // data chunk
+        fread(header, 4, 1, f);
+        if (memcmp(header, dataHeader, 4) != 0) {
+            fclose(f);
+            return 7;
+        }
+
+        u32 chunkSize;
+        fread(&chunkSize, 4, 1, f);
+        _dataEnd = ftell(f) + chunkSize;
+        _dataStart = ftell(f);
+
+        _loaded = true;
+
+        return 0;
+    }
+
+    void WAV::free_() {
+        if (!_loaded)
+            return;
+        delete[] _filename;
+        _filename = nullptr;
+        fclose(_stream);
+        _stream = nullptr;
+        _loaded = false;
+    }
+
+    void initAudioStream() {
+        mm_stream stream;
+
+        stream.sampling_rate = 44100;
+        stream.buffer_length = 8000;
+        stream.callback = fillAudioStream;
+        stream.format = MM_STREAM_16BIT_STEREO;
+        stream.timer = MM_TIMER0;
+        stream.manual = 1;
+
+        mmStreamOpen(&stream);
+    }
+
+    void WAV::play() {
+        if (!_loaded) {
+            return;
+        }
+        if (_active) {
+            stop();
+        }
+        fseek(_stream, _dataStart, SEEK_SET);
+        _active = true;
+        _co = 44100;
+        _maxValueIdx = kWAVBuffer;
+        _cValueIdx = kWAVBuffer;
+        _next = playingWavHead;
+        if (playingWavHead != nullptr)
+            playingWavHead->_prev = this;
+        playingWavHead = this;
+    }
+
+    void WAV::stop() {
+        if (!_active)
+            return;
+        _active = false;
+        if (_prev != nullptr)
+            _prev->_next = _next;
         else
-        {
-            currentBgmFrame = 1;
+            playingWavHead = _next;
+        if (_next != nullptr)
+            _next->_prev = _prev;
+        if (deleteOnStop) {
+            free_();
+            delete this;
         }
     }
-    if (currentBgmFrame == 0)
-    {
-	    currentBgmSoundId = NF_PlayRawSound(
-            (GetSoundRamAddress(BGMS[currentBgm].track, false) + currentBgmFile), 
-            BGMS[currentBgm].volume,
-            SOUND_PAN,
-            singleFile && looping,
-            0
-        );
-    }
-    currentBgmFrame++;
-}
 
-char* Sound::GetBgmTrackProgressString()
-{
-    // Return a string in the format xx:xx. Assume 60fps.
-    const int trackFiles = GetTrackFileCount(currentBgm);
-    int frames = 0;
-    int totalFrames = 0;
-    for (int i = 0; (i < trackFiles); i++)
-    {
-        int trackFrames = BGMS[currentBgm].trackFrames[i];
-        if (i < currentBgmFile)
-        {
-            frames += trackFrames;
+    mm_word fillAudioStream(mm_word length, mm_addr dest, mm_stream_formats format) {
+        WAV* current = playingWavHead;
+        memset(dest, 0, 4 * length);
+        while (current != nullptr) {
+            WAV* next = current->_next;
+            if (fillAudioStreamWav(current, length, (u16*)dest, format)) {
+                current->stop();
+            }
+            current = next;
         }
-        totalFrames += trackFrames;
+        return length;
     }
-    frames += currentBgmFrame;
 
-    int seconds = frames / 60;
-    int totalSeconds = totalFrames / 60;
-    int minutes = seconds / 60;
-    int totalMinutes = totalSeconds / 60;
-    seconds = seconds % 60;
-    totalSeconds = totalSeconds % 60;
-    sprintf(progressString, "%02d:%02d/%02d:%02d", minutes, seconds, totalMinutes, totalSeconds);
-    return progressString;
-}
+    bool fillAudioStreamWav(WAV* wav, mm_word length, u16* dest, mm_stream_formats) {
+        if (wav == nullptr)
+            return true;
+        if (!wav->_active)
+            return true;
+        if (!wav->_loaded)
+            return true;
+        FILE* stream = wav->_stream;
+        // TODO: convert bit depth
+        if (wav->_bitsPerSample != 16)
+            return true;
+        // TODO: Document how sample rate change works
+        u32 dstI = 0;
+        // TODO: s32 addition; to clip
 
-void Sound::StopBGM()
-{
-    if (bgmPlaying)
-    {
-        soundKill(currentBgmSoundId);
-        looping = false;
-        bgmPlaying = false;
+        while (dstI < length) {
+            while (wav->_co >= 44100) {
+                wav->_cValueIdx += 1;
+                if (wav->_cValueIdx >= wav->_maxValueIdx) {
+                    if ((u32)ftell(stream) >= wav->_dataEnd) {
+                        if (wav->_loops != 0) {
+                            if (wav->_loops > 0)
+                                wav->_loops--;
+                            fseek(stream, wav->_dataStart, SEEK_SET);
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    long readElements = (wav->_dataEnd - ftell(stream)) / 2;
+                    if (wav->_stereo)
+                        readElements /= 2;
+                    if (readElements > kWAVBuffer)
+                        readElements = kWAVBuffer;
+                    if (!wav->_stereo)
+                        wav->_maxValueIdx = fread(&wav->_values, 2, readElements, stream);
+                    else
+                        wav->_maxValueIdx = fread(&wav->_values, 4, readElements, stream);
+                    wav->_cValueIdx = 0;
+                }
+                wav->_co -= 44100;
+            }
+            for (int i = 0; i < 2; i++) {
+                if (!wav->_stereo)
+                    dest[dstI * 2 + i] += wav->_values[wav->_cValueIdx];
+                else
+                    dest[dstI * 2 + i] += wav->_values[wav->_cValueIdx * 2 + i];
+            }
+            wav->_co += wav->_sampleRate;
+            dstI++;
+        }
+        return false;
     }
-}
 
-void Sound::PlaySFX(EffectId sfx)
-{
-    currentSfxSoundId = NF_PlayRawSound(
-        GetSoundRamAddress(sfx, true),
-        127,
-        SOUND_PAN,
-        false,
-        0
-    );
-}
+    void PlayBGM(BgmId bgm, bool loop) {
+        StopBGM();
+        cBGMusic.loadWAV(BGMS[bgm].path);
+        cBGMusic.setLoops(loop ? -1 : 0);
+        cBGMusic.deleteOnStop = false;
+        if (cBGMusic.getLoaded())
+            cBGMusic.play();
+        else {
+            cBGMusic.free_();
+        }
+    }
 
-void Sound::StopSFX()
-{
-    soundKill(currentSfxSoundId);
+    void StopBGM() {
+        cBGMusic.stop();
+        cBGMusic.free_();
+    }
 }
