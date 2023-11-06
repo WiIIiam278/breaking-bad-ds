@@ -37,8 +37,7 @@ Game::Game()
     sys.mem_bank			= nullptr;
     sys.fifo_channel		= FIFO_MAXMOD;
     mmInit(&sys);
-    Audio::initAudioStream();
-    Audio::LoadSFXs();
+    Audio::SetupAudio();
 
     // Load global save
     globalSave.loadData();
@@ -1586,6 +1585,7 @@ void Game::Update()
 
     // Update sounds
     // sound.Update(frame);
+    mmStreamUpdate();
 
     // Refresh shadow OAM copy
     NF_SpriteOamSet(1);

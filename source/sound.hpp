@@ -12,6 +12,12 @@
 #include <nf_lib.h>
 #include <maxmod9.h>
 
+struct WavFile
+{
+    const char* name;
+    const char* path;
+};
+
 enum BgmId
 {
     BGM_TITLE_INTRO,
@@ -24,48 +30,6 @@ enum BgmId
     BGM_FINAL_COOK
 };
 
-struct Bgm
-{
-    const char* name;
-    const char* path;
-};
-
-const int BGM_COUNT = 8;
-const Bgm BGMS[BGM_COUNT] =
-{
-    {
-        "Breaking Bad (Title)",
-        "bgm/title_hook"
-    },
-    {
-        "Breaking Bad (Menu)",
-        "bgm/title_loop"
-    },
-    {
-        "Baby Blue (Game Over)",
-        "bgm/baby_blue"
-    },
-    {
-        "The Cousins (Superlab)",
-        "bgm/the_cousins_1"
-    },
-    {
-        "Clear Waters (Tutorial)",
-        "bgm/clear_waters_1"
-    },
-    {
-        "Rodrigo y Gabriela (Clear)",
-        "bgm/rodrigo_y_gabriela"
-    },
-    {
-        "Saul's Theme",
-        "bgm/sauls_theme"
-    },
-    {
-        "The Final Cook",
-        "bgm/the_final_cook"
-    }
-};
 
 enum SfxId
 {
@@ -83,22 +47,35 @@ enum SfxId
     SFX_MINERALS
 };
 
-// const int SFX_COUNT = 12;
-// const char* SFXS[SFX_COUNT] =
-// {
-//     {"sfx/menu_drum"},
-//     {"sfx/menu_select"},
-//     {"sfx/dialogue_bleep"},
-//     {"sfx/success_bell"},
-//     {"sfx/valve_turn"},
-//     {"sfx/goodbye_walter"},
-//     {"sfx/pestle"},
-//     {"sfx/crank"},
-//     {"sfx/click"},
-//     {"sfx/vaccum"},
-//     {"sfx/acceptable"},
-//     {"sfx/minerals"}
-// };
+const int BGM_COUNT = 8;
+const WavFile BGMS[BGM_COUNT] =
+{
+    {"Breaking Bad (Title)", "bgm/title_hook"},
+    {"Breaking Bad (Menu)", "bgm/title_loop"},
+    {"Baby Blue (Game Over)", "bgm/baby_blue"},
+    {"The Cousins (Superlab)", "bgm/the_cousins_1"},
+    {"Clear Waters (Tutorial)", "bgm/clear_waters_1"},
+    {"Rodrigo y Gabriela (Clear)", "bgm/rodrigo_y_gabriela"},
+    {"Saul's Theme", "bgm/sauls_theme"},
+    {"The Final Cook", "bgm/the_final_cook"}
+};
+
+const int SFX_COUNT = 12;
+const WavFile SFXS[SFX_COUNT] =
+{
+    {"Drum", "sfx/menu_drum"},
+    {"Select", "sfx/menu_select"},
+    {"Bleep", "sfx/dialogue_bleep"},
+    {"Bell", "sfx/success_bell"},
+    {"Turn", "sfx/valve_turn"},
+    {"Waltuh", "sfx/goodbye_walter"},
+    {"Pestle", "sfx/pestle"},
+    {"Crank", "sfx/crank"},
+    {"Click", "sfx/click"},
+    {"Vaccum", "sfx/vaccum"},
+    {"Acceptable", "sfx/acceptable"},
+    {"Minerals", "sfx/minerals"}
+};
 
 namespace Audio {
     // We do not read a sample at a time, that would take too long. We load in chunks.
@@ -148,7 +125,9 @@ namespace Audio {
         friend bool fillAudioStreamWav(WAV*, mm_word, u16*, mm_stream_formats);
     };
 
-    void initAudioStream();
+    static WAV* soundEffects[SFX_COUNT];
+
+    void SetupAudio();
     mm_word fillAudioStream(mm_word length, mm_addr dest, mm_stream_formats format);
     bool fillAudioStreamWav(WAV* wav, mm_word length, u16* dest, mm_stream_formats format);
 

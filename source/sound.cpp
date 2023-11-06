@@ -8,12 +8,6 @@ namespace Audio
 
     int WAV::loadWAV(const char *name)
     {
-        // consoleDemoInit();
-        // setBrightness(2, 0);
-        // setBrightness(1, 0);
-        // setBrightness(0, 0);
-        printf("Loading %s\n", name);
-
         free_();
         _loops = 0;
         char buffer[100];
@@ -101,14 +95,15 @@ namespace Audio
         _dataStart = ftell(f);
 
         _loaded = true;
-        printf("Loaded %s\n", name);
         return 0;
     }
 
     void WAV::free_()
     {
         if (!_loaded)
+        {
             return;
+        }
         delete[] _filename;
         _filename = nullptr;
         fclose(_stream);
@@ -116,18 +111,20 @@ namespace Audio
         _loaded = false;
     }
 
-    void initAudioStream()
+    void SetupAudio()
     {
+        // Setup stream
         mm_stream stream;
-
         stream.sampling_rate = 44100;
         stream.buffer_length = 8000;
         stream.callback = fillAudioStream;
         stream.format = MM_STREAM_16BIT_STEREO;
         stream.timer = MM_TIMER0;
         stream.manual = 1;
-
         mmStreamOpen(&stream);
+
+        // Load sound effects
+        LoadSFXs();
     }
 
     void WAV::play()
@@ -154,14 +151,23 @@ namespace Audio
     void WAV::stop()
     {
         if (!_active)
+        {
             return;
+        }
         _active = false;
         if (_prev != nullptr)
+        {
             _prev->_next = _next;
+        }
         else
+        {
             playingWavHead = _next;
+        }
+
         if (_next != nullptr)
+        {
             _next->_prev = _prev;
+        }
         if (deleteOnStop)
         {
             free_();
@@ -188,15 +194,23 @@ namespace Audio
     bool fillAudioStreamWav(WAV *wav, mm_word length, u16 *dest, mm_stream_formats)
     {
         if (wav == nullptr)
+        {
             return true;
+        }
         if (!wav->_active)
+        {
             return true;
+        }
         if (!wav->_loaded)
+        {
             return true;
+        }
         FILE *stream = wav->_stream;
         // TODO: convert bit depth
         if (wav->_bitsPerSample != 16)
+        {
             return true;
+        }
         // TODO: Document how sample rate change works
         u32 dstI = 0;
         // TODO: s32 addition; to clip
@@ -249,32 +263,24 @@ namespace Audio
 
     void LoadSFXs()
     {
-        // Prepare sound engine
-        // soundEnable();
-        // NF_InitRawSoundBuffers();
+        for (int sfx = 0; sfx < SFX_COUNT; sfx++)
+        {
+            auto *sfxWav = new Audio::WAV;
+            sfxWav->loadWAV(SFXS[sfx].path);
+            sfxWav->setLoops(0);
 
-        
-        // Load SFX
-        // for (int i = 0; i < SFX_COUNT; i++)
-        // {
-        //     NF_LoadRawSound(SFXS[i], i, 22050, 0);
-        // }
+            soundEffects[sfx] = sfxWav;
+        }
     }
 
     void PlaySFX(SfxId sfx)
     {
-        // NF_PlayRawSound(
-        //     sfx,
-        //     127,
-        //     64,
-        //     false,
-        //     0
-        // );
+        soundEffects[sfx]->play();
     }
 
     void StopSFX()
     {
-        soundKill(0);
+        
     }
 
     void PlayBGM(BgmId bgm, bool loop)

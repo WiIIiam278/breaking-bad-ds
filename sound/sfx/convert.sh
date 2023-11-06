@@ -1,1 +1,2 @@
-for i in *.ogg; do ffmpeg -i "$i" -y -f s8 -acodec pcm_s8 -ar 11025 -vn "../../nitrofiles/sfx/${i%.*}.raw"; done
+# Converts ogg sfx files into metadata-stripped WAVs
+for i in *.ogg; do ffmpeg -y -i "$i" -map_metadata -1 -acodec pcm_s16le -ac 2 -ar 22050 -fflags +bitexact -flags:v +bitexact -flags:a +bitexact "../../nitrofiles/sfx/${i%.*}.wav"; done
