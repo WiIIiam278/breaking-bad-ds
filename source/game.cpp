@@ -885,9 +885,9 @@ void Game::StartMenuScreen(bool debugMode)
 
     if (debugFlag)
     {
-        StartGame(GAME_STORY_MODE);
-        OpenShopMenu();
-        return;
+        // StartGame(GAME_STORY_MODE);
+        // OpenShopMenu();
+        // return;
     }
 
     mode = MAIN_MENU;
