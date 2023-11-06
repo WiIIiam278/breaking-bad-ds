@@ -7,7 +7,7 @@ struct Level
 };
 
 const int LEVEL_COUNT = 5;
-/* const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
+const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
     {
         8,
         265
@@ -32,16 +32,16 @@ const int LEVEL_COUNT = 5;
         1,
         60
     }
-} */;
-
-const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
-    { 1, 999 },
-    { 1, 999 },
-    { 1, 999 },
-    { 1, 999 },
-    { 16, 500 },
-    { 1, 999 }
 };
+
+/* const Level LEVEL_STORY_MODE[LEVEL_COUNT + 1] = {
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 },
+    { 1, 999 }
+}; */
 
 
 const Level LEVEL_TUTORIAL = {
