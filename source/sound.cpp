@@ -286,7 +286,7 @@ namespace Audio
     void PlayBGM(BgmId bgm, bool loop)
     {
         StopBGM();
-        int l = cBGMusic.loadWAV(BGMS[bgm].path);
+        cBGMusic.loadWAV(BGMS[bgm].path);
         cBGMusic.setLoops(loop ? -1 : 0);
         cBGMusic.deleteOnStop = false;
         if (cBGMusic.getLoaded())
@@ -295,7 +295,6 @@ namespace Audio
         {
             cBGMusic.free_();
         }
-        while (l != 0) {}
     }
 
     void StopBGM()

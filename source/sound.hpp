@@ -53,8 +53,8 @@ const WavFile BGMS[BGM_COUNT] =
     {"Breaking Bad (Title)", "bgm/title_hook"},
     {"Breaking Bad (Menu)", "bgm/title_loop"},
     {"Baby Blue (Game Over)", "bgm/baby_blue"},
-    {"The Cousins (Superlab)", "bgm/the_cousins_1"},
-    {"Clear Waters (Tutorial)", "bgm/clear_waters_1"},
+    {"The Cousins (Superlab)", "bgm/the_cousins"},
+    {"Clear Waters (Tutorial)", "bgm/clear_waters"},
     {"Rodrigo y Gabriela (Clear)", "bgm/rodrigo_y_gabriela"},
     {"Saul's Theme", "bgm/sauls_theme"},
     {"The Final Cook", "bgm/the_final_cook"}

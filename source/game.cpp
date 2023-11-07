@@ -1584,7 +1584,6 @@ void Game::Update()
     }
 
     // Update sounds
-    // sound.Update(frame);
     mmStreamUpdate();
 
     // Refresh shadow OAM copy
