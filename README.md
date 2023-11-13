@@ -40,7 +40,7 @@ To run this on melonDS, you'll need to go into the Emulator Config -> DLDI -> En
 You can also run this on a modded DSi or 3DS with Twilight Menu++ (other game loaders have not been tested). You can download the game ROM by scanning the QR code below in your loader's menu, if your system supports this. Please make sure you use v1.0.3+, or your game may crash on startup!
 
 <details>
-<summary>Download ROM QR code (v1.0.4)</summary>
+<summary>Download ROM QR code (v1.0.5)</summary>
 
 ![QR code for installing the game on a DSi/3DS with TwilightMenu](dsi-qr-code.png)
 
