@@ -15,7 +15,10 @@ int main()
     // Prepare graphics
     game.Prepare3DGraphics();
     game.Prepare2DGraphics();
-
+    
+    // Setup sound
+    Audio::LoadSFXs();
+    
     // Start the game
     game.StartMenuScreen(DEBUG_MODE);
 

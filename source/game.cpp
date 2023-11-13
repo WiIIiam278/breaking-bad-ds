@@ -30,15 +30,6 @@ Game::Game()
     // Prepare NiFi
     nifiPrepare();
 
-    // Setup sound
-    mm_ds_system sys;
-    sys.mod_count 			= 0;
-    sys.samp_count			= 0;
-    sys.mem_bank			= nullptr;
-    sys.fifo_channel		= FIFO_MAXMOD;
-    mmInit(&sys);
-    Audio::SetupAudio();
-
     // Load global save
     globalSave.loadData();
 }
@@ -1111,9 +1102,6 @@ void Game::UpdateGameOver()
             rumble(gameOverFrame % 2 == 0);
         }
         break;
-    case -10:
-        Audio::StopSFX();
-        break;
     case 0:
         if (!levelClear)
         {
@@ -1584,7 +1572,7 @@ void Game::Update()
     }
 
     // Update sounds
-    mmStreamUpdate();
+    Audio::audioManager.update();
 
     // Refresh shadow OAM copy
     NF_SpriteOamSet(1);

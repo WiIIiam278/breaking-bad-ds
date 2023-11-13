@@ -50,7 +50,9 @@
         "dswifi9.h": "c",
         "stdio.h": "c",
         "nds.h": "c",
-        "multiplayer.h": "c"
+        "multiplayer.h": "c",
+        "cstring": "cpp",
+        "list": "cpp"
     },
     "C_Cpp.default.compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc"
 }

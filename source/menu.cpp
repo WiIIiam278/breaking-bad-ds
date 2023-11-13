@@ -403,14 +403,16 @@ void Menu::ShowMinerals(bool showSprites)
     }
 }
 
-char* Menu::GetCharacterName(Character character) {
-    switch (character) {
-        case CHAR_WALT:
-            return "Walt";
-        case CHAR_JESSE:
-            return "Jesse";
-        case CHAR_YEPPERS:
-            return "Kusuri";
+char *Menu::GetCharacterName(Character character)
+{
+    switch (character)
+    {
+    case CHAR_WALT:
+        return "Walt";
+    case CHAR_JESSE:
+        return "Jesse";
+    case CHAR_YEPPERS:
+        return "Kusuri";
     }
     return "Unknown";
 }
@@ -426,8 +428,7 @@ void Menu::UpdateMinerals(volatile int frame)
     if (keysDown() & KEY_TOUCH)
     {
         touchRead(&touch);
-        touching = touch.px >= MINERAL_GRID_BASE_POS[0] && touch.px <= MINERAL_GRID_BASE_POS[0] + ((32 + MINERAL_GAP) * MINERALS_PER_ROW) 
-            && touch.py > MINERAL_GRID_BASE_POS[1] && touch.py < MINERAL_GRID_BASE_POS[1] + ((32 + MINERAL_GAP) * (MINERAL_COUNT / MINERALS_PER_ROW));
+        touching = touch.px >= MINERAL_GRID_BASE_POS[0] && touch.px <= MINERAL_GRID_BASE_POS[0] + ((32 + MINERAL_GAP) * MINERALS_PER_ROW) && touch.py > MINERAL_GRID_BASE_POS[1] && touch.py < MINERAL_GRID_BASE_POS[1] + ((32 + MINERAL_GAP) * (MINERAL_COUNT / MINERALS_PER_ROW));
 
         if (!touching)
         {
@@ -446,10 +447,14 @@ void Menu::UpdateMinerals(volatile int frame)
 
         if (touching)
         {
-            Audio::PlaySFX(SFX_MENU_SELECT);
-
             bool touchingMineral = touch.px >= pos[0] && touch.px <= pos[0] + 32 && touch.py >= pos[1] && touch.py <= pos[1] + 32;
-            currentlySelectedMineral = touchingMineral ? i : currentlySelectedMineral;
+
+            int selected = touchingMineral ? i : currentlySelectedMineral;
+            if (currentlySelectedMineral != selected)
+            {
+                Audio::PlaySFX(SFX_MENU_SELECT);
+                currentlySelectedMineral = selected;
+            }
         }
 
         if (currentlySelectedMineral == i)
@@ -509,14 +514,16 @@ void Menu::Update(volatile int frame)
         {
             showStartSprite = !showStartSprite;
         }
-        if (!canSave()) {
+        if (!canSave())
+        {
             NF_WriteText(1, 0, 0, 0, "Cannot save game!");
         }
         NF_WriteText(1, 0, 26, 0, "v1.0.5");
         break;
 
     case MENU_RUMBLE:
-        if (!isDSiMode()) {
+        if (!isDSiMode())
+        {
             NF_WriteText(1, 0, 2, 7, "A DS Rumble Pak is required.");
             NF_WriteText(1, 0, 2, 8, "to enable this feature. If a");
             NF_WriteText(1, 0, 2, 9, "Rumble Pak is inserted into");
@@ -525,10 +532,11 @@ void Menu::Update(volatile int frame)
 
             NF_WriteText(1, 0, 2, 14, "Remove the Rumble Pak from");
             NF_WriteText(1, 0, 2, 15, "SLOT-2 to disable rumble.");
-        
+
             rumble(frame % 2 == 0);
-        } 
-        else {
+        }
+        else
+        {
             NF_WriteText(1, 0, 2, 9, "Rumble support is disabled.");
             NF_WriteText(1, 0, 2, 11, "You do not have a system");
             NF_WriteText(1, 0, 2, 12, "that supports the rumble");
@@ -569,9 +577,8 @@ void Menu::Update(volatile int frame)
     case MENU_MUSIC_PLAYER:
         NF_WriteText(1, 0, 2, 9, "Currently playing:");
         char trackNoAndTitle[50];
-        sprintf(trackNoAndTitle, "%d. %s", currentSoundTestTrack + 1, BGMS[currentSoundTestTrack].name);
-        NF_WriteText(1, 0, 2, 10, trackNoAndTitle);
-        // NF_WriteText(1, 0, 2, 11, GetBgmTrackProgressString());
+        sprintf(trackNoAndTitle, "%d. %s", currentSoundTestTrack + 1, BGMS[currentSoundTestTrack].name.c_str());
+        NF_WriteText(1, 0, 2, 11, trackNoAndTitle);
         NF_WriteText(1, 0, 2, 13, "LEFT/RIGHT to change track.");
         break;
 
@@ -579,7 +586,7 @@ void Menu::Update(volatile int frame)
     case MENU_MP_JOIN_ROOM:
         UpdateMultiplayer();
         break;
-    
+
     case MENU_CUSTOM_GAME:
         NF_WriteText(1, 0, 2, 2, "- Custom Cook -");
 
@@ -587,51 +594,48 @@ void Menu::Update(volatile int frame)
         char editorText[50];
         for (int i = 0; i < CUSTOM_GAME_OPTION_COUNT; i++)
         {
-            switch (i) {
-                case 0:
-                    if (customGameValues[i] == 5) {
-                        sprintf(
-                            editorText,
-                            "%s%s: Final Cook", customGameCursor == i ? "> " : "", 
-                            customGameIds[i]
-                        );
-                    }
-                    else
-                    {
-                        sprintf(
-                            editorText,
-                            "%s%s: %i", customGameCursor == i ? "> " : "", 
-                            customGameIds[i],
-                            customGameValues[i] + 1
-                        );
-                    }
-                    break;
-                case 1:
+            switch (i)
+            {
+            case 0:
+                if (customGameValues[i] == 5)
+                {
                     sprintf(
                         editorText,
-                        "%s%s: $%i", customGameCursor == i ? "> " : "", 
-                        customGameIds[i],
-                        customGameValues[i]
-                    );
-                    break;
-                case 2:
+                        "%s%s: Final Cook", customGameCursor == i ? "> " : "",
+                        customGameIds[i]);
+                }
+                else
+                {
                     sprintf(
-                        editorText, 
-                        "%s%s: %s", customGameCursor == i ? "> " : "",
+                        editorText,
+                        "%s%s: %i", customGameCursor == i ? "> " : "",
                         customGameIds[i],
-                        GetCharacterName(static_cast<Character>(customGameValues[i]))
-                    );
-                    break;
-                default:
-                    sprintf(
-                        editorText, 
-                        "%s%s: %s", customGameCursor == i ? "> " : "",
-                        customGameIds[i],
-                        customGameValues[i] ? "On" : "Off"
-                    );
-                    break;
+                        customGameValues[i] + 1);
+                }
+                break;
+            case 1:
+                sprintf(
+                    editorText,
+                    "%s%s: $%i", customGameCursor == i ? "> " : "",
+                    customGameIds[i],
+                    customGameValues[i]);
+                break;
+            case 2:
+                sprintf(
+                    editorText,
+                    "%s%s: %s", customGameCursor == i ? "> " : "",
+                    customGameIds[i],
+                    GetCharacterName(static_cast<Character>(customGameValues[i])));
+                break;
+            default:
+                sprintf(
+                    editorText,
+                    "%s%s: %s", customGameCursor == i ? "> " : "",
+                    customGameIds[i],
+                    customGameValues[i] ? "On" : "Off");
+                break;
             }
-            
+
             NF_WriteText(1, 0, 3 - (customGameCursor == i ? 2 : 0), 5 + (i * 2), editorText);
         }
 
@@ -691,7 +695,7 @@ MenuSelection Menu::HandleInput(volatile int frame)
                     currentSoundTestTrack = BGM_COUNT - 1;
                 }
             }
-            
+
             Audio::PlayBGM(static_cast<BgmId>(currentSoundTestTrack), true);
             rumble(currentSoundTestTrack % 2 == 0);
         }
@@ -717,11 +721,10 @@ MenuSelection Menu::HandleInput(volatile int frame)
         break;
 
     case MENU_CUSTOM_GAME:
-        if (keysDown() & KEY_RIGHT || keysDown() & KEY_LEFT
-             || keysDown() & KEY_DOWN || keysDown() & KEY_UP)
+        if (keysDown() & KEY_RIGHT || keysDown() & KEY_LEFT || keysDown() & KEY_DOWN || keysDown() & KEY_UP)
         {
             // Adjust cursor
-            if (keysDown() & KEY_UP) 
+            if (keysDown() & KEY_UP)
             {
                 customGameCursor--;
                 Audio::PlaySFX(SFX_MENU_SELECT);
@@ -734,8 +737,8 @@ MenuSelection Menu::HandleInput(volatile int frame)
             if (customGameCursor < 0)
             {
                 customGameCursor = CUSTOM_GAME_OPTION_COUNT - 1;
-            } 
-            else if (customGameCursor >= CUSTOM_GAME_OPTION_COUNT) 
+            }
+            else if (customGameCursor >= CUSTOM_GAME_OPTION_COUNT)
             {
                 customGameCursor = 0;
             }
@@ -754,7 +757,7 @@ MenuSelection Menu::HandleInput(volatile int frame)
                 customGameValues[customGameCursor] -= valueInc;
                 Audio::PlaySFX(SFX_SUCCESS_BELL);
             }
-            if (customGameValues[customGameCursor] < valueMin) 
+            if (customGameValues[customGameCursor] < valueMin)
             {
                 customGameValues[customGameCursor] = valueMax;
             }
@@ -793,7 +796,7 @@ MenuSelection Menu::HandleLayoutInput(volatile int frame, touchPosition touch)
     }
 
     if (keysDown() & KEY_B)
-    {   
+    {
         SetState(layout->backState, frame);
         return NONE;
     }
@@ -953,8 +956,10 @@ MenuSelection Menu::HandleClick(MenuSelection clicked, volatile int frame)
         }
         return NONE;
     case START_STORY_MODE:
-        if (CheckSelection(clicked)) {
-            if ((keysHeld() & KEY_SELECT) && (keysHeld() & KEY_R)) {
+        if (CheckSelection(clicked))
+        {
+            if ((keysHeld() & KEY_SELECT) && (keysHeld() & KEY_R))
+            {
                 SetState(MENU_CUSTOM_GAME, frame);
                 return OPEN_CUSTOM_GAME_MENU;
             }
@@ -1002,7 +1007,7 @@ void Menu::Draw(volatile int frame)
     }
 }
 
-int* Menu::GetCustomGameValues()
+int *Menu::GetCustomGameValues()
 {
     return customGameValues;
 }
