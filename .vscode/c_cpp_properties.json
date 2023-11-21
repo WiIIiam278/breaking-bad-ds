@@ -4,9 +4,9 @@
             "name": "NDS",
             "includePath": [
                 "${workspaceFolder}",
-                "/nitro-engine/include/**",
-                "/nds_nflib/include/**",
-                "/opt/devkitpro/libnds/include/**"
+                "C:/devkitpro/libnds/include/**",
+                "C:/devkitpro/nitro-engine/include/**",
+                "C:/devkitpro/nds_nflib/include/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -18,9 +18,9 @@
             "browse": {
                 "path": [
                     "${workspaceFolder}",
-                    "/nitro-engine/include/**",
-                    "/nds_nflib/include/**",
-                    "/opt/devkitpro/libnds/include/**"
+                    "C:/devkitpro/libnds/include/**",
+                    "C:/devkitpro/nitro-engine/include/**",
+                    "C:/devkitpro/nds_nflib/include/**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

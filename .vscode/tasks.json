@@ -23,7 +23,7 @@
             "label": "run",
             "type": "shell",
             "isBackground": true,
-            "command": "C:\\melonDS\\melonDS.exe", // This requires https://github.com/melonDS-emu/melonDS/pull/1583
+            "command": "C:/Users/William/Documents/melonDS/melonDS.exe", // This requires a build of melon with https://github.com/melonDS-emu/melonDS/pull/1583
             "args": [
                 "${workspaceFolder}/${workspaceFolderBasename}.nds"
             ],
@@ -40,7 +40,7 @@
                 "build debug"
             ],
             "isBackground": false,
-            "command": "C:/melonDS/melonDS.exe",
+            "command": "C:/Users/William/Documents/melonDS/melonDS.exe",
             "args": [
                 "${workspaceFolder}/${workspaceFolderBasename}.nds"
             ],
