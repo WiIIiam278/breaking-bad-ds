@@ -6,7 +6,7 @@
                 "${workspaceFolder}",
                 "C:/devkitpro/libnds/include/**",
                 "C:/devkitpro/nitro-engine/include/**",
-                "C:/devkitpro/nds_nflib/include/**"
+                "C:/devkitpro/nflib/include/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -20,7 +20,7 @@
                     "${workspaceFolder}",
                     "C:/devkitpro/libnds/include/**",
                     "C:/devkitpro/nitro-engine/include/**",
-                    "C:/devkitpro/nds_nflib/include/**"
+                    "C:/devkitpro/nflib/include/**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
