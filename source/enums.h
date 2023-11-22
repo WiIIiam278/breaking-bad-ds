@@ -102,9 +102,9 @@ enum MinigameResult
 
 enum Character
 {
-    CHAR_WALT = 0,
-    CHAR_JESSE = 1,
-    CHAR_YEPPERS = 2
+    CHAR_WALT = 0, // Walter
+    CHAR_JESSE = 1, // Jesse
+    CHAR_YEPPERS = 2 // Kusuri
 };
 
 const int POWER_UP_COUNT = 5;

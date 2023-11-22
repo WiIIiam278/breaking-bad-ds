@@ -4,6 +4,28 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "make debug",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "DEBUG=1"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "make release",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "DEBUG=0"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "clean",
             "type": "process",
             "command": "make",
@@ -13,17 +35,10 @@
             "problemMatcher": []
         },
         {
-            "dependsOn": "clean",
-            "label": "build debug",
-            "type": "process",
-            "command": "make",
-            "problemMatcher": []
-        },
-        {
             "label": "run",
             "type": "shell",
             "isBackground": true,
-            "command": "C:\\melonDS\\melonDS.exe", // This requires https://github.com/melonDS-emu/melonDS/pull/1583
+            "command": "C:/Users/William/Documents/Desmume/Dev/DeSmuME_0.9.11_x86_dev+.exe",
             "args": [
                 "${workspaceFolder}/${workspaceFolderBasename}.nds"
             ],
@@ -37,11 +52,12 @@
             "label": "gdb-debug",
             "type": "shell",
             "dependsOn": [
-                "build debug"
+                "make debug"
             ],
             "isBackground": false,
-            "command": "C:/melonDS/melonDS.exe",
+            "command": "C:/Users/William/Documents/Desmume/Dev/DeSmuME_0.9.11_x86_dev+.exe",
             "args": [
+                "--arm9gdb=20000",
                 "${workspaceFolder}/${workspaceFolderBasename}.nds"
             ],
             "presentation": {
@@ -56,7 +72,7 @@
             "command": "taskkill",
             "args": [
                 "/FI",
-                "imagename eq melonDS*"
+                "imagename eq DeSmuME*"
             ],
             "problemMatcher": []
         }

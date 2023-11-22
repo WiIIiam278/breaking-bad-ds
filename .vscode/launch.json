@@ -18,8 +18,8 @@
             "environment": [],
             "externalConsole": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc",
-            "miDebuggerServerAddress": "localhost:3333",
+            "miDebuggerPath": "C:/devkitpro/devkitARM/bin/arm-none-eabi-gdb.exe",
+            "miDebuggerServerAddress": "localhost:20000",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing",
