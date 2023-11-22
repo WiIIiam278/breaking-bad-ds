@@ -46,8 +46,6 @@ private:
 
     // Story mode
     Shop shop;
-    const char GOOD_ENDING_BG[32] = "bg/good_ending";
-    const char BAD_ENDING_BG[32] = "bg/bad_ending";
     bool showingWinScreen = false;
 
     // Cheats
@@ -127,11 +125,14 @@ private:
     Minigame *currentMinigame = NULL;
 
     // Backgrounds
-    const int HUD_BG = 1;
+    const int HUD_BG = 1; // HUD background
     const char SP_HUD_BG_NAME[32] = "bg/hud";
     const char MP_HUD_BG_NAME[32] = "bg/multiplayer_hud";
-    const int PAUSED_BG = 2;
+    
+    const int PAUSED_END_BG = 2; // Pause / end screen background
     const char PAUSED_BG_NAME[32] = "bg/paused";
+    const char GOOD_ENDING_BG[32] = "bg/good_ending";
+    const char BAD_ENDING_BG[32] = "bg/bad_ending";
 
 public:
     Game();

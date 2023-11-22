@@ -213,12 +213,12 @@ void Game::TogglePauseMenu()
         player.walking = false;
         ToggleHud(false);
         NF_LoadTiledBg(PAUSED_BG_NAME, PAUSED_BG_NAME, 256, 256);
-        NF_CreateTiledBg(1, PAUSED_BG, PAUSED_BG_NAME);
+        NF_CreateTiledBg(1, PAUSED_END_BG, PAUSED_BG_NAME);
         mode = PAUSED;
     }
     else
     {
-        NF_DeleteTiledBg(1, PAUSED_BG);
+        NF_DeleteTiledBg(1, PAUSED_END_BG);
         NF_UnloadTiledBg(PAUSED_BG_NAME);
         ToggleHud(true);
         player.canMove = true;
@@ -480,22 +480,28 @@ void Game::ShowEndScreen(bool winScreen)
     mode = STORY_END_SCREEN;
     showingWinScreen = winScreen;
     frame = 0;
+    
+    // Award "clear story mode" mineral
+    AwardMineral(MINERAL_EMERALD, true);
+    if (!customFlag) {
+        globalSave.saveData();
+    }
 
     Transition(false, 0, TS_BOTH, frame);
-    NF_ClearTextLayer(1, 0);
-    sound.StopBGM();
     ToggleHud(false);
+    NF_ClearTextLayer(1, 0);
+    NF_VramSpriteGfxDefrag(1);
 
     sound.PlayBGM(BGM_TITLE_LOOP, true);
     if (winScreen)
     {
         NF_LoadTiledBg(GOOD_ENDING_BG, GOOD_ENDING_BG, 256, 256);
-        NF_CreateTiledBg(1, PAUSED_BG, GOOD_ENDING_BG);
+        NF_CreateTiledBg(1, PAUSED_END_BG, GOOD_ENDING_BG);
     }
     else
     {
         NF_LoadTiledBg(BAD_ENDING_BG, BAD_ENDING_BG, 256, 256);
-        NF_CreateTiledBg(1, PAUSED_BG, BAD_ENDING_BG);
+        NF_CreateTiledBg(1, PAUSED_END_BG, BAD_ENDING_BG);
     }
 }
 
@@ -515,7 +521,7 @@ void Game::UpdateEndScreen()
     }
     if (frame > 1200)
     {
-        NF_DeleteTiledBg(1, PAUSED_BG);
+        NF_DeleteTiledBg(1, PAUSED_END_BG);
         if (showingWinScreen)
         {
             NF_UnloadTiledBg(GOOD_ENDING_BG);
@@ -534,7 +540,6 @@ void Game::UpdateEndScreen()
         }
 
         levelClear = true;
-        AwardMineral(MINERAL_EMERALD, true);
         QuitToTitle();
     }
 }
@@ -565,6 +570,7 @@ void Game::QuitToTitle()
     {
         globalSave.loadData();
     }
+    NF_VramSpriteGfxDefrag(1);
     StartMenuScreen(false);
     if (!levelClear)
     {
@@ -1324,7 +1330,7 @@ void Game::Update()
         if (gameType != GAME_MULTIPLAYER_VS &&
             (mode == PAUSED) && (keysDown() & KEY_B))
         {
-            NF_DeleteTiledBg(1, PAUSED_BG);
+            NF_DeleteTiledBg(1, PAUSED_END_BG);
             NF_UnloadTiledBg(PAUSED_BG_NAME);
             QuitToTitle();
             return;
