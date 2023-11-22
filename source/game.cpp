@@ -702,7 +702,7 @@ void Game::LoadLabScene()
         return;
     }
 
-    // Determien player 1 character
+    // Determine player 1 character
     Character p1Char = (isMultiplayer ? (!isHostClient() ? CHAR_JESSE : CHAR_WALT) : ((keysHeld() & KEY_Y) && (keysHeld() & KEY_SELECT) ? CHAR_YEPPERS : CHAR_WALT));
     
     // If this is a custom game, use selected character
