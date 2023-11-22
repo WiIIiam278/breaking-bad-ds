@@ -446,9 +446,12 @@ void Menu::UpdateMinerals(volatile int frame, Sound *sound)
 
         if (touching)
         {
-            sound->PlaySFX(SFX_MENU_SELECT);
-
             bool touchingMineral = touch.px >= pos[0] && touch.px <= pos[0] + 32 && touch.py >= pos[1] && touch.py <= pos[1] + 32;
+            
+            if (touchingMineral && currentlySelectedMineral != i) {
+                sound->PlaySFX(SFX_MENU_SELECT);
+            }
+            
             currentlySelectedMineral = touchingMineral ? i : currentlySelectedMineral;
         }
 
