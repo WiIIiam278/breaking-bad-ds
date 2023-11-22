@@ -621,7 +621,13 @@ void Game::CheckDialogue()
             if (!enabledCheats[CHEAT_DIALOGUE]) {
                 StartDialogue((ScriptId)dialogueId);
             }
+            
+            // Increment dialogue progress
             dialogueProgress++;
+            if (gameType == GAME_STORY_MODE) 
+            {
+                globalSave.currentDialogue = dialogueProgress;
+            }
         }
     }
 }
@@ -1158,6 +1164,7 @@ void Game::UpdateGameOver()
             {
                 if (globalSave.currentDay == LEVEL_COUNT - 1)
                 {
+                    dialogueProgress = globalSave.currentDialogue = (globalSave.currentDay + 1);
                     CheckDialogue();
                     return;
                 }
